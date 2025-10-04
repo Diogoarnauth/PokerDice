@@ -64,7 +64,7 @@ class PlayerController(
     }
 */
 
-    @DeleteMapping(Uris.Players.GET_BY_ID) // mesmo path de GET, mas método DELETE
+    @DeleteMapping(PlayerUris.Players.GET_BY_ID) // mesmo path de GET, mas método DELETE
     fun deletePlayer(
         @PathVariable id: String,
         player: AuthenticatedPlayer,             // já vem do ArgumentResolver
@@ -88,7 +88,7 @@ class PlayerController(
     }
 
 
-    @GetMapping(Uris.Players.GET_BY_ID)
+    @GetMapping(PlayerUris.Players.GET_BY_ID)
     fun getById(@PathVariable id: String): ResponseEntity<*> {
         // 1) Validar o path param (tem de ser número)
         val playerId = id.toIntOrNull()
@@ -115,7 +115,7 @@ class PlayerController(
         }
     }
 
-    @PostMapping(Uris.Players.CREATE)
+    @PostMapping(PlayerUris.Players.CREATE)
     fun createPlayer(
         @RequestBody input: PlayerCreateInputModel
     ): ResponseEntity<*> {

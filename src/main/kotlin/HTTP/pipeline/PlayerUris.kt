@@ -4,7 +4,7 @@ package org.example.HTTP.pipeline
 import org.springframework.web.util.UriTemplate
 import java.net.URI
 
-object Uris {
+object PlayerUris {
     const val PREFIX = "/api"
     const val HOME = PREFIX
 

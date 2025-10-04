@@ -1,35 +1,22 @@
 package org.example.HTTP.pipeline
 
+import PlayersService
 import com.sun.net.httpserver.Authenticator
+import org.example.HTTP.model.CreatePlayerOutputModel
 import org.example.HTTP.model.GetByIdOutputModel
+import org.example.HTTP.model.PlayerCreateInputModel
 import org.example.HTTP.model.Problem
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RestController
-
-/*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.isel.daw.tictactoe.domain.users.AuthenticatedUser
-import pt.isel.daw.tictactoe.http.model.Problem
-import pt.isel.daw.tictactoe.http.model.UserCreateInputModel
-import pt.isel.daw.tictactoe.http.model.UserCreateTokenInputModel
-import pt.isel.daw.tictactoe.http.model.UserHomeOutputModel
-import pt.isel.daw.tictactoe.http.model.UserTokenCreateOutputModel
-import pt.isel.daw.tictactoe.services.TokenCreationError
-import pt.isel.daw.tictactoe.services.UserCreationError
-import pt.isel.daw.tictactoe.services.UsersService
-import pt.isel.daw.tictactoe.utils.Failure
-import pt.isel.daw.tictactoe.utils.Success
-*/
+
+
 @RestController
 class UsersController(
-    private val userService: UsersService,
+    private val playerService: PlayersService,
 ) {
     /*@PostMapping(Uris.Users.CREATE)
     fun create(
@@ -82,7 +69,7 @@ class UsersController(
             ?: return Problem.response(400, Problem.invalidRequestContent)
 
         // 2) Pedir ao serviço
-        val res = usersService.getById(userId)
+        val res = playerService.getPlayerById(userId)
 
         // 3) Mapear resultado → HTTP
         return when (res) {
@@ -93,6 +80,23 @@ class UsersController(
                 )
             )
             is Authenticator.Failure -> ResponseEntity.status(404).build<Unit>() // not found
+        }
+    }
+
+    @PostMapping(Uris.Users.CREATE)
+    fun createUser(
+        @RequestBody input: PlayerCreateInputModel
+    ): ResponseEntity<*> {
+        val result = playerService.createPlayer(input.username, input.password)
+
+        return if (result != null) {
+            // 201 Created + corpo JSON com o ID
+            ResponseEntity
+                .status(201)
+                .body(CreatePlayerOutputModel(result.id))
+        } else {
+            // 400 Bad Request se não conseguir criar
+            Problem.response(400, Problem.userAlreadyExists)
         }
     }
 

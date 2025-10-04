@@ -19,11 +19,11 @@ class Problem(
             .header("Content-Type", MEDIA_TYPE)
             .body<Any>(problem)
 
-        val userAlreadyExists =
+        val playerAlreadyExists =
             Problem(
                 URI(
                     "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                            "docs/problems/user-already-exists",
+                            "docs/problems/player-already-exists",
                 ),
             )
         val insecurePassword =
@@ -34,11 +34,11 @@ class Problem(
                 ),
             )
 
-        val userOrPasswordAreInvalid =
+        val playerOrPasswordAreInvalid =
             Problem(
                 URI(
                     "https://github.com/isel-leic-daw/s2223i-51d-51n-public/tree/main/code/tic-tac-tow-service/" +
-                            "docs/problems/user-or-password-are-invalid",
+                            "docs/problems/player-or-password-are-invalid",
                 ),
             )
 

@@ -9,7 +9,7 @@ data class Player(
     val name : String,
     val age : Int,
     var credit : Int,
-    var WinCounter : Int
+    var winCounter : Int
 
 ){
     init {
@@ -19,14 +19,14 @@ data class Player(
         require(name.isNotBlank()) { "Name cannot be blank." }
         require(age in 18..100) { "Age must be between 18 and 100." }
         require(credit >= 0) { "Credit cannot be negative." }
-        require(WinCounter >= 0) { "WinCounter cannot be negative." }
+        require(winCounter >= 0) { "WinCounter cannot be negative." }
     }
 
     fun incrementCredit(newCredits : Int){
         credit += newCredits
     }
     fun winCounter(){
-        WinCounter +=1
+        winCounter +=1
     }
 
 

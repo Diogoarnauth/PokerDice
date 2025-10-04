@@ -7,6 +7,7 @@ import org.example.HTTP.model.GetByIdOutputModel
 import org.example.HTTP.model.PlayerCreateInputModel
 import org.example.HTTP.model.Problem
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -15,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController
 
 
 @RestController
-class UsersController(
+class PlayerController(
     private val playerService: PlayersService,
 ) {
     /*@PostMapping(Uris.Users.CREATE)
@@ -62,29 +63,60 @@ class UsersController(
         userService.revokeToken(user.token)
     }
 */
-    @GetMapping(Uris.Users.GET_BY_ID)
+
+    @DeleteMapping(Uris.Players.GET_BY_ID) // mesmo path de GET, mas método DELETE
+    fun deletePlayer(
+        @PathVariable id: String,
+        player: AuthenticatedPlayer,             // já vem do ArgumentResolver
+    ): ResponseEntity<*> {
+
+        // 1) validar path param
+        val playerId = id.toIntOrNull()
+            ?: return Problem.response(400, Problem.invalidRequestContent)
+
+        // 2) (opcional mas recomendado) só pode apagar o próprio
+        if (player.id != playerId) {
+            return ResponseEntity.status(403).build<Unit>() // Forbidden
+        }
+
+        // 3) pedir ao serviço
+        return when (val res = playersService.deleteById(playerId)) {
+            is Authenticator.Success -> ResponseEntity.noContent().build<Unit>()       // 204
+            is Authenticator.Failure -> ResponseEntity.status(404).build<Unit>()       // Not Found
+            else -> ResponseEntity.status(500).build<Unit>() // ver se é isto que temos de ter
+        }
+    }
+
+
+    @GetMapping(Uris.Players.GET_BY_ID)
     fun getById(@PathVariable id: String): ResponseEntity<*> {
         // 1) Validar o path param (tem de ser número)
-        val userId = id.toIntOrNull()
+        val playerId = id.toIntOrNull()
             ?: return Problem.response(400, Problem.invalidRequestContent)
 
         // 2) Pedir ao serviço
-        val res = playerService.getPlayerById(userId)
+        val res = playerService.getPlayerById(playerId)
 
         // 3) Mapear resultado → HTTP
         return when (res) {
             is Authenticator.Success -> ResponseEntity.ok(
                 GetByIdOutputModel(
                     id = res.value.id,          // adapta o tipo se for Long
-                    username = res.value.username
+                    username = res.value.username,
+                    name = res.value.name,
+                    age = res.value.age,
+                    credit = res.value.credit,
+                    winCounter = res.value.WinCounter
+
                 )
             )
             is Authenticator.Failure -> ResponseEntity.status(404).build<Unit>() // not found
+            else -> ResponseEntity.status(500).build<Unit>() // ver se é isto que temos de ter
         }
     }
 
-    @PostMapping(Uris.Users.CREATE)
-    fun createUser(
+    @PostMapping(Uris.Players.CREATE)
+    fun createPlayer(
         @RequestBody input: PlayerCreateInputModel
     ): ResponseEntity<*> {
         val result = playerService.createPlayer(input.username, input.password)
@@ -96,7 +128,7 @@ class UsersController(
                 .body(CreatePlayerOutputModel(result.id))
         } else {
             // 400 Bad Request se não conseguir criar
-            Problem.response(400, Problem.userAlreadyExists)
+            Problem.response(400, Problem.playerAlreadyExists)
         }
     }
 

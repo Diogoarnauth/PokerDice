@@ -1,6 +1,6 @@
 package org.example.Domain.Games
 
-sealed class Dice(val value: Int, val label: String) {
+sealed class Dice(val value: Int, val label: String) { // garante tipo seguro para cada face
     data object Nine  : Dice(9,  "nine")
     data object Ten   : Dice(10, "ten")
     data object Jack  : Dice(11, "jack")

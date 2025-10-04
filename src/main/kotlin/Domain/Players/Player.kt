@@ -3,13 +3,14 @@ package org.example.Domain.Players
 import java.util.*
 
 data class Player(
-    val id : Int,
-    val token : UUID = UUID.randomUUID(),
-    val username : String,
-    val name : String,
-    val age : Int,
-    var credit : Int,
-    var winCounter : Int
+    val id: Int,
+    val token: UUID? = UUID.randomUUID(),
+    val username: String,
+    val password: String,
+    val name: String,
+    val age: Int,
+    var credit: Int,
+    var winCounter: Int
 
 ){
     init {

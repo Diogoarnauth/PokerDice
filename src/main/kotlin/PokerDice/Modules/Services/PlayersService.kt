@@ -118,6 +118,13 @@ class PlayersService(
         }
     }
 
+    fun revokeToken(token: String): Boolean {
+        val tokenValidationInfo = playerDomain.createTokenValidationInformation(token)
+        return transactionManager.run {
+            it.playersRepository.removeTokenByValidationInfo(tokenValidationInfo)
+            true
+        }
+    }
 
 
 }

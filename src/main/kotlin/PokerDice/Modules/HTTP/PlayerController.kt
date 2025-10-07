@@ -11,6 +11,7 @@ import org.example.HTTP.model.GetByIdOutputModel
 import org.example.HTTP.model.PlayerCreateInputModel
 import org.example.HTTP.model.Problem
 import org.example.HTTP.pipeline.PlayerUris
+import org.example.PokerDice.Modules.Domain.Domain.Players.AuthenticatedPlayer
 import org.example.PokerDice.Modules.HTTP.model.PlayerCreateTokenInputModel
 import org.example.PokerDice.Modules.HTTP.model.PlayerTokenCreateOutputModel
 import org.springframework.http.ResponseEntity
@@ -94,9 +95,17 @@ class PlayerController(
             is Failure -> when (res.value) {
                 PlayerGetByIdError.PlayerNotFound ->
                     Problem.response(404, Problem.playerNotFound)
+
+                else -> {TODO()}
             }
+
+            else -> {TODO()}
         }
     }
 
+    @PostMapping(PlayerUris.Players.LOGOUT)
+    fun logout(player: AuthenticatedPlayer) {
+        playerService.revokeToken(player.token)
+    }
 
 }

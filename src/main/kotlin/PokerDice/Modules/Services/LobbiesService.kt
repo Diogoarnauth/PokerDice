@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
-
+/*
 @Service
 class LobbiesService(
     // Dependências futuras, ex: playersRepository, transactionManager
@@ -89,4 +89,4 @@ class LobbiesService(
         return LeaveLobbyResult.Ok
     }
 
-}
+}*/

@@ -9,6 +9,8 @@ import org.example.HTTP.model.GetByIdOutputModel
 import org.example.HTTP.model.PlayerCreateInputModel
 import org.example.HTTP.model.Problem
 import org.example.HTTP.pipeline.PlayerUris
+import org.example.PokerDice.Modules.HTTP.model.PlayerCreateTokenInputModel
+import org.example.PokerDice.Modules.HTTP.model.PlayerTokenCreateOutputModel
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -43,6 +45,28 @@ class PlayerController(
                 }
 
             else -> {TODO()}//dúvidas
+        }
+    }
+
+    @PostMapping(PlayerUris.Players.TOKEN)
+    fun token(
+        @RequestBody input: PlayerCreateTokenInputModel,
+    ): ResponseEntity<*> {
+        val res = playerService.createToken(input.username, input.password)
+        return when (res) {
+            is Success ->
+                ResponseEntity.status(200)
+                    .body(PlayerTokenCreateOutputModel(res.value.tokenValue))
+
+            is Failure ->
+                when (res.value) {
+                    TokenCreationError.UserOrPasswordAreInvalid ->
+                        Problem.response(400, Problem.playerOrPasswordAreInvalid)
+
+                    else -> {TODO()}
+                }
+
+            else -> {TODO()}
         }
     }
 

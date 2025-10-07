@@ -1,5 +1,6 @@
 package org.example.Domain.Players
 
+import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
 import java.util.*
 
 data class Player(
@@ -7,6 +8,7 @@ data class Player(
     val token: UUID? = UUID.randomUUID(),
     val username: String,
     val password: String,
+    val passwordValidation: PasswordValidationInfo, //dúvidas, qual a diferença entre ambas
     val name: String,
     val age: Int,
     var credit: Int,

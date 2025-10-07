@@ -10,11 +10,11 @@ object PlayerUris {
 
     fun home(): URI = URI(HOME)
 
-    object Users {
-        const val CREATE = "$PREFIX/users"
-        const val TOKEN = "$PREFIX/users/token"
+    object Players {
+        const val CREATE = "$PREFIX/players"
+        const val TOKEN = "$PREFIX/players/token"
         const val LOGOUT = "$PREFIX/logout"
-        const val GET_BY_ID = "$PREFIX/users/{id}"
+        const val GET_BY_ID = "$PREFIX/players/{id}"
         const val HOME = "$PREFIX/me"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)

@@ -20,8 +20,12 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    api("org.springframework.security:spring-security-core:6.5.5")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+
+    // To use Kotlin specific date and time functions
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 }
 
 tasks.test { useJUnitPlatform() }

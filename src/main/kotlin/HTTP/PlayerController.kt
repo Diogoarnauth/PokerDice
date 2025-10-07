@@ -39,7 +39,10 @@ class PlayerController(
                 when (res.value) {
                     PlayerCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                     PlayerCreationError.PlayerAlreadyExists -> Problem.response(400, Problem.playerAlreadyExists)
+                    else -> {TODO()} //dúvidas
                 }
+
+            else -> {TODO()}//dúvidas
         }
     }
 

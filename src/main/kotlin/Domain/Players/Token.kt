@@ -1,5 +1,5 @@
-import kotlinx.datetime.Instant
 
+import kotlinx.datetime.Instant
 
 class Token(
     val tokenValidationInfo: TokenValidationInfo,

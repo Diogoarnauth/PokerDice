@@ -1,4 +1,5 @@
 import org.example.Domain.Players.Player
+import org.example.repository.TransactionManager
 import org.springframework.stereotype.Service
 import pt.isel.daw.tictactoe.domain.users.PlayersDomain
 import java.time.Clock
@@ -46,7 +47,7 @@ class PlayersService(
         return transactionManager.run {
             val usersRepository = it.usersRepository
             if (usersRepository.isUserStoredByUsername(username)) {
-                failure(UserCreationError.UserAlreadyExists)
+                failure(PlayerCreationError.PlayerAlreadyExists)
             } else {
                 val id = usersRepository.storeUser(username, passwordValidationInfo)
                 success(id)

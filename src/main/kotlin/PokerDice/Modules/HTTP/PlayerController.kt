@@ -1,9 +1,11 @@
 package org.example.HTTP
 
 import Failure
+import PlayerGetByIdOutputModel
 import PlayersService
 import Success
 import com.sun.net.httpserver.Authenticator
+import org.example.Domain.Players.Player
 import org.example.HTTP.model.CreatePlayerOutputModel
 import org.example.HTTP.model.GetByIdOutputModel
 import org.example.HTTP.model.PlayerCreateInputModel
@@ -67,6 +69,32 @@ class PlayerController(
                 }
 
             else -> {TODO()}
+        }
+    }
+
+    @GetMapping(PlayerUris.Players.GET_BY_ID)
+    fun getById(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
+        val res = playerService.getById(id)
+
+        return when (res) {
+            is Success -> {
+                val player: Player = res.value
+                ResponseEntity.status(200)
+                    .body(
+                        PlayerGetByIdOutputModel(
+                            username = player.username,
+                            token = player.token!!,
+                            name = player.name,
+                        )
+                    )
+            }
+
+            is Failure -> when (res.value) {
+                PlayerGetByIdError.PlayerNotFound ->
+                    Problem.response(404, Problem.playerNotFound)
+            }
         }
     }
 

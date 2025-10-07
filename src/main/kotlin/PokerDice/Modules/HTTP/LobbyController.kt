@@ -1,12 +1,5 @@
 package org.example.HTTP.pipeline
 
-import LobbiesService
-import org.example.HTTP.model.*
-import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.*
-import org.example.HTTP.model.Problem // ajusta import conforme o teu pacote
-import org.example.HTTP.pipeline.LobbyUris as Uris
-
 /*
 @RestController
 class LobbiesController(

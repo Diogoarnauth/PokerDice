@@ -1,15 +1,11 @@
-package pt.isel.daw.tictactoe.domain.users
 
-import PasswordValidationInfo
-import PlayersDomainConfig
-import Token
-import TokenEncoder
-import TokenValidationInfo
+
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
 import java.util.Base64
 
 @Component

@@ -1,7 +1,7 @@
 package org.example.repository
 
 interface Transaction {
-    val usersRepository: UsersRepository
+    val playersRepository: PlayersRepository
 
     val gamesRepository: GamesRepository
 

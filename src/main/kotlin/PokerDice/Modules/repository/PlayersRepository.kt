@@ -1,23 +1,28 @@
 package org.example.repository
 
-import PasswordValidationInfo
+
 import Token
 import TokenValidationInfo
 import kotlinx.datetime.Instant
+import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
 import org.example.Domain.Players.Player
 
 
 interface PlayersRepository {
-    fun storeUser(
+    fun storePlayer(
         username: String,
         passwordValidation: PasswordValidationInfo,
     ): Int
 
-    fun getUserByUsername(username: String): Player?
+    fun getPlayerByUsername(username: String): Player?
+
+    fun getPlayerById (id: Int): Player?
+
 
     fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Player, Token>?
 
-    fun isUserStoredByUsername(username: String): Boolean
+    fun isPlayerStoredByUsername(username: String): Boolean
+
 
     fun createToken(
         token: Token,

@@ -3,11 +3,11 @@ import kotlinx.datetime.Instant
 import org.example.Domain.Players.Player
 import org.example.HTTP.pipeline.PlayerUris
 import org.example.PokerDice.Modules.HTTP.model.PlayerTokenCreateOutputModel
+import org.example.repository.PlayersRepository
 import org.example.repository.TransactionManager
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import pt.isel.daw.tictactoe.domain.users.PlayersDomain
 
 
 data class TokenExternalInfo(
@@ -27,6 +27,14 @@ sealed class TokenCreationError {
     data object UserOrPasswordAreInvalid : TokenCreationError()
 }
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
+
+
+sealed class PlayerGetByIdError {
+    data object PlayerNotFound : PlayerGetByIdError()
+    //data class InvalidToken(val tokenValue: String) : PlayerGetByIdError() //dúvida :não sei se é necessário
+}
+
+typealias PlayerGetByIdResult = Either<PlayerGetByIdError, Player>
 
 
 
@@ -50,11 +58,11 @@ class PlayersService(
         val passwordValidationInfo = playerDomain.createPasswordValidationInformation(password)
 
         return transactionManager.run {
-            val usersRepository = it.usersRepository
-            if (usersRepository.isUserStoredByUsername(username)) {
+            val playersRepository = it.playersRepository
+            if (playersRepository.isPlayerStoredByUsername(username)) {
                 failure(PlayerCreationError.PlayerAlreadyExists)
             } else {
-                val id = usersRepository.storeUser(username, passwordValidationInfo)
+                val id = playersRepository.storePlayer(username, passwordValidationInfo)
                 success(id)
             }
         }
@@ -68,9 +76,9 @@ class PlayersService(
             failure(TokenCreationError.UserOrPasswordAreInvalid)
         }
         return transactionManager.run {
-            val usersRepository = it.usersRepository
+            val playersRepository = it.playersRepository
             val player: Player =
-                usersRepository.getUserByUsername(username)
+                playersRepository.getPlayerByUsername(username)
                     ?: return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
             if (!playerDomain.validatePassword(password, player.passwordValidation)) {
                 if (!playerDomain.validatePassword(password, player.passwordValidation)) {
@@ -86,7 +94,7 @@ class PlayersService(
                     createdAt = now,
                     lastUsedAt = now,
                 )
-            usersRepository.createToken(newToken, playerDomain.maxNumberOfTokensPerUser)
+            playersRepository.createToken(newToken, playerDomain.maxNumberOfTokensPerUser)
             Either.Right(
                 TokenExternalInfo(
                     tokenValue,
@@ -98,9 +106,16 @@ class PlayersService(
 
     @GetMapping(PlayerUris.Players.GET_BY_ID)
     fun getById(
-        @PathVariable id: String,
-    ) {
-        TODO("TODO")
+        @PathVariable id: Int,
+    ): PlayerGetByIdResult {
+        return transactionManager.run {
+            val playersRepository = it.playersRepository
+
+            val player = playersRepository.getPlayerById(id)
+                ?: return@run failure(PlayerGetByIdError.PlayerNotFound)
+
+            success(player)
+        }
     }
 
 

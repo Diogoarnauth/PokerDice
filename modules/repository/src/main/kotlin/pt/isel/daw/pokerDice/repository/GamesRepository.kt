@@ -1,8 +1,5 @@
-package org.example.repository
-
-
-
-import org.example.Domain.Games.Game
+package pt.isel.daw.pokerDice.repository
+import pt.isel.daw.pokerDice.domain.games.Game
 import java.util.UUID
 
 interface GamesRepository {

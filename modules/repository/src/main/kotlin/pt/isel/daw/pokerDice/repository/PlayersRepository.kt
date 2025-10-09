@@ -1,11 +1,7 @@
-package org.example.repository
+package pt.isel.daw.pokerDice.repository
 
-
-import Token
-import TokenValidationInfo
 import kotlinx.datetime.Instant
-import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
-import org.example.Domain.Players.Player
+import pt.isel.daw.pokerDice.domain.players.*
 
 
 interface PlayersRepository {

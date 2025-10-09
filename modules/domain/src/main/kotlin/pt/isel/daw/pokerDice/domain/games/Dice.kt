@@ -1,4 +1,6 @@
-package org.example.Domain.Games
+package pt.isel.daw.pokerDice.domain.games
+
+import kotlin.random.Random
 
 sealed class Dice(val value: Int, val label: String) { // garante tipo seguro para cada face
     data object Nine  : Dice(9,  "nine")
@@ -11,7 +13,7 @@ sealed class Dice(val value: Int, val label: String) { // garante tipo seguro pa
     companion object {
         val faces: List<Dice> = listOf(Nine, Ten, Jack, Queen, King, Ace)
 
-        fun random(rng: kotlin.random.Random = kotlin.random.Random.Default): Dice =
+        fun random(rng: Random = Random.Default): Dice =
             faces[rng.nextInt(faces.size)]
 
         fun from(label: String): Dice =

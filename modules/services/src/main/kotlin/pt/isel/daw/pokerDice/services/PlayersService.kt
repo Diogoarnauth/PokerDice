@@ -1,14 +1,14 @@
+package pt.isel.daw.pokerDice.services
+
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import org.example.Domain.Players.Player
-import org.example.HTTP.pipeline.PlayerUris
-import org.example.PokerDice.Modules.HTTP.model.PlayerTokenCreateOutputModel
-import org.example.repository.PlayersRepository
-import org.example.repository.TransactionManager
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-
+import pt.isel.daw.pokerDice.domain.players.*
+import pt.isel.daw.pokerDice.http.pipeline.*
+import pt.isel.daw.pokerDice.repository.*
+import pt.isel.daw.pokerDice.utils.*
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -40,9 +40,9 @@ typealias PlayerGetByIdResult = Either<PlayerGetByIdError, Player>
 
 @Service // dúvida :falar com o stor acerca de usar service ou named
 class PlayersService(
-    private val transactionManager: TransactionManager,
+    private val transactionManager: TransactionManager, // erro
     private val playerDomain: PlayersDomain,
-    private val clock: Clock
+    private val clock: Clock // erro
 ) {
 
     fun createPlayer(

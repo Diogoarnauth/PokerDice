@@ -1,4 +1,4 @@
-package org.example.HTTP.model
+package pt.isel.daw.pokerDice.http.model
 
 import org.springframework.http.ResponseEntity
 import java.net.URI

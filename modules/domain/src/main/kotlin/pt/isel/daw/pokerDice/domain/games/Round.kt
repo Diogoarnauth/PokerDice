@@ -1,7 +1,5 @@
-package org.example.Domain.Games
-
-import org.example.Domain.Players.Player
-
+package pt.isel.daw.pokerDice.domain.games
+/*
 class Round (
     val id: Int,
     var winner: Player? = null,
@@ -27,3 +25,4 @@ class Round (
 }
 
 
+*/

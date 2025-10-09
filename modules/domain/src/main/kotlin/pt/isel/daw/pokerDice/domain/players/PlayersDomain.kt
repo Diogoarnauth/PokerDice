@@ -1,11 +1,10 @@
-
+package pt.isel.daw.pokerDice.domain.players
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
 import java.util.Base64
 
 @Component

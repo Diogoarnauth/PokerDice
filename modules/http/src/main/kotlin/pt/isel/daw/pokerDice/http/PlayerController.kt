@@ -1,18 +1,7 @@
-package org.example.HTTP
+package pt.isel.daw.pokerDice.http
 
-import Failure
-import PlayerGetByIdOutputModel
-import PlayersService
-import Success
-import com.sun.net.httpserver.Authenticator
-import org.example.Domain.Players.Player
-import org.example.HTTP.model.CreatePlayerOutputModel
-import org.example.HTTP.model.GetByIdOutputModel
-import org.example.HTTP.model.PlayerCreateInputModel
-import org.example.HTTP.model.Problem
-import org.example.HTTP.pipeline.PlayerUris
-import org.example.PokerDice.Modules.HTTP.model.PlayerCreateTokenInputModel
-import org.example.PokerDice.Modules.HTTP.model.PlayerTokenCreateOutputModel
+import com.sun.net.httpserver.*
+import pt.isel.daw.pokerDice.http.pipeline.PlayerUris
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
@@ -20,6 +9,10 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.isel.daw.pokerDice.domain.players.Player
+import pt.isel.daw.pokerDice.http.model.*
+import pt.isel.daw.pokerDice.services.*
+import pt.isel.daw.pokerDice.utils.*
 
 @RestController
 class PlayerController(

@@ -28,4 +28,26 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 }
 
+springBoot {
+    mainClass.set("pt.isel.daw.pokerDice.PokerDiceApplicationKt")
+}
+
 tasks.test { useJUnitPlatform() }
+
+val dockerImageTagPostgresTest = "postgres-test:latest"
+
+tasks.register<Exec>("buildImagePostgresTest") {
+    commandLine(
+        "docker",
+        "build",
+        "-t",
+        dockerImageTagPostgresTest,
+        "-f",
+        "tests/Dockerfile-postgres-test",
+        "../repository-jdbi",
+    )
+}
+
+tasks.register<Exec>("allUp") {
+    commandLine("docker", "compose", "up", "--force-recreate", "-d")
+}

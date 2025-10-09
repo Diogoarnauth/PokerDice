@@ -1,4 +1,4 @@
-package org.example.Host
+package pt.isel.daw.pokerDice
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication

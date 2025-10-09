@@ -1,9 +1,11 @@
-import org.example.Domain.Players.Player
-import org.example.HTTP.model.LobbyCreateInputModel
+package pt.isel.daw.pokerDice.services
+
+
 import org.springframework.stereotype.Service
+import pt.isel.daw.pokerDice.http.model.*
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
-
+/*
 
 @Service
 class LobbiesService(
@@ -17,7 +19,7 @@ class LobbiesService(
         lobbies.values.filter { !it.isFull }
 
     /** Cria um novo Lobby */
-    fun create (hostId: Int, input: LobbyCreateInputModel): CreateLobbyResult{
+    fun create (hostId: Int, input: LobbyCreateInputModel): CreateLobbyResult {
         // validações básicas
         if (input.minPlayers <= 0 || input.maxPlayers < input.minPlayers || input.nRounds <= 0) {
             return CreateLobbyResult.InvalidSettings
@@ -89,4 +91,4 @@ class LobbiesService(
         return LeaveLobbyResult.Ok
     }
 
-}
+}*/

@@ -1,5 +1,5 @@
-import org.example.Domain.Players.Player
-
+package pt.isel.daw.pokerDice.domain.games
+/*
 // Lobby interno
 data class Lobby(
     val id: Int,
@@ -14,3 +14,4 @@ data class Lobby(
     val isFull: Boolean
         get() = players.size >= maxPlayers
 }
+*/

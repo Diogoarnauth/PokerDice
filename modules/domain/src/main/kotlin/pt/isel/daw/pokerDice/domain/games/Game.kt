@@ -1,4 +1,4 @@
-package org.example.Domain.Games
+package pt.isel.daw.pokerDice.domain.games
 
 import java.util.UUID
 

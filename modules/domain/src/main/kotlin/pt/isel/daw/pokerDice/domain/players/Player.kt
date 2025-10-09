@@ -1,6 +1,5 @@
-package org.example.Domain.Players
+package pt.isel.daw.pokerDice.domain.players
 
-import org.example.Domain.PasswordValidationInfo.PasswordValidationInfo
 import java.util.*
 
 data class Player(

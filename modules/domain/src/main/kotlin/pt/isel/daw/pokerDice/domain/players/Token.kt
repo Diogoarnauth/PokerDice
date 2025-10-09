@@ -1,4 +1,4 @@
-
+package pt.isel.daw.pokerDice.domain.players
 import kotlinx.datetime.Instant
 
 class Token(

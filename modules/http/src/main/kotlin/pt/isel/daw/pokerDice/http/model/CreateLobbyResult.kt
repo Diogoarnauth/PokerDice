@@ -1,3 +1,5 @@
+package pt.isel.daw.pokerDice.http.model
+
 /**
  * usado pelo service para indicar se a criação do lobby foi bem-sucedida
  * Ok- devolve o ID do lobby criado

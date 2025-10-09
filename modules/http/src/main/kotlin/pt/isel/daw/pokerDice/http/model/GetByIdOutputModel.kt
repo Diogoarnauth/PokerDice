@@ -1,4 +1,4 @@
-package org.example.HTTP.model
+package pt.isel.daw.pokerDice.http.model
 
 class GetByIdOutputModel (
         val id: Int,

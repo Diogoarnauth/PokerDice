@@ -1,4 +1,5 @@
-package org.example.repository
+package pt.isel.daw.pokerDice.repository
+
 
 interface Transaction {
     val playersRepository: PlayersRepository

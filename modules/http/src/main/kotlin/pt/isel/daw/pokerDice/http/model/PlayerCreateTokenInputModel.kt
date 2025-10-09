@@ -1,5 +1,4 @@
-package org.example.PokerDice.Modules.HTTP.model
-
+package pt.isel.daw.pokerDice.http.model
 
 data class PlayerCreateTokenInputModel(
     val username: String,

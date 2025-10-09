@@ -1,4 +1,4 @@
-package org.example.HTTP.pipeline
+package pt.isel.daw.pokerDice.http.pipeline
 
 import org.springframework.web.util.UriTemplate
 import java.net.URI

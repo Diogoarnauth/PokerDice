@@ -1,4 +1,4 @@
-
+package pt.isel.daw.pokerDice.domain.players
 import kotlin.time.Duration
 
 data class PlayersDomainConfig(

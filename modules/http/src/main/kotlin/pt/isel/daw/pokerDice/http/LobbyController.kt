@@ -1,4 +1,4 @@
-package org.example.HTTP.pipeline
+package pt.isel.daw.pokerDice.http
 
 /*
 @RestController

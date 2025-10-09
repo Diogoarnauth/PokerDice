@@ -1,3 +1,5 @@
+package pt.isel.daw.pokerDice.utils
+
 sealed class Either<out L, out R> {
     data class Left<out L>(val value: L) : Either<L, Nothing>()
 

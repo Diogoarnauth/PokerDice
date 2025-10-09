@@ -21,11 +21,8 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation(project(":modules:domain"))
-    implementation(project(":modules:repository"))
-    implementation(project(":modules:repository_jdbi"))
-    implementation(project(":modules:services"))
-    implementation(project(":modules:http"))
+
+    api(project(":modules:http"))
 
     api("org.springframework.security:spring-security-core:6.5.5")
 

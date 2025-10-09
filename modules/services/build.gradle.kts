@@ -17,9 +17,7 @@ java {
 repositories { mavenCentral() }
 
 dependencies {
-    implementation(project(":modules:domain"))
-    implementation(project(":modules:repository"))
-    implementation(project(":modules:http"))
+    api(project(":modules:repository"))
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")

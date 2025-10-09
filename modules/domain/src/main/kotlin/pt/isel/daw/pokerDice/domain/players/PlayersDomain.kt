@@ -1,17 +1,16 @@
 package pt.isel.daw.pokerDice.domain.players
 
-import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
+import kotlinx.datetime.*
 import java.util.Base64
+import org.springframework.security.crypto.password.PasswordEncoder
 
 @Component
 class PlayersDomain(
-    private val passwordEncoder: PasswordEncoder,
-    private val tokenEncoder: TokenEncoder,
-    private val config: PlayersDomainConfig,
+    private val passwordEncoder: PasswordEncoder, // erro
+    private val tokenEncoder: TokenEncoder, // erro
+    private val config: PlayersDomainConfig, // erro
 ) {
     fun generateTokenValue(): String =
         ByteArray(config.tokenSizeInBytes).let { byteArray ->

@@ -20,9 +20,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation(project(":modules:domain"))
-    implementation(project(":modules:services"))
-    implementation(project(":modules:http"))
+    api(project(":modules:services"))
 
     implementation("org.springframework.boot:spring-boot-starter-validation")
     api("org.springframework.security:spring-security-core:6.5.5")

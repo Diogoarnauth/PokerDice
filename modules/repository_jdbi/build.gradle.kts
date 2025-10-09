@@ -21,7 +21,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     api("org.springframework.security:spring-security-core:6.5.5")
-    implementation(project(":modules:domain"))
     implementation(project(":modules:repository"))
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 

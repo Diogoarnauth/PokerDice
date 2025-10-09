@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import pt.isel.daw.pokerDice.domain.players.*
-import pt.isel.daw.pokerDice.http.pipeline.*
 import pt.isel.daw.pokerDice.repository.*
 import pt.isel.daw.pokerDice.utils.*
 
@@ -104,7 +103,6 @@ class PlayersService(
         }
     }
 
-    @GetMapping(PlayerUris.Players.GET_BY_ID)
     fun getById(
         @PathVariable id: Int,
     ): PlayerGetByIdResult {

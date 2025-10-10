@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.services
 
+import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Service
@@ -37,7 +38,7 @@ typealias PlayerGetByIdResult = Either<PlayerGetByIdError, Player>
 
 
 
-@Service // dúvida :falar com o stor acerca de usar service ou named
+@Named // dúvida :falar com o stor acerca de usar service ou named
 class PlayersService(
     private val transactionManager: TransactionManager, // erro
     private val playerDomain: PlayersDomain,
@@ -115,6 +116,7 @@ class PlayersService(
             success(player)
         }
     }
+
 
 
 

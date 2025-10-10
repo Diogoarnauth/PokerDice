@@ -16,6 +16,7 @@ object PlayerUris {
         const val LOGOUT = "$PREFIX/logout"
         const val GET_BY_ID = "$PREFIX/players/{id}"
         const val HOME = "$PREFIX/me"
+        const  val INVITE = "$PREFIX/invite"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
 

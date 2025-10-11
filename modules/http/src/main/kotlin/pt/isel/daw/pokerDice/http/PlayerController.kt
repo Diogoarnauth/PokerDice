@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice.http
 
-import pt.isel.daw.pokerDice.http.pipeline.PlayerUris
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable

@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.http.pipeline
+package pt.isel.daw.pokerDice.http
 
 
 import org.springframework.web.util.UriTemplate

@@ -1,9 +1,9 @@
 -- Tabela Player
-CREATE TABLE Player (
+CREATE TABLE dbo.Player (
     id SERIAL PRIMARY KEY,
-    token UUID DEFAULT gen_random_uuid(),  -- aqui ou em kotlin
+    token UUID NOT NULL
     username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,       
+    passwordValidation VARCHAR(255) NOT NULL,
     name VARCHAR(100) NOT NULL,
     age INT CHECK (age BETWEEN 18 AND 100), 
     credit INT DEFAULT 0 CHECK (credit >= 0),
@@ -11,7 +11,7 @@ CREATE TABLE Player (
 );
 
 -- Tabela Lobby
-CREATE TABLE Lobby (
+CREATE TABLE dbo.Lobby (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -22,8 +22,8 @@ CREATE TABLE Lobby (
 );
 
 -- Tabela Game
-CREATE TABLE Game (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+CREATE TABLE dbo.Game (
+    id UUID PRIMARY KEY NOT NULL
     lobby_id INT REFERENCES Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
     state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
     nrPlayers INT NOT NULL,
@@ -31,7 +31,7 @@ CREATE TABLE Game (
 );
 
 -- Tabela Round
-CREATE TABLE Round (
+CREATE TABLE dbo.Round (
     id SERIAL PRIMARY KEY,
     game_id UUID REFERENCES Game(id) ON DELETE CASCADE,
     winner INT REFERENCES Player(id) ON DELETE SET NULL,
@@ -40,3 +40,18 @@ CREATE TABLE Round (
     timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
 );
 
+create table dbo.APP_INVITE(
+    id serial primary key,
+    inviterId integer references dbo.Player(id),
+    inviteValidationInfo varchar(255) unique not null,
+    state varchar(20) not null CHECK (state IN ('pending', 'used', 'expired')),
+    createdAt bigint not null
+);
+
+create table dbo.TOKEN (
+    tokenValidation varchar(255) primary key ,
+    createdAt bigint not null,
+    lastUsedAt bigint not null,
+    playerId integer,
+    foreign key (playerId) references dbo.Player(id) on delete cascade
+);

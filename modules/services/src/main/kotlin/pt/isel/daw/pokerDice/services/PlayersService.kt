@@ -172,6 +172,22 @@ class PlayersService(
         }
     }
 
+    fun getPlayerByToken(token: String): Player? {
+        if (!playerDomain.canBeToken(token)) {
+            return null
+        }
+        return transactionManager.run {
+            val usersRepository = it.playersRepository
+            val tokenValidationInfo = playerDomain.createTokenValidationInformation(token)
+            val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+            if (userAndToken != null && playerDomain.isTokenTimeValid(clock, userAndToken.second)) {
+                usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+                userAndToken.first
+            } else {
+                null
+            }
+        }
+    }
 
 
 

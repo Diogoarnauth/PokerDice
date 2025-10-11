@@ -10,6 +10,7 @@ data class Game(
     val minCredits: Int,
     val players: List<Player> = emptyList(),
     val rounds: List<Round> = emptyList(),
+    val scores: MutableMap<Player, Int> = mutableMapOf(),
     val currentPlayerIndex: Int,
     val lastRoll: List<Dice>,
     val lastCombination:CombinationType?
@@ -19,19 +20,23 @@ data class Game(
         WAITING_FOR_PLAYERS,
         ENDED,
         RUNNING,
-        NEXT_PLAYER
-        ;
+        NEXT_PLAYER,
+        ROUND_OVER;
 
-        val isEnded: Boolean
-            get() = this == ENDED
-
-        val isRunning: Boolean
-            get() = this == RUNNING
-
-        val isWaitingForPlayers: Boolean
-            get() = this == WAITING_FOR_PLAYERS
-
-        val isNextPlayer: Boolean
-            get() = this == NEXT_PLAYER
+        val isEnded: Boolean get() = this == ENDED
+        val isRunning: Boolean get() = this == RUNNING
+        val isWaitingForPlayers: Boolean get() = this == WAITING_FOR_PLAYERS
+        val isNextPlayer: Boolean get() = this == NEXT_PLAYER
+        val isRoundOver: Boolean get() = this == ROUND_OVER
     }
+
+    /**
+     * Verifica se o jogo está completo (todos os jogadores entraram).
+     */
+    val isFull: Boolean get() = players.size >= nrPlayers
+
+    /**
+     * Retorna o jogador atual (de acordo com o índice).
+     */
+    val currentPlayer: Player ? get() = players.getOrNull(currentPlayerIndex)
 }

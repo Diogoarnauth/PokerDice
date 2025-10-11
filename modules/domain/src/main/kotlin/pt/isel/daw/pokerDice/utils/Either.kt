@@ -15,5 +15,5 @@ typealias Success<S> = Either.Right<S>
 typealias Failure<F> = Either.Left<F>
 
 
-
+//vou ter calma
 //tentativa de

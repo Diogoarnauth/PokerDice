@@ -2,7 +2,7 @@ package pt.isel.daw.pokerDice.http
 
 import org.springframework.web.util.UriTemplate
 import java.net.URI
-
+/*
 object Uris {
     const val PREFIX = "/api"
     const val HOME = PREFIX
@@ -34,4 +34,4 @@ object Uris {
         const val LISTEN = "$PREFIX/chat/listen"
         const val SEND = "$PREFIX/chat/send"
     }
-}
+}*/

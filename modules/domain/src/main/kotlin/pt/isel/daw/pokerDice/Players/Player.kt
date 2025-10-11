@@ -27,6 +27,7 @@ data class Player(
     fun incrementCredit(newCredits : Int){
         credit += newCredits
     }
+
     fun winCounter(){
         winCounter +=1
     }

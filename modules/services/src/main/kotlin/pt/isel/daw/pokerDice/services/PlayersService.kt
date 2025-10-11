@@ -4,7 +4,6 @@ import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Service
-import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import pt.isel.daw.pokerDice.domain.players.*
 import pt.isel.daw.pokerDice.repository.*

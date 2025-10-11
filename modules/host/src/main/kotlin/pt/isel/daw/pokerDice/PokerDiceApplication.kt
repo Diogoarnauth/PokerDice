@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import pt.isel.daw.pokerDice.Players.Sha256TokenEncoder
 import pt.isel.daw.pokerDice.domain.Invite.InviteDomainConfig
 import pt.isel.daw.pokerDice.domain.Invite.Sha256InviteEncoder
 //import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
 import pt.isel.daw.pokerDice.domain.players.PlayersDomainConfig
-import pt.isel.daw.pokerDice.domain.players.Sha256TokenEncoder
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication

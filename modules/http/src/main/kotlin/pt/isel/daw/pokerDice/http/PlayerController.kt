@@ -74,6 +74,7 @@ class PlayerController(
         }
     }
 
+
     @GetMapping(PlayerUris.Players.GET_BY_ID)
     fun getById(
         @PathVariable id: Int,

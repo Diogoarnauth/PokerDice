@@ -14,6 +14,7 @@ import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
 import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
+import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomainConfig
 //import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
 import pt.isel.daw.pokerDice.domain.players.PlayersDomainConfig
 import pt.isel.daw.pokerDice.domain.players.Sha256TokenEncoder
@@ -62,6 +63,17 @@ class PokerDiceApplication {
             usedState = "used",
             declinedState = "declined",
         )
+
+    @Bean
+    fun lobbiesDomainConfig() =
+        LobbiesDomainConfig(
+            minPlayersAllowed = 2,
+            maxPlayersAllowed = 5,
+            minRoundsAllowed = 2,
+            maxRoundsAllowed = 10,
+            minCreditAllowed = 20
+        )
+
 }
 
 @Configuration
@@ -84,3 +96,5 @@ fun main(args: Array<String>) {
     logger.info("Starting app")
     runApplication<PokerDiceApplication>(*args)
 }
+
+// sudo docker compose up --build -

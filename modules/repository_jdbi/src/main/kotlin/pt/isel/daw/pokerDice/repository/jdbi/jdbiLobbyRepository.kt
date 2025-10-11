@@ -2,9 +2,8 @@ package pt.isel.daw.pokerDice.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.isel.daw.pokerDice.domain.Lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
-import pt.isel.daw.pokerDice.domain.players.Player
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
 
 class JdbiLobbyRepository(

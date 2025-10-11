@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.Lobbies
+package pt.isel.daw.pokerDice.domain.lobbies
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component

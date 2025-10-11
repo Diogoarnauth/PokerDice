@@ -1,11 +1,11 @@
-package pt.isel.daw.pokerDice.domain.Lobbies
+package pt.isel.daw.pokerDice.domain.lobbies
 
 import org.springframework.stereotype.Component
 
 @Component
 class LobbiesDomainConfig(
-    val isPrivate: Boolean,
-    val password: String?,
+    //val isPrivate: Boolean,
+    //val password: String?,
     val minPlayersAllowed: Int,
     val maxPlayersAllowed: Int,
     val minRoundsAllowed: Int,
@@ -19,7 +19,7 @@ class LobbiesDomainConfig(
         require(minRoundsAllowed >= 2 )
         require(maxRoundsAllowed <= 10 )
         require(minCreditAllowed >= 10)
-        require(isPrivate && password != null || !isPrivate && password == null)
+       // require(isPrivate && password != null || !isPrivate && password == null)
     }
 
 }

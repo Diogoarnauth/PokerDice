@@ -17,14 +17,14 @@ import pt.isel.daw.pokerDice.utils.*
 class LobbiesController(
     private val lobbies: LobbiesService
 ) {
-
+/*
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
     @GetMapping(LobbyUris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
         val list = LobbiesService.listAllLobbies()
         return ResponseEntity.ok(lobbies)
     }
-
+*/
 
     /*  // POST /lobbies → cria lobby (auth requerido)
       @PostMapping(LobbyUris.Lobbies.CREATE)

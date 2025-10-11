@@ -3,12 +3,9 @@ package pt.isel.daw.pokerDice.services
 
 import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
-import pt.isel.daw.pokerDice.domain.Lobbies.LobbiesDomain
-import pt.isel.daw.pokerDice.domain.Lobbies.LobbiesDomainConfig
-import pt.isel.daw.pokerDice.domain.Lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
+import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.repository.TransactionManager
-
-
 
 @Service
 class LobbiesService(
@@ -25,13 +22,13 @@ class LobbiesService(
 
 
 
-    /** Detalhes de um lobby */
+    /** Detalhes de um lobby
     fun getById(id: Int): Lobby =
         transactionManager.run {
             val lobbiesRepository = it.lobbiesRepository  // ou lobbiesRepository, depende do nome no teu Transaction
             return@run lobbiesRepository.getById(id)
         }
-
+    */
 
     /** Cria um novo Lobby */
    /* fun create (hostId: Int, input: LobbyCreateInputModel): CreateLobbyResult {

@@ -1,5 +1,7 @@
 package pt.isel.daw.pokerDice.domain.games
-/*
+
+import pt.isel.daw.pokerDice.domain.players.Player
+
 class Round (
     val id: Int,
     var winner: Player? = null,
@@ -25,4 +27,3 @@ class Round (
 }
 
 
-*/

@@ -1,5 +1,4 @@
 plugins {
-    id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.6"
     kotlin("jvm") version "1.9.24"            // compatível com Spring Boot 3.3.x
     kotlin("plugin.spring") version "1.9.24"   // importante p/ anotações Spring
@@ -17,12 +16,26 @@ java {
 repositories { mavenCentral() }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+
+    api(project(":modules:services"))
+
+    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.3.4"))
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+
+
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     api("org.springframework.security:spring-security-core:6.5.5")
 
+    // para testes
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation(kotlin("test"))
+
+    // To use Spring MVC and the Servlet API
+    implementation("org.springframework:spring-webmvc:6.2.10")
+    compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")
+
+    // To use SLF4J
+    implementation("org.slf4j:slf4j-api:2.0.16")
 
     // To use Kotlin specific date and time functions
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")

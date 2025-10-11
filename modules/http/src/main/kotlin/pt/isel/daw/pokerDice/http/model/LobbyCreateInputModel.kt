@@ -1,5 +1,5 @@
-package org.example.HTTP.model
-
+package pt.isel.daw.pokerDice.http.model
+/*
 import org.example.Domain.Players.Player
 
 class LobbyCreateInputModel (
@@ -10,3 +10,4 @@ class LobbyCreateInputModel (
     val maxPlayers : Int,
     val nRounds : Int
 )
+*/

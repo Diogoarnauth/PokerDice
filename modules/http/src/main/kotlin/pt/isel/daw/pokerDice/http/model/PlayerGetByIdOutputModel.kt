@@ -1,3 +1,4 @@
+package pt.isel.daw.pokerDice.http.model
 import java.util.UUID
 
 data class PlayerGetByIdOutputModel(

@@ -1,3 +1,5 @@
+package pt.isel.daw.pokerDice.http.model
+/*
 import org.example.Domain.Players.Player
 
 /**
@@ -20,4 +22,4 @@ sealed interface GetLobbyResult {
     ) : GetLobbyResult
 
     object NotFound : GetLobbyResult
-}
+}*/

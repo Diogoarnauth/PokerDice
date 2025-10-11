@@ -21,7 +21,7 @@ class AuthenticationInterceptor(
         if (handler is HandlerMethod &&
             handler.methodParameters.any {
                 it.parameterType == AuthenticatedPlayer::class.java
-            }
+            } //valida se o endPoint (@get...@post etc, exige algum AuthenticatedPlayer)
         ) {
             // enforce authentication
             val player =
@@ -32,7 +32,7 @@ class AuthenticationInterceptor(
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
                 false
             } else {
-                AuthenticatedPlayerArgumentResolver.addUserTo(player, request)
+                AuthenticatedPlayerArgumentResolver.addPlayerTo(player, request)
                 true
             }
         }

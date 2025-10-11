@@ -1,22 +1,20 @@
-package pt.isel.daw.pokerDice.http.pipeline
-
+package pt.isel.daw.pokerDice.http
 
 import org.springframework.web.util.UriTemplate
 import java.net.URI
 
-object PlayerUris {
+object Uris {
     const val PREFIX = "/api"
     const val HOME = PREFIX
 
     fun home(): URI = URI(HOME)
 
-    object Players {
-        const val CREATE = "$PREFIX/players"
-        const val TOKEN = "$PREFIX/players/token"
+    object Users {
+        const val CREATE = "$PREFIX/users"
+        const val TOKEN = "$PREFIX/users/token"
         const val LOGOUT = "$PREFIX/logout"
-        const val GET_BY_ID = "$PREFIX/players/{id}"
+        const val GET_BY_ID = "$PREFIX/users/{id}"
         const val HOME = "$PREFIX/me"
-        const  val INVITE = "$PREFIX/invite"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
 
@@ -27,7 +25,7 @@ object PlayerUris {
         fun register(): URI = URI(CREATE)
     }
 
-  /*  object Status {
+    object Status {
         const val HOSTNAME = "$PREFIX/status/hostname"
         const val IP = "$PREFIX/status/ip"
     }
@@ -35,5 +33,5 @@ object PlayerUris {
     object Chat {
         const val LISTEN = "$PREFIX/chat/listen"
         const val SEND = "$PREFIX/chat/send"
-    }*/
+    }
 }

@@ -1,38 +1,31 @@
 services:
-  db:
-    image: postgres:16
-    container_name: postgres-db
+  db-tests:
+    container_name: db-tests
+    build:
+      context: ./modules/repository_jdbi
+      dockerfile: ./tests/Dockerfile-db-test
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: mydatabase
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
     ports:
-      - "5432:5432"
+      - "5433:5432"       # porta externa do host
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - mynetwork
+      - pgdata:/var/lib/postgresql/data
 
   app:
+    container_name: kotlin-app
     build:
       context: .
-      dockerfile: Dockerfile # onde está o dockerFile
-    container_name: kotlin-app
+      dockerfile: ./Dockerfile
+    depends_on:
+      - db-tests
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-tests:5432/db
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
     ports:
       - "8080:8080"
-    depends_on:
-      - db
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/mydatabase
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: 1234
-    networks:
-      - mynetwork
 
 volumes:
-  postgres_data:
-
-networks:
-  mynetwork:
-
-#       DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit" for environment variable
+  pgdata:

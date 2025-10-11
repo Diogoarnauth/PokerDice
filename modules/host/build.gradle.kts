@@ -17,12 +17,20 @@ java {
 repositories { mavenCentral() }
 
 dependencies {
+
+    api(project(":modules:http"))
+    implementation(project(":modules:services"))
+    implementation(project(":modules:repository_jdbi"))
+
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
 
-    api(project(":modules:http"))
+    // for JDBI and Postgres
+    implementation("org.jdbi:jdbi3-core:3.37.1")
+    implementation("org.postgresql:postgresql:42.7.2")
 
     api("org.springframework.security:spring-security-core:6.5.5")
 
@@ -31,6 +39,12 @@ dependencies {
     // To use Kotlin specific date and time functions
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
     runtimeOnly("org.postgresql:postgresql:42.7.3")
+
+    /*// To use WebTestClient on tests
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
+    testImplementation(kotlin("test"))*/
 }
+
 
 tasks.test { useJUnitPlatform() }

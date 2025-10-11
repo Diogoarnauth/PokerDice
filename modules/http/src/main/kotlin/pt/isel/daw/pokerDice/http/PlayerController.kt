@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
 import pt.isel.daw.pokerDice.domain.players.Player
 import pt.isel.daw.pokerDice.http.model.*
 import pt.isel.daw.pokerDice.services.*
@@ -91,5 +92,18 @@ class PlayerController(
         }
     }
 
+   /* @PostMapping(PlayerUris.Players.INVITE)
+    fun appInvite(AuthenticatedPlayer: AuthenticatedPlayer): ResponseEntity<*> {
+        val res = playerService.createAppInvite(AuthenticatedPlayer.player.id)
+        return when (res) {
+            is Success ->
+                ResponseEntity
+                    .status(201)
+                    .body(InviteAppOutputModel(res.value))
 
+            is Failure ->
+                Problem.response(400, Problem.inviteCreationError)
+        }
+    }
+*/
 }

@@ -6,15 +6,16 @@ import pt.isel.daw.pokerDice.domain.players.*
 //mudar depois
 
 interface PlayersRepository {
-    fun storePlayer(
+    /*fun storePlayer(
         username: String,
         passwordValidation: PasswordValidationInfo,
-    ): Int
+    ): Int*/
 
     fun getPlayerByUsername(username: String): Player?
 
     fun getPlayerById (id: Int): Player?
 
+    fun create(username: String,name: String,age: Int,inviteCode: String, passwordValidationInfo: PasswordValidationInfo,): Int
 
     fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Player, Token>?
 

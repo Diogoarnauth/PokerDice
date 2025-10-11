@@ -24,7 +24,7 @@ class PlayerController(
     fun create(
         @RequestBody input: PlayerCreateInputModel,
     ): ResponseEntity<*> {
-        val res = playerService.createPlayer(input.username,input.name, input.age, input.password)
+        val res = playerService.createPlayer(input.username,input.name, input.age, input.password, input.inviteCode)
         return when (res) {
             is Success ->
                 ResponseEntity.status(201)
@@ -35,8 +35,8 @@ class PlayerController(
 
             is Failure ->
                 when (res.value) {
-                    PlayerCreationError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
-                    PlayerCreationError.PlayerAlreadyExists -> Problem.response(400, Problem.playerAlreadyExists)
+                    PlayerRegisterError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    PlayerRegisterError.PlayerAlreadyExists -> Problem.response(400, Problem.playerAlreadyExists)
                     else -> {TODO()} //dúvidas
                 }
 
@@ -56,7 +56,7 @@ class PlayerController(
 
             is Failure ->
                 when (res.value) {
-                    TokenCreationError.UserOrPasswordAreInvalid ->
+                    TokenCreationError.PlayerOrPasswordAreInvalid ->
                         Problem.response(400, Problem.playerOrPasswordAreInvalid)
 
                     else -> {TODO()}
@@ -92,7 +92,7 @@ class PlayerController(
         }
     }
 
-   /* @PostMapping(PlayerUris.Players.INVITE)
+    @PostMapping(PlayerUris.Players.INVITE)
     fun appInvite(AuthenticatedPlayer: AuthenticatedPlayer): ResponseEntity<*> {
         val res = playerService.createAppInvite(AuthenticatedPlayer.player.id)
         return when (res) {
@@ -105,5 +105,5 @@ class PlayerController(
                 Problem.response(400, Problem.inviteCreationError)
         }
     }
-*/
+
 }

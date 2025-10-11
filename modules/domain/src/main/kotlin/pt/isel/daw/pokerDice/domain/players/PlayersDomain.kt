@@ -64,5 +64,5 @@ class PlayersDomain(
     // TODO it could be better
     fun isSafePassword(password: String) = password.length > 4
 
-    val maxNumberOfTokensPerUser = config.maxTokensPerUser
+    val maxNumberOfTokensPerPlayer = config.maxTokensPerPlayer
 }

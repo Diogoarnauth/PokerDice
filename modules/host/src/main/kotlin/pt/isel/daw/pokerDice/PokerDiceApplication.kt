@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import pt.isel.daw.pokerDice.domain.Invite.InviteDomainConfig
 import pt.isel.daw.pokerDice.domain.Invite.Sha256InviteEncoder
-//import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tiveres esta função
+//import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
 import pt.isel.daw.pokerDice.domain.players.PlayersDomainConfig
 import pt.isel.daw.pokerDice.domain.players.Sha256TokenEncoder
 import kotlin.time.Duration.Companion.hours
@@ -24,7 +24,7 @@ class PokerDiceApplication {
             PGSimpleDataSource().apply {
                 setURL(System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/pokerdice?user=postgres&password=postgres")
             }
-        ) // podes adicionar .configureWithAppRequirements() se existir
+        )// adicionar .configureWithAppRequirements() quando existir
 
     @Bean
     fun tokenEncoder() = Sha256TokenEncoder()
@@ -44,7 +44,7 @@ class PokerDiceApplication {
             tokenSizeInBytes = 256 / 8,
             tokenTtl = 24.hours,
             tokenRollingTtl = 1.hours,
-            maxTokensPerUser = 3,
+            maxTokensPerPlayer = 3,
         )
 
     @Bean

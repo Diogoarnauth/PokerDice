@@ -6,7 +6,6 @@ data class Player(
     val id: Int,
     val token: UUID? = UUID.randomUUID(),
     val username: String,
-    val password: String,
     val passwordValidation: PasswordValidationInfo, //dúvidas, qual a diferença entre ambas
     val name: String,
     val age: Int,

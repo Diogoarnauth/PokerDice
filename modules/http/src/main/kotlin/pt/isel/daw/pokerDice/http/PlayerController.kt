@@ -17,6 +17,17 @@ class PlayerController(
     private val playerService: PlayersService,
 ) {
 
+
+    @PostMapping("/bootstrap")
+    fun bootstrapAdmin(@RequestBody input: BootstrapRegisterInputModel): ResponseEntity<*> {
+        if (playerService.hasAnyPlayer()) {
+            return ResponseEntity.status(403).body("Bootstrap already done")
+        }
+        val id = playerService.bootstrapFirstPlayer(input.username, input.name, input.age, input.password)
+        return ResponseEntity.ok(id)
+    }
+
+
     @PostMapping(PlayerUris.Players.CREATE)
     fun create(
         @RequestBody input: PlayerCreateInputModel,

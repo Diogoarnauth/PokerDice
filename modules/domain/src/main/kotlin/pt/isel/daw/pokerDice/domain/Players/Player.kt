@@ -10,7 +10,8 @@ data class Player(
     val name: String,
     val age: Int,
     var credit: Int,
-    var winCounter: Int
+    var winCounter: Int,
+    var lobbyId: Int? = null,
 
 ){
     init {

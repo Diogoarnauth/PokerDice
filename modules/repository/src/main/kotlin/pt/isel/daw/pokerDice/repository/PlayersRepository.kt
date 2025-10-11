@@ -27,6 +27,8 @@ interface PlayersRepository {
         maxTokens: Int,
     )
 
+    fun countPlayers():Int
+
     fun updateTokenLastUsed(
         token: Token,
         now: Instant,

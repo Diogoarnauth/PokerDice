@@ -131,6 +131,12 @@ class JdbiPlayersRepository(
         TODO("Not yet implemented")
     }
 
+    override fun countPlayers(): Int =
+        handle.createQuery("SELECT COUNT(*) FROM dbo.Player")
+            .mapTo<Int>()
+            .one()
+
+
 
     private data class PlayerAndTokenModel(
         val id: Int,

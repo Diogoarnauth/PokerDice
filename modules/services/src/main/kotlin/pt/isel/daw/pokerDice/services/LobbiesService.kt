@@ -1,24 +1,40 @@
 package pt.isel.daw.pokerDice.services
 
 
+import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicInteger
-/*
+import pt.isel.daw.pokerDice.domain.Lobbies.LobbiesDomain
+import pt.isel.daw.pokerDice.domain.Lobbies.LobbiesDomainConfig
+import pt.isel.daw.pokerDice.domain.Lobbies.Lobby
+import pt.isel.daw.pokerDice.repository.TransactionManager
+
+
 
 @Service
 class LobbiesService(
-    // Dependências futuras, ex: playersRepository, transactionManager
+    private val transactionManager: TransactionManager, // erro
+    private val lobbiesDomain: LobbiesDomain,
+    private val clock: Clock // erro
 ){
-    private val nextLobbyId = AtomicInteger(1)
-    private val lobbies = mutableMapOf<Int, Lobby>()
 
     /** Lista todos os lobbies visíveis (ainda não cheios) */
-    fun listOpen(): List<Lobby> =
-        lobbies.values.filter { !it.isFull }
+    fun getVisibleLobbies(): List<Lobby> = transactionManager.run {
+        val lobbyRepository = it.lobbiesRepository
+       return@run lobbyRepository.getLobbiesNotFull()
+    }
+
+
+
+    /** Detalhes de um lobby */
+    fun getById(id: Int): Lobby =
+        transactionManager.run {
+            val lobbiesRepository = it.lobbiesRepository  // ou lobbiesRepository, depende do nome no teu Transaction
+            return@run lobbiesRepository.getById(id)
+        }
+
 
     /** Cria um novo Lobby */
-    fun create (hostId: Int, input: LobbyCreateInputModel): CreateLobbyResult {
+   /* fun create (hostId: Int, input: LobbyCreateInputModel): CreateLobbyResult {
         // validações básicas
         if (input.minPlayers <= 0 || input.maxPlayers < input.minPlayers || input.nRounds <= 0) {
             return CreateLobbyResult.InvalidSettings
@@ -47,20 +63,6 @@ class LobbiesService(
         lobbies[lobbyId] = lobby
         return CreateLobbyResult.Ok(lobbyId)
     }
-    /** Detalhes de um lobby */
-    fun getById(id: Int): GetLobbyResult =
-        lobbies[id]?.let {
-            GetLobbyResult.Ok(
-                id = it.id,
-                name = it.name,
-                description = it.description,
-                hostId = it.hostId,
-                players = it.players.toList(),
-                minPlayers = it.minPlayers,
-                maxPlayers = it.maxPlayers,
-                rounds = it.rounds
-            )
-        } ?: GetLobbyResult.NotFound
 
     /** Entrar num lobby */
     fun join(lobbyId: Int, playerId: Int): JoinLobbyResult {
@@ -89,5 +91,5 @@ class LobbiesService(
 
         return LeaveLobbyResult.Ok
     }
-
-}*/
+*/
+}

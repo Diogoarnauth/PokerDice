@@ -189,6 +189,29 @@ class PlayersService(
         }
     }
 
+    fun hasAnyPlayer(): Boolean = transactionManager.run {
+        val playersRepository = it.playersRepository
+        return@run playersRepository.countPlayers() > 0
+    }
+
+    fun bootstrapFirstPlayer(username : String, name : String, age : Int, password : String): Int =
+        transactionManager.run {
+            val playersRepository = it.playersRepository
+            val passwordValidationInfo = playerDomain.createPasswordValidationInformation(password)
+            playersRepository.create(
+                username = username,
+                name = name,
+                age = age,
+                inviteCode = "BOOTSTRAP",
+                passwordValidationInfo = passwordValidationInfo
+            )
+        }
+
+
+
+
+
+
 
 
 }

@@ -8,6 +8,7 @@ CREATE TABLE dbo.Player (
     age INT CHECK (age BETWEEN 18 AND 100), 
     credit INT DEFAULT 0 CHECK (credit >= 0),
     winCounter INT DEFAULT 0 CHECK (winCounter >= 0)
+    lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE SET NULL
 );
 
 -- Tabela Lobby

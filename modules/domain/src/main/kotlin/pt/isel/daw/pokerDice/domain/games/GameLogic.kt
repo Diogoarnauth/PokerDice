@@ -31,7 +31,7 @@ object PokerDiceScorer {
         require(dice.size == 5) { "A roll must contain exactly 5 dice" }
 
         val counts = dice.groupingBy { it.value }.eachCount()
-        val distinct = counts.size
+        // val distinct = counts.size
 
         return when {
             counts.values.contains(5) -> 900
@@ -144,7 +144,7 @@ class GameLogic(
         val diceRolls = List(5) {Dice.random()}
 
         // 5. Determinar a combinação e pontuação
-        val combination = determineCombination(diceRolls)
+        // val combination = determineCombination(diceRolls)
         val score = PokerDiceScorer.score(diceRolls)
 
         // 6. Atualizar/obter ronda atual

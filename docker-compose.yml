@@ -9,7 +9,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=db
     ports:
-      - "5433:5432"       # porta externa do host
+      - "5433:5432"       # porta 5433 no host → 5432 no contêiner
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -26,6 +26,7 @@ services:
       - SPRING_DATASOURCE_PASSWORD=postgres
     ports:
       - "8080:8080"
-
+    #command: ["./bin/wait-for-postgres.sh", "java", "-jar", "app.jar"]
 volumes:
   pgdata:
+

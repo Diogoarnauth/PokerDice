@@ -20,7 +20,6 @@ class GameLogicTest {
     private fun createPlayer(id: Int, name: String = "Player$id") = Player(
         id = id,
         username = name.lowercase(),
-        password = "1234",
         passwordValidation = PasswordValidationInfo("val"),
         name = name,
         age = 25,
@@ -100,7 +99,6 @@ class GameLogicTest {
         val game = logic.createNewGame(2, 10).copy(state = Game.State.NEXT_PLAYER)
         val p1 = Player(1,
                         UUID.randomUUID(),
-                        "renataa",
                         "renataa",
                         PasswordValidationInfo("val"),
                         "Renata",

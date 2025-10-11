@@ -46,5 +46,8 @@ dependencies {
     testImplementation(kotlin("test"))*/
 }
 
+springBoot {
+    mainClass.set("pt.isel.daw.pokerDice.PokerDiceApplicationKt")
+}
 
 tasks.test { useJUnitPlatform() }

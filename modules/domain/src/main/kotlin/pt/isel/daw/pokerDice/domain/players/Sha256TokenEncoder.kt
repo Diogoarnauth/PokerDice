@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.Players
+package pt.isel.daw.pokerDice.domain.players
 
 import pt.isel.daw.pokerDice.domain.players.TokenEncoder
 import pt.isel.daw.pokerDice.domain.players.TokenValidationInfo

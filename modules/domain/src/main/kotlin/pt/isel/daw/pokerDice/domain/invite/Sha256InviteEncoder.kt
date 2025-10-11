@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.Invite
+package pt.isel.daw.pokerDice.domain.invite
 
 import java.security.MessageDigest
 import java.util.Base64

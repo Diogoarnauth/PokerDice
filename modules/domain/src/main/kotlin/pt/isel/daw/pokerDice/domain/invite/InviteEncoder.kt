@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.Invite
+package pt.isel.daw.pokerDice.domain.invite
 
 
 interface InviteEncoder {

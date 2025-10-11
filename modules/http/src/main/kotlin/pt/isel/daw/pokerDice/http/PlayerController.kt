@@ -87,7 +87,7 @@ class PlayerController(
                     .body(
                         PlayerGetByIdOutputModel(
                             username = player.username,
-                            token = player.token!!,
+                            token = player.token,
                             name = player.name,
                         )
                     )

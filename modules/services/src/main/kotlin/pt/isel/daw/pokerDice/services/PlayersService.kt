@@ -4,7 +4,7 @@ import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.web.bind.annotation.PathVariable
-import pt.isel.daw.pokerDice.domain.Invite.InviteDomain
+import pt.isel.daw.pokerDice.domain.invite.InviteDomain
 import pt.isel.daw.pokerDice.domain.players.*
 import pt.isel.daw.pokerDice.repository.*
 import pt.isel.daw.pokerDice.utils.*

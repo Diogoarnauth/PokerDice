@@ -12,11 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
-import pt.isel.daw.pokerDice.Players.Sha256TokenEncoder
-import pt.isel.daw.pokerDice.domain.Invite.InviteDomainConfig
-import pt.isel.daw.pokerDice.domain.Invite.Sha256InviteEncoder
+import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
+import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
 //import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
 import pt.isel.daw.pokerDice.domain.players.PlayersDomainConfig
+import pt.isel.daw.pokerDice.domain.players.Sha256TokenEncoder
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticatedPlayerArgumentResolver
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticationInterceptor
 import kotlin.time.Duration.Companion.hours

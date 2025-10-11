@@ -3,8 +3,8 @@ package pt.isel.daw.pokerDice.repository.jdbi
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.isel.daw.pokerDice.domain.Invite.AppInvite
-import pt.isel.daw.pokerDice.domain.Invite.InviteValidationInfo
+import pt.isel.daw.pokerDice.domain.invite.AppInvite
+import pt.isel.daw.pokerDice.domain.invite.InviteValidationInfo
 import pt.isel.daw.pokerDice.repository.InviteRepository
 
 class JdbiInviteRepository(

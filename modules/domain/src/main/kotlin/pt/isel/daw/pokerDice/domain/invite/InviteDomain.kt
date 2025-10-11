@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.Invite
+package pt.isel.daw.pokerDice.domain.invite
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

@@ -9,7 +9,6 @@ class PlayerTest {
     private fun createPlayer(id: Int, name: String = "Player$id") = Player(
         id = id,
         username = name.lowercase(),
-        password = "1234",
         passwordValidation = PasswordValidationInfo("val"),
         name = name,
         age = 25,
@@ -32,7 +31,6 @@ class PlayerTest {
             Player(
                 id = 1,
                 username = "renata",
-                password = "1234",
                 passwordValidation = PasswordValidationInfo("val"),
                 name = "Renata",
                 age = 17,
@@ -48,7 +46,6 @@ class PlayerTest {
         val p = Player(
             id = 1,
             username = "renata",
-            password = "1234",
             passwordValidation = PasswordValidationInfo("val"),
             name = "Renata",
             age = 25,
@@ -65,7 +62,6 @@ class PlayerTest {
         val p = Player(
             id = 1,
             username = "renata",
-            password = "1234",
             passwordValidation = PasswordValidationInfo("val"),
             name = "Renata",
             age = 25,

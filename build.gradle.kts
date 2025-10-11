@@ -44,7 +44,7 @@ tasks.register<Exec>("buildImagePostgresTest") {
         dockerImageTagPostgresTest,
         "-f",
         "tests/Dockerfile-postgres-test",
-        "../repository-jdbi",
+        "../repository_jdbi",
     )
 }
 

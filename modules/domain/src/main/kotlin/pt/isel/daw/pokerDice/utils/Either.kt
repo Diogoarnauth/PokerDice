@@ -13,3 +13,7 @@ fun <L> failure(error: L) = Either.Left(error)
 
 typealias Success<S> = Either.Right<S>
 typealias Failure<F> = Either.Left<F>
+
+
+//vou ter calma
+//tentativa de

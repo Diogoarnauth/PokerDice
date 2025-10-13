@@ -14,5 +14,4 @@ data class Lobby(
     val maxPlayers: Int,
     val rounds: Int,
     val minCreditToParticipate: Int,
-
 )

@@ -1,13 +1,17 @@
 -- Tabela Lobby
-CREATE TABLE Lobby (
-                       id SERIAL PRIMARY KEY,
-                       name VARCHAR(100) NOT NULL,
-                       description TEXT,
-                       minPlayers INT NOT NULL,
-                       maxPlayers INT NOT NULL,
-                       rounds INT NOT NULL CHECK (rounds > 0)
-                       --host_id INT NOT NULL REFERENCES Player(id) ON DELETE CASCADE -- faz sentido caso haja delete do player delete dos respetivos lobbys ?
 
+
+CREATE TABLE Lobby (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    host_id INT NOT NULL REFERENCES Player(id) ON DELETE CASCADE,
+    is_private BOOLEAN NOT NULL DEFAULT FALSE,
+    password_validation VARCHAR(255),
+    minPlayers INT NOT NULL CHECK (minPlayers >= 2),
+    maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
+    rounds INT NOT NULL CHECK (rounds > 0),
+    min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10)
 );
 
 -- Tabela Player
@@ -19,7 +23,7 @@ CREATE TABLE Player (
     name VARCHAR(100) NOT NULL,
     age INT CHECK (age BETWEEN 18 AND 100), 
     credit INT DEFAULT 0 CHECK (credit >= 0),
-    winCounter INT DEFAULT 0 CHECK (winCounter >= 0)
+    winCounter INT DEFAULT 0 CHECK (winCounter >= 0),
    -- lobby_id INT REFERENCES Lobby(id) ON DELETE SET NULL
 );
 
@@ -39,7 +43,6 @@ CREATE TABLE IF NOT EXISTS Game (
     nrPlayers INT NOT NULL,
     minCredits INT NOT NULL CHECK (minCredits >= 0)
 );
-
 -- Tabela Round
 CREATE TABLE IF NOT EXISTS Round (
     id SERIAL PRIMARY KEY,

@@ -7,13 +7,13 @@ class LobbiesDomainConfig(
     //val isPrivate: Boolean,
     //val password: String?,
     val minPlayersAllowed: Int,
-    val maxPlayersAllowed: Int,
+     val maxPlayersAllowed: Int,
     val minRoundsAllowed: Int,
     val maxRoundsAllowed: Int,
     val minCreditAllowed: Int,
 ){
     init{
-        require (minPlayersAllowed > 1 && minPlayersAllowed <= maxPlayersAllowed)
+        require (minPlayersAllowed in 2..maxPlayersAllowed)
         require (maxPlayersAllowed <= 6)
         require(minRoundsAllowed < maxRoundsAllowed)
         require(minRoundsAllowed >= 2 )

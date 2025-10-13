@@ -1,16 +1,17 @@
 -- Player
-INSERT INTO Player (token, username, passwordValidation, name, age, credit, winCounter)
+/*INSERT INTO Player (token, username, passwordValidation, name, age, credit, winCounter)
 VALUES
     ('a3e1f8b2-1c2d-4e5f-9a6b-7c8d9e0f1a2b', 'user1', 'pass1', 'Alice', 25, 100, 2),
     ('b4f2e9c3-2d3e-5f6a-8b7c-9d0e1f2a3b4c', 'user2', 'pass2', 'Bob', 30, 200, 5),
-    ('c5g3h0d4-3e4f-6a7b-9c8d-0e1f2a3b4c5d', 'user3', 'pass3', 'Charlie', 40, 150, 3);
+    ('c5b3a0d4-3e4f-6a7b-9c8d-0e1f2a3b4c5d', 'user3', 'pass3', 'Charlie', 40, 150, 3);
+*/
 
 -- Lobby
 INSERT INTO Lobby (name, description, host_id, minPlayers, maxPlayers, rounds)
 VALUES
     ('Fun Lobby', 'Casual games', 1, 2, 6, 5),
-    ('Pro Lobby', 'Competitive matches', 2, 4, 8, 10),
-    ('Night Owls', 'Late night games', 3, 3, 5, 7);
+    ('Pro Lobby', 'Competitive matches', 1, 4, 8, 10),
+    ('Night Owls', 'Late night games', 1, 3, 5, 7);
 
 -- Game
 INSERT INTO Game (id, lobby_id, state, nrPlayers, minCredits)

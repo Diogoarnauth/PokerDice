@@ -97,4 +97,4 @@ fun main(args: Array<String>) {
     runApplication<PokerDiceApplication>(*args)
 }
 
-// sudo docker compose up --build -
+// sudo docker compose up --build - olaaaa

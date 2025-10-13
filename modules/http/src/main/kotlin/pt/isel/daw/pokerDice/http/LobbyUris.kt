@@ -15,6 +15,7 @@ object LobbyUris {
         const val BY_ID = "$ROOT/{id}"        // GET  -> detalhes do lobby
         const val JOIN = "$ROOT/{id}/players" // POST -> entrar no lobby
         const val LEAVE_ME = "$ROOT/{id}/players/me" // DELETE -> sair
+        const val CLOSE ="$ROOT/{id}/close"
 
         // Helpers para criar URIs concretas
         fun byId(id: Int): URI =

@@ -68,6 +68,13 @@ class JdbiLobbyRepository(
             .singleOrNull()
     }
 
+    override fun deleteLobbyById(lobbyId: Int) {
+        handle.createUpdate("DELETE FROM Lobby WHERE id = :id")
+            .bind("id", lobbyId)
+            .execute()
+    }
+
+
 
     override fun getLobbiesNotFull(): List<Lobby> {
         val sql = """

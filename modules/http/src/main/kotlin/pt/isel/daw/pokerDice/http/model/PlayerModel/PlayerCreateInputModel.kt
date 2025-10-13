@@ -1,6 +1,4 @@
-package pt.isel.daw.pokerDice.http.model
-
-import javax.print.attribute.standard.RequestingUserName
+package pt.isel.daw.pokerDice.http.model.PlayerModel
 
 class PlayerCreateInputModel (
     val username: String,

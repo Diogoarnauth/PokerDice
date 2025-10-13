@@ -142,6 +142,13 @@ class JdbiPlayersRepository(
             .execute()
     }
 
+   override fun clearLobbyForAllPlayers(lobbyId: Int) {
+        handle.createUpdate("UPDATE Player SET lobby_id = NULL WHERE lobby_id = :lobbyId")
+            .bind("lobbyId", lobbyId)
+            .execute()
+    }
+
+
     override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
         TODO("Not yet implemented")
     }

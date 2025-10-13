@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.http.model
+package pt.isel.daw.pokerDice.http.model.LobbyModel
 
 /**
  * Resultado de DELETE /lobbies/{id}/players/me (sair do lobby).

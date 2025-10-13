@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController
 import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
 import pt.isel.daw.pokerDice.domain.players.Player
 import pt.isel.daw.pokerDice.http.model.*
+import pt.isel.daw.pokerDice.http.model.InviteModel.InviteAppOutputModel
+import pt.isel.daw.pokerDice.http.model.PlayerModel.*
 import pt.isel.daw.pokerDice.services.*
 import pt.isel.daw.pokerDice.utils.*
 

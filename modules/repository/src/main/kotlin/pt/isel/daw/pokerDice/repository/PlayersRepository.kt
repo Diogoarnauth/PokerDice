@@ -35,6 +35,8 @@ interface PlayersRepository {
         now: Instant,
     )
 
+    fun clearLobbyForAllPlayers(lobbyId: Int)
+
     fun countPlayersInLobby(lobbyId: Int): Int
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int

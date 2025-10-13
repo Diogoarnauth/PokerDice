@@ -45,6 +45,8 @@ class Problem(
         val lobbyNotFound = Problem(URI("${BASE_URL}lobbyNotFound"))
         val alreadyInLobby = Problem(URI("${BASE_URL}AlreadyInLobby"))
         val lobbyFull = Problem(URI("${BASE_URL}LobbyFull"))
+        val notInLobby = Problem(URI("${BASE_URL}notInLobby"))
+        val onlyHostCanCloseLobby = Problem(URI("${BASE_URL}onlyHostCanCloseLobby"))
 
 
         //Generic

@@ -1,16 +1,11 @@
 package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
-import pt.isel.daw.pokerDice.domain.players.Player
 import pt.isel.daw.pokerDice.http.model.*
-import pt.isel.daw.pokerDice.http.model.CreateLobbyResult
+import pt.isel.daw.pokerDice.http.model.LobbyModel.LobbyCreateInputModel
+import pt.isel.daw.pokerDice.http.model.LobbyModel.LobbyGetByIdOutputModel
 import pt.isel.daw.pokerDice.services.*
 import pt.isel.daw.pokerDice.utils.*
 
@@ -131,23 +126,52 @@ class LobbiesController(
                   else -> {TODO()}
               }
           }
-    /*
+
 
           // DELETE /lobbies/{id}/players/me → sair do lobby
           @DeleteMapping(LobbyUris.Lobbies.LEAVE_ME)
           fun leave(
-              user: AuthenticatedUser,
+              authenticatedPlayer: AuthenticatedPlayer,
               @PathVariable id: String
           ): ResponseEntity<*> {
               val lobbyId = id.toIntOrNull()
                   ?: return Problem.response(400, Problem.invalidRequestContent)
 
-              return when (val res = lobbies.leave(lobbyId, user.id)) {
-                  is LeaveLobbyResult.Ok -> ResponseEntity.noContent().build<Unit>()
-                  is LeaveLobbyResult.NotFound -> Problem.response(404, Problem.lobbyNotFound)
-                  is LeaveLobbyResult.NotInLobby -> Problem.response(409, Problem.notInLobby)
+              val res = lobbies.leaveLobby(lobbyId, authenticatedPlayer.player.id)
+
+              return when (res) {
+                  is Success -> ResponseEntity.noContent().build<Unit>()
+
+                  is Failure -> when (res.value) {
+                      LeaveLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
+                      LeaveLobbyError.NotInLobby -> Problem.response(409, Problem.notInLobby)
+                  }
+
+                  else -> {TODO()}
               }
           }
 
-     */
+    // DELETE /lobbies/{id} → o host encerra o lobby completamente
+    @DeleteMapping(LobbyUris.Lobbies.CLOSE)
+    fun closeLobby(
+        authenticatedPlayer: AuthenticatedPlayer,
+        @PathVariable id: String
+    ): ResponseEntity<*> {
+        val lobbyId = id.toIntOrNull()
+            ?: return Problem.response(400, Problem.invalidRequestContent)
+
+        val res = lobbies.closeLobby(lobbyId, authenticatedPlayer.player.id)
+
+        return when (res) {
+            is Success -> ResponseEntity.noContent().build<Unit>()
+            is Failure -> when (res.value) {
+                CloseLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
+                CloseLobbyError.NotHost -> Problem.response(403, Problem.onlyHostCanCloseLobby)
+            }
+
+            else -> {TODO()}
+        }
+    }
+
+
 }

@@ -44,6 +44,13 @@ sealed class LeaveLobbyError {
     data object NotInLobby : LeaveLobbyError()
 }
 
+typealias CloseLobbyResult = Either<CloseLobbyError, Unit>
+
+sealed class CloseLobbyError {
+    data object LobbyNotFound : CloseLobbyError()
+    data object NotHost : CloseLobbyError()
+}
+
 
 
 @Service
@@ -58,6 +65,28 @@ class LobbiesService(
         val lobbyRepository = it.lobbiesRepository
        return@run lobbyRepository.getLobbiesNotFull()
     }
+
+    fun leaveLobby(lobbyId: Int, playerId: Int): LeaveLobbyResult =
+        transactionManager.run {
+            val lobbiesRepo = it.lobbiesRepository
+            val playersRepo = it.playersRepository
+
+            // Verifica se o lobby existe
+            val lobby = lobbiesRepo.getById(lobbyId)
+                ?: return@run failure(LeaveLobbyError.LobbyNotFound)
+
+            // Verifica se o jogador pertence a este lobby
+            val player = playersRepo.getPlayerById(playerId)
+                ?: return@run failure(LeaveLobbyError.NotInLobby)
+
+            if (player.lobbyId != lobbyId)
+                return@run failure(LeaveLobbyError.NotInLobby)
+
+            // Remove o jogador do lobby (define lobby_id = NULL)
+            playersRepo.updateLobbyIdForPlayer(playerId, null)
+
+            success(Unit)
+        }
 
 
 
@@ -162,20 +191,25 @@ class LobbiesService(
             success(Unit)
         }
 
-    /*
-        /** Sair de um lobby */
-        fun leave(lobbyId: Int, playerId: Int): LeaveLobbyResult {
-            val lobby = lobbies[lobbyId] ?: return LeaveLobbyResult.NotFound
-            val player = lobby.players.find { it.id == playerId } ?: return LeaveLobbyResult.NotInLobby
+    fun closeLobby(lobbyId: Int, playerId: Int): CloseLobbyResult =
+        transactionManager.run {
+            val lobbiesRepo = it.lobbiesRepository
+            val playersRepo = it.playersRepository
 
-            lobby.players.remove(player)
+            // Verificar se o lobby existe
+            val lobby = lobbiesRepo.getById(lobbyId)
+                ?: return@run failure(CloseLobbyError.LobbyNotFound)
 
-            // Se o host sair e o lobby não começou, fecha o lobby
-            if (player.id == lobby.hostId && lobby.players.isEmpty()) {
-                lobbies.remove(lobbyId)
-            }
+            // Verificar se o jogador é o host
+            if (lobby.hostId != playerId)
+                return@run failure(CloseLobbyError.NotHost)
 
-            return LeaveLobbyResult.Ok
+            // Remover todos os jogadores associados ao lobby
+            playersRepo.clearLobbyForAllPlayers(lobbyId)
+
+            // Eliminar o lobby da base de dados
+            lobbiesRepo.deleteLobbyById(lobbyId)
+
+            success(Unit)
         }
-    */
 }

@@ -10,6 +10,72 @@ class JdbiLobbyRepository(
     private val handle: Handle,
 ) : LobbiesRepository {
 
+    override fun existsByHost(hostId: Int): Boolean =
+        handle.createQuery("SELECT COUNT(*) FROM Lobby WHERE host_id = :hostId")
+            .bind("hostId", hostId)
+            .mapTo<Int>()
+            .single() > 0
+
+
+    override fun createLobby(
+        hostId: Int,
+        name: String,
+        description: String,
+        isPrivate: Boolean,
+        passwordValidationInfo: PasswordValidationInfo?,
+        minPlayers: Int,
+        maxPlayers: Int,
+        rounds: Int,
+        minCreditToParticipate: Int
+    ): Int? {
+        val sql = """
+        INSERT INTO Lobby (
+            name, 
+            description, 
+            host_id, 
+            is_private, 
+            password_validation, 
+            minPlayers, 
+            maxPlayers, 
+            rounds, 
+            min_credit_to_participate
+        ) VALUES (
+            :name, 
+            :description, 
+            :hostId, 
+            :isPrivate, 
+            :passwordValidation, 
+            :minPlayers, 
+            :maxPlayers, 
+            :rounds, 
+            :minCreditToParticipate
+        )
+        RETURNING id
+    """
+
+        return handle.createUpdate(sql)
+            .bind("name", name)
+            .bind("description", description)
+            .bind("hostId", hostId)
+            .bind("isPrivate", isPrivate)
+            .bind("passwordValidation", passwordValidationInfo?.validationInfo) // null se público
+            .bind("minPlayers", minPlayers)
+            .bind("maxPlayers", maxPlayers)
+            .bind("rounds", rounds)
+            .bind("minCreditToParticipate", minCreditToParticipate)
+            .executeAndReturnGeneratedKeys("id")
+            .mapTo<Int>()
+            .singleOrNull()
+    }
+
+    override fun deleteLobbyById(lobbyId: Int) {
+        handle.createUpdate("DELETE FROM Lobby WHERE id = :id")
+            .bind("id", lobbyId)
+            .execute()
+    }
+
+
+
     override fun getLobbiesNotFull(): List<Lobby> {
         val sql = """
             SELECT l.id, l.name, l.description, l.host_id, l.is_private, 
@@ -44,7 +110,7 @@ class JdbiLobbyRepository(
             .mapTo<LobbyRow>()
             .singleOrNull()
             ?.toLobby()
-    }
+        }
     }
 
 

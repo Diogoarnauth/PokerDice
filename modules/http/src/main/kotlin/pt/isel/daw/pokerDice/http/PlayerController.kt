@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RestController
 import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
 import pt.isel.daw.pokerDice.domain.players.Player
 import pt.isel.daw.pokerDice.http.model.*
+import pt.isel.daw.pokerDice.http.model.InviteModel.InviteAppOutputModel
+import pt.isel.daw.pokerDice.http.model.PlayerModel.*
 import pt.isel.daw.pokerDice.services.*
 import pt.isel.daw.pokerDice.utils.*
 
@@ -45,6 +47,11 @@ class PlayerController(
                 when (res.value) {
                     PlayerRegisterError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                     PlayerRegisterError.PlayerAlreadyExists -> Problem.response(400, Problem.playerAlreadyExists)
+
+                    PlayerRegisterError.InvitationDontExist -> Problem.response(400, Problem.invitationDontExist)
+                    PlayerRegisterError.InvitationUsed -> Problem.response(400, Problem.invitationUsed)
+                    PlayerRegisterError.InvitationExpired -> Problem.response(400, Problem.invitationExpired)
+
                     else -> {TODO()} //dúvidas
                 }
 

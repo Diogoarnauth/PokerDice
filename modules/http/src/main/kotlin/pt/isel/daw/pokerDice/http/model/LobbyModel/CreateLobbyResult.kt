@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.http.model
+package pt.isel.daw.pokerDice.http.model.LobbyModel
 
 /**
  * usado pelo service para indicar se a criação do lobby foi bem-sucedida

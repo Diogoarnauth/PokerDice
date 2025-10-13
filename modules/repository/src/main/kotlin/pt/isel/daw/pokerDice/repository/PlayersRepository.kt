@@ -21,6 +21,7 @@ interface PlayersRepository {
 
     fun isPlayerStoredByUsername(username: String): Boolean
 
+    fun updateLobbyIdForPlayer(playerId: Int, lobbyId: Int?)
 
     fun createToken(
         token: Token,
@@ -33,6 +34,10 @@ interface PlayersRepository {
         token: Token,
         now: Instant,
     )
+
+    fun clearLobbyForAllPlayers(lobbyId: Int)
+
+    fun countPlayersInLobby(lobbyId: Int): Int
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
 }

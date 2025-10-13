@@ -82,6 +82,21 @@ class JdbiPlayersRepository(
             .mapTo<Int>()
             .single() == 1
 
+    override fun updateLobbyIdForPlayer(playerId: Int, lobbyId: Int?) {
+            handle.createUpdate("UPDATE Player SET lobby_id = :lobbyId WHERE id = :playerId")
+                .bind("lobbyId", lobbyId)
+                .bind("playerId", playerId)
+                .execute()
+
+    }
+
+    override fun countPlayersInLobby(lobbyId: Int): Int =
+        handle.createQuery("SELECT COUNT(*) FROM Player WHERE lobby_id = :lobbyId")
+            .bind("lobbyId", lobbyId)
+            .mapTo<Int>()
+            .one()
+
+
 
     override fun createToken( // testar, perceber se percebe quando o maxtokens foi atingido
         token: Token,
@@ -126,6 +141,13 @@ class JdbiPlayersRepository(
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .execute()
     }
+
+   override fun clearLobbyForAllPlayers(lobbyId: Int) {
+        handle.createUpdate("UPDATE Player SET lobby_id = NULL WHERE lobby_id = :lobbyId")
+            .bind("lobbyId", lobbyId)
+            .execute()
+    }
+
 
     override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
         TODO("Not yet implemented")

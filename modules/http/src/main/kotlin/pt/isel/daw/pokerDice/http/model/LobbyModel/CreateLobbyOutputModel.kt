@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.http.model
+package pt.isel.daw.pokerDice.http.model.LobbyModel
 /*
 import org.example.Domain.Players.Player
 

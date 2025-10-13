@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.http.model
+package pt.isel.daw.pokerDice.http.model.LobbyModel
 
 /**
  * Resultado de POST /lobbies/{id}/players (entrar num lobby).

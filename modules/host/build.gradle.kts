@@ -1,53 +1,105 @@
 plugins {
-    id("org.springframework.boot") version "3.3.4"
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "1.9.24"            // compatível com Spring Boot 3.3.x
-    kotlin("plugin.spring") version "1.9.24"   // importante p/ anotações Spring
+    kotlin("jvm")
+    kotlin("plugin.spring")
+    id("org.springframework.boot")
+    id("io.spring.dependency-management")
 }
 
-group = "org.example"
+group = "pt.isel.daw"
 version = "1.0-SNAPSHOT"
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21)) // 17 ou 21
-    }
-}
-
-repositories { mavenCentral() }
-
 dependencies {
-
-    api(project(":modules:http"))
-    implementation(project(":modules:services"))
-    implementation(project(":modules:repository_jdbi"))
+    // Module dependencies
+    implementation(project(":http"))
+    implementation(project(":services"))
+    implementation(project(":repository-jdbi"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // for JDBI and Postgres
     implementation("org.jdbi:jdbi3-core:3.37.1")
     implementation("org.postgresql:postgresql:42.7.2")
 
-    api("org.springframework.security:spring-security-core:6.5.5")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-
     // To use Kotlin specific date and time functions
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
-    runtimeOnly("org.postgresql:postgresql:42.7.3")
 
-    /*// To use WebTestClient on tests
+    // To get password encode
+    implementation("org.springframework.security:spring-security-core:6.5.4")
+
+    // To use WebTestClient on tests
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
-    testImplementation(kotlin("test"))*/
+    testImplementation(kotlin("test"))
 }
 
-springBoot {
-    mainClass.set("pt.isel.daw.pokerDice.PokerDiceApplicationKt")
+tasks.test {
+    useJUnitPlatform()
+    if (System.getenv("DB_URL") == null) {
+        environment("DB_URL", "jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
+    }
+    dependsOn(":repository-jdbi:dbTestsWait")
+    finalizedBy(":repository-jdbi:dbTestsDown")
 }
 
-tasks.test { useJUnitPlatform() }
+kotlin {
+    jvmToolchain(21)
+}
+
+/**
+ * Docker related tasks
+ */
+tasks.register<Copy>("extractUberJar") {
+    dependsOn("assemble")
+    // opens the JAR containing everything...
+    from(zipTree(layout.buildDirectory.file("libs/host-$version.jar").get().toString()))
+    // ... into the 'build/dependency' folder
+    into("build/dependency")
+}
+
+val dockerImageTagJvm = "tic-tac-toe-jvm"
+val dockerImageTagNginx = "tic-tac-toe-nginx"
+val dockerImageTagPostgresTest = "tic-tac-toe-postgres-test"
+val dockerImageTagUbuntu = "tic-tac-toe-ubuntu"
+
+tasks.register<Exec>("buildImageJvm") {
+    dependsOn("extractUberJar")
+    commandLine("docker", "build", "-t", dockerImageTagJvm, "-f", "tests/Dockerfile-jvm", ".")
+}
+
+tasks.register<Exec>("buildImageNginx") {
+    commandLine("docker", "build", "-t", dockerImageTagNginx, "-f", "tests/Dockerfile-nginx", ".")
+}
+
+tasks.register<Exec>("buildImagePostgresTest") {
+    commandLine(
+        "docker",
+        "build",
+        "-t",
+        dockerImageTagPostgresTest,
+        "-f",
+        "tests/Dockerfile-postgres-test",
+        "../repository-jdbi",
+    )
+}
+
+tasks.register<Exec>("buildImageUbuntu") {
+    commandLine("docker", "build", "-t", dockerImageTagUbuntu, "-f", "tests/Dockerfile-ubuntu", ".")
+}
+
+tasks.register("buildImageAll") {
+    dependsOn("buildImageJvm")
+    dependsOn("buildImageNginx")
+    dependsOn("buildImagePostgresTest")
+    dependsOn("buildImageUbuntu")
+}
+
+tasks.register<Exec>("allUp") {
+    commandLine("docker", "compose", "up", "--force-recreate", "-d")
+}
+
+tasks.register<Exec>("allDown") {
+    commandLine("docker", "compose", "down")
+}

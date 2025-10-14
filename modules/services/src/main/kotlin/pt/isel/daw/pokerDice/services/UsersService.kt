@@ -3,13 +3,14 @@ package pt.isel.daw.pokerDice.services
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import org.springframework.web.bind.annotation.PathVariable
 import pt.isel.daw.pokerDice.domain.invite.InviteDomain
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.domain.users.UsersDomain
-import pt.isel.daw.pokerDice.repository.*
-import pt.isel.daw.pokerDice.utils.*
+import pt.isel.daw.pokerDice.repository.TransactionManager
+import pt.isel.daw.pokerDice.utils.Either
+import pt.isel.daw.pokerDice.utils.failure
+import pt.isel.daw.pokerDice.utils.success
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -29,10 +30,9 @@ sealed class TokenCreationError {
 }
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
 
-
 sealed class UserGetByIdError {
     data object UserNotFound : UserGetByIdError()
-    //data class InvalidToken(val tokenValue: String) : UserGetByIdError() //dúvida :não sei se é necessário
+    // data class InvalidToken(val tokenValue: String) : UserGetByIdError() //dúvida :não sei se é necessário
 }
 
 typealias UserGetByIdResult = Either<UserGetByIdError, User>
@@ -57,16 +57,14 @@ sealed class CreatingAppInviteError {
 
 typealias CreatingAppInviteResult = Either<CreatingAppInviteError, String>
 
-
-
-@Named // dúvida :falar com o stor acerca de usar service ou named
+// dúvida :falar com o stor acerca de usar service ou named
+@Named
 class UsersService(
-    private val transactionManager: TransactionManager, // erro
+    private val transactionManager: TransactionManager,
     private val userDomain: UsersDomain,
     private val inviteDomain: InviteDomain,
-    private val clock: Clock // erro
+    private val clock: Clock,
 ) {
-
     fun createAppInvite(userId: Int): CreatingAppInviteResult =
         transactionManager.run {
             val inviteRepository = it.inviteRepository
@@ -82,15 +80,13 @@ class UsersService(
             }
         }
 
-
     fun createUser(
         username: String,
         name: String,
         age: Int,
         password: String,
-        inviteCode:String
+        inviteCode: String,
     ): UserRegisterResult {
-
         if (!userDomain.isSafePassword(password)) {
             return failure(UserRegisterError.InsecurePassword)
         }
@@ -99,7 +95,6 @@ class UsersService(
         val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
 
         return transactionManager.run {
-
             val usersRepository = it.usersRepository
             val inviteRepository = it.inviteRepository
             val invite = inviteRepository.getAppInviteByValidationInfo(inviteCodeValidationInfo)
@@ -113,17 +108,15 @@ class UsersService(
             } else if (!inviteDomain.isInviteCodeValid(invite.state)) {
                 failure(UserRegisterError.InvitationUsed)
             } else if (!inviteDomain.isInviteTimeNotExpired(invite.createdAt, clock)) {
-                inviteRepository.changeInviteState( invite.id, inviteDomain.expiredState)
+                inviteRepository.changeInviteState(invite.id, inviteDomain.expiredState)
                 failure(UserRegisterError.InvitationExpired)
             } else {
-                val userId = usersRepository.create(username,name,age,inviteCode, passwordValidationInfo)
-                inviteRepository.changeInviteState( invite.id, inviteDomain.usedState)
+                val userId = usersRepository.create(username, name, age, inviteCode, passwordValidationInfo)
+                inviteRepository.changeInviteState(invite.id, inviteDomain.usedState)
                 success(userId)
             }
         }
-
     }
-
 
     fun createToken(
         username: String,
@@ -161,14 +154,13 @@ class UsersService(
         }
     }
 
-    fun getById(
-        @PathVariable id: Int,
-    ): UserGetByIdResult {
+    fun getById(id: Int): UserGetByIdResult {
         return transactionManager.run {
             val usersRepository = it.usersRepository
 
-            val user = usersRepository.getUserById(id)
-                ?: return@run failure(UserGetByIdError.UserNotFound)
+            val user =
+                usersRepository.getUserById(id)
+                    ?: return@run failure(UserGetByIdError.UserNotFound)
 
             success(user)
         }
@@ -191,12 +183,21 @@ class UsersService(
         }
     }
 
-    fun hasAnyUser(): Boolean = transactionManager.run {
-        val usersRepository = it.usersRepository
-        return@run usersRepository.countUsers() > 0
-    }
+    fun hasAnyUser(): Boolean =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            println("olaaaa plssss")
+            println(usersRepository.toString())
+            println("count: ${usersRepository.countUsers()}")
+            return@run usersRepository.countUsers() > 0
+        }
 
-    fun bootstrapFirstUser(username : String, name : String, age : Int, password : String): Int =
+    fun bootstrapFirstUser(
+        username: String,
+        name: String,
+        age: Int,
+        password: String,
+    ): Int =
         transactionManager.run {
             val usersRepository = it.usersRepository
             val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
@@ -205,15 +206,7 @@ class UsersService(
                 name = name,
                 age = age,
                 inviteCode = "BOOTSTRAP",
-                passwordValidationInfo = passwordValidationInfo
+                passwordValidationInfo = passwordValidationInfo,
             )
         }
-
-
-
-
-
-
-
-
 }

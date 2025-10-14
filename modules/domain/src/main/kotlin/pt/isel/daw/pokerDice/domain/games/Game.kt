@@ -14,7 +14,7 @@ data class Game(
     val scores: MutableMap<User, Int> = mutableMapOf(),
     val currentPlayerIndex: Int,
     val lastRoll: List<Dice>,
-    val lastCombination: CombinationType?
+    val lastCombination: CombinationType?,
 // adicionar mais depois
 ) {
     enum class State {
@@ -22,7 +22,8 @@ data class Game(
         ENDED,
         RUNNING,
         NEXT_PLAYER,
-        ROUND_OVER;
+        ROUND_OVER,
+        ;
 
         val isEnded: Boolean get() = this == ENDED
         val isRunning: Boolean get() = this == RUNNING
@@ -39,5 +40,5 @@ data class Game(
     /**
      * Retorna o jogador atual (de acordo com o índice).
      */
-    val currentPlayer: User ? get() = players.getOrNull(currentPlayerIndex)
+    val currentPlayer: User? get() = players.getOrNull(currentPlayerIndex)
 }

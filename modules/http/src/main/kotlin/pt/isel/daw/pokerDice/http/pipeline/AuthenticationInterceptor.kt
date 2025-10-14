@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice.http.pipeline
 
-
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -21,7 +20,7 @@ class AuthenticationInterceptor(
         if (handler is HandlerMethod &&
             handler.methodParameters.any {
                 it.parameterType == AuthenticatedUser::class.java
-            } //valida se o endPoint (@get...@post etc, exige algum AuthenticatedUser)
+            } // valida se o endPoint (@get...@post etc, exige algum AuthenticatedUser)
         ) {
             // enforce authentication
             val user =

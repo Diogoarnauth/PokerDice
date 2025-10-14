@@ -9,12 +9,11 @@
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
-            <option value="$PROJECT_DIR$/modules" />
             <option value="$PROJECT_DIR$/modules/domain" />
             <option value="$PROJECT_DIR$/modules/host" />
             <option value="$PROJECT_DIR$/modules/http" />
             <option value="$PROJECT_DIR$/modules/repository" />
-            <option value="$PROJECT_DIR$/modules/repository_jdbi" />
+            <option value="$PROJECT_DIR$/modules/repository-jdbi" />
             <option value="$PROJECT_DIR$/modules/services" />
           </set>
         </option>

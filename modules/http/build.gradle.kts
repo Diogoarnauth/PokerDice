@@ -1,34 +1,16 @@
 plugins {
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "1.9.24"            // compatível com Spring Boot 3.3.x
-    kotlin("plugin.spring") version "1.9.24"   // importante p/ anotações Spring
+    kotlin("jvm")
+    kotlin("plugin.spring")
 }
 
-group = "org.example"
+group = "pt.isel.daw"
 version = "1.0-SNAPSHOT"
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21)) // 17 ou 21
-    }
-}
-
-repositories { mavenCentral() }
 
 dependencies {
 
-    api(project(":modules:services"))
-
-    implementation(platform("org.springframework.boot:spring-boot-dependencies:3.3.4"))
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    api("org.springframework.security:spring-security-core:6.5.5")
-
-    // para testes
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testImplementation(kotlin("test"))
+    // Module dependencies
+    implementation(project(":domain"))
+    implementation(project(":services"))
 
     // To use Spring MVC and the Servlet API
     implementation("org.springframework:spring-webmvc:6.2.10")
@@ -41,4 +23,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
 }
 
-tasks.test { useJUnitPlatform() }
+tasks.test {
+    useJUnitPlatform()
+    if (System.getenv("DB_URL") == null) {
+        environment("DB_URL", "jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
+    }
+}
+
+kotlin {
+    jvmToolchain(21)
+}

@@ -6,5 +6,5 @@ data class Play(
     val playerId: Int,
     val dice: List<Dice>,
     val score: Int,
-    val timestamp: Instant
+    val timestamp: Instant,
 )

@@ -1,53 +1,12 @@
-plugins {
-    id("org.springframework.boot") version "3.3.4"
-    id("io.spring.dependency-management") version "1.1.6"
-    kotlin("jvm") version "1.9.24"            // compatível com Spring Boot 3.3.x
-    kotlin("plugin.spring") version "1.9.24"   // importante p/ anotações Spring
-}
-
-group = "org.example"
-version = "1.0-SNAPSHOT"
-
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21)) // 17 ou 21
+subprojects {
+    apply(plugin = "org.jlleitschuh.gradle.ktlint")
+    repositories {
+        mavenCentral()
     }
 }
-
-repositories { mavenCentral() }
-
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-    implementation("org.jetbrains.kotlin:kotlin-reflect")
-    api("org.springframework.security:spring-security-core:6.5.5")
-
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-
-    // To use Kotlin specific date and time functions
-    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.1")
+tasks.register<Exec>("composeDown") {
+    commandLine("docker", "compose", "down")
 }
 
-springBoot {
-    mainClass.set("pt.isel.daw.pokerDice.PokerDiceApplicationKt")
-}
-
-tasks.test { useJUnitPlatform() }
-
-val dockerImageTagPostgresTest = "postgres-test:latest"
-
-tasks.register<Exec>("buildImagePostgresTest") {
-    commandLine(
-        "docker",
-        "build",
-        "-t",
-        dockerImageTagPostgresTest,
-        "-f",
-        "tests/Dockerfile-postgres-test",
-        "../repository_jdbi",
-    )
-}
-
-tasks.register<Exec>("allUp") {
-    commandLine("docker", "compose", "up", "--force-recreate", "-d")
-}
+extra["composeFileDir"] = layout.projectDirectory
+println("composeFileDir - ${layout.projectDirectory}")

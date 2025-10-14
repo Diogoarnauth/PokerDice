@@ -20,8 +20,7 @@ class Problem(
             .header("Content-Type", MEDIA_TYPE)
             .body<Any>(problem)
 
-
-        //User Related
+        // User Related
         val userAlreadyInvited = Problem(URI("${BASE_URL}user-already-invited"))
         val dontHavePermission = Problem(URI("${BASE_URL}permission-denied"))
         val userNotFound = Problem(URI("${BASE_URL}user-not-found"))
@@ -29,14 +28,13 @@ class Problem(
         val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid"))
         val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized"))
 
-
-        //Invitation Related
+        // Invitation Related
         val invitationDontExist = Problem(URI("${BASE_URL}invite-dont-exist"))
         val inviteCreationError = Problem(URI("${BASE_URL}invite-creation-error"))
         val invitationExpired = Problem(URI("${BASE_URL}invite-expired"))
         val invitationUsed = Problem(URI("${BASE_URL}invite-used"))
 
-        //Lobby Related
+        // Lobby Related
         val invalidLobbySettings = Problem(URI("${BASE_URL}invalid-Lobby-Settings"))
         val lobbyAlreadyExists = Problem(URI("${BASE_URL}lobbyAlreadyExists"))
         val HostAlreadyHasAnOpenLobby = Problem(URI("${BASE_URL}HostAlreadyHasAnOpenLobby"))
@@ -48,18 +46,13 @@ class Problem(
         val notInLobby = Problem(URI("${BASE_URL}notInLobby"))
         val onlyHostCanCloseLobby = Problem(URI("${BASE_URL}onlyHostCanCloseLobby"))
 
-
-        //Generic
+        // Generic
         val insecurePassword = Problem(URI("${BASE_URL}insecure-password"))
         val internalServerError = Problem(URI("${BASE_URL}InternalServerError"))
         val invalidRequestContent = Problem(URI("${BASE_URL}invalid-content"))
 
-
-
-
-
-        //val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
-        //val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))
-        //val noUpdateProvided = Problem(URI("${BASE_URL}no-update-provided"))
+        // val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
+        // val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))
+        // val noUpdateProvided = Problem(URI("${BASE_URL}no-update-provided"))
     }
 }

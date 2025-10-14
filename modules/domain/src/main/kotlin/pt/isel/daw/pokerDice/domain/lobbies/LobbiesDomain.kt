@@ -9,7 +9,6 @@ class LobbiesDomain(
     private val config: LobbiesDomainConfig,
     private val passwordEncoder: PasswordEncoder,
 ) {
-
     fun validatePassword(
         password: String,
         validationInfo: PasswordValidationInfo,
@@ -24,7 +23,4 @@ class LobbiesDomain(
         )
 
     fun isSafePassword(password: String) = password.length > 4
-
-
-
 }

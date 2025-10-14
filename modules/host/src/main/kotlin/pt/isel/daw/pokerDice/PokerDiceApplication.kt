@@ -15,23 +15,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
 import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomainConfig
-//import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
-import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.domain.users.Sha256TokenEncoder
+import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticatedUserArgumentResolver
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticationInterceptor
+import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
 class PokerDiceApplication {
-
     @Bean
-    fun jdbi(): Jdbi =
-        Jdbi.create(
-            PGSimpleDataSource().apply {
-                setURL(System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/pokerdice?user=postgres&password=postgres")
-            }
-        )// adicionar .configureWithAppRequirements() quando existir
+    fun jdbi() =
+        Jdbi
+            .create(
+                PGSimpleDataSource().apply {
+                    setURL(Environment.getDbUrl())
+                },
+            ).configureWithAppRequirements()
 
     @Bean
     fun tokenEncoder() = Sha256TokenEncoder()
@@ -71,9 +71,8 @@ class PokerDiceApplication {
             maxUsersAllowed = 5,
             minRoundsAllowed = 2,
             maxRoundsAllowed = 10,
-            minCreditAllowed = 20
+            minCreditAllowed = 20,
         )
-
 }
 
 @Configuration
@@ -96,5 +95,3 @@ fun main(args: Array<String>) {
     logger.info("Starting app")
     runApplication<PokerDiceApplication>(*args)
 }
-
-// sudo docker compose up --build - olaaaa

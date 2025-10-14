@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice.http
 
-
 import org.springframework.web.util.UriTemplate
 import java.net.URI
 
@@ -16,7 +15,7 @@ object UserUris {
         const val LOGOUT = "$PREFIX/logout"
         const val GET_BY_ID = "$PREFIX/users/{id}"
         const val HOME = "$PREFIX/me"
-        const  val INVITE = "$PREFIX/invite"
+        const val INVITE = "$PREFIX/invite"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
 

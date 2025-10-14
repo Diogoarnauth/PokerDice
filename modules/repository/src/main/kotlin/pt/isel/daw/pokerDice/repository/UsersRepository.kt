@@ -6,7 +6,7 @@ import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
 
-//mudar depois
+// mudar depois
 
 interface UsersRepository {
     /*fun storeUser(
@@ -16,22 +16,31 @@ interface UsersRepository {
 
     fun getUserByUsername(username: String): User?
 
-    fun getUserById (id: Int): User?
+    fun getUserById(id: Int): User?
 
-    fun create(username: String, name: String, age: Int, inviteCode: String, passwordValidationInfo: PasswordValidationInfo,): Int
+    fun create(
+        username: String,
+        name: String,
+        age: Int,
+        inviteCode: String,
+        passwordValidationInfo: PasswordValidationInfo,
+    ): Int
 
     fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>?
 
     fun isUserStoredByUsername(username: String): Boolean
 
-    fun updateLobbyIdForUser(userId: Int, lobbyId: Int?)
+    fun updateLobbyIdForUser(
+        userId: Int,
+        lobbyId: Int?,
+    )
 
     fun createToken(
         token: Token,
         maxTokens: Int,
     )
 
-    fun countUsers():Int
+    fun countUsers(): Int
 
     fun updateTokenLastUsed(
         token: Token,

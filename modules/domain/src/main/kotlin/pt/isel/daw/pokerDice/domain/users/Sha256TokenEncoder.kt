@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice.domain.users
 
-
 import java.security.MessageDigest
 import java.util.Base64
 

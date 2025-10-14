@@ -2,31 +2,11 @@ services:
   db-tests:
     container_name: db-tests
     build:
-      context: ./modules/repository_jdbi
+      context: ./modules/repository-jdbi
       dockerfile: ./tests/Dockerfile-db-test
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=db
     ports:
-      - "5433:5432"       # porta 5433 no host → 5432 no contêiner
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-  app:
-    container_name: kotlin-app
-    build:
-      context: .
-      dockerfile: ./Dockerfile
-    depends_on:
-      - db-tests
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-tests:5432/db
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres
-    ports:
-      - "8080:8080"
-    #command: ["./bin/wait-for-postgres.sh", "java", "-jar", "app.jar"]
-volumes:
-  pgdata:
-
+      - 5432:5432

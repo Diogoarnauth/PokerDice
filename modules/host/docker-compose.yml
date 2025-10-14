@@ -1,13 +1,13 @@
 services:
-  ttt-postgres-tests:
+  pokerDice_tests:
     container_name: ttt-postgres-tests
     image: tic-tac-toe-postgres-test
     environment:
-      - POSTGRES_USER=dbuser
-      - POSTGRES_PASSWORD=changeit
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=db
     ports:
-      - 5433:5432
+      - 5432:5432
 
   # ttt-jvm-1 and ttt-jvm-2 are used to illustrate scenarios with a fixed number of servers
   # with static and well know names.
@@ -17,7 +17,7 @@ services:
     image: tic-tac-toe-jvm
     environment:
       PORT: 8081
-      DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit"
+      DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
     ports:
       - 8081:8081
 
@@ -27,7 +27,7 @@ services:
     image: tic-tac-toe-jvm
     environment:
       PORT: 8082
-      DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit"
+      DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
     ports:
       - 8082:8082
 
@@ -39,7 +39,7 @@ services:
     hostname: ttt-jvm-dynamic
     environment:
       PORT: 8080
-      DB_URL: "jdbc:postgresql://db-tests:5432/db?user=dbuser&password=changeit"
+      DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
 
   # The service running the load-balancer
   nginx:

@@ -4,12 +4,11 @@ import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 
 interface LobbiesRepository {
-
     fun getLobbiesNotFull(): List<Lobby>
 
     fun getById(id: Int): Lobby?
 
-    fun existsByHost(hostId: Int):Boolean
+    fun existsByHost(hostId: Int): Boolean
 
     fun createLobby(
         hostId: Int,
@@ -20,10 +19,8 @@ interface LobbiesRepository {
         minPlayers: Int,
         maxPlayers: Int,
         rounds: Int,
-        minCreditToParticipate: Int
+        minCreditToParticipate: Int,
     ): Int?
 
     fun deleteLobbyById(lobbyId: Int)
-
-
-    }
+}

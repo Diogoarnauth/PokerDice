@@ -2,11 +2,12 @@ package pt.isel.daw.pokerDice.domain.players
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.*
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.User
 
 class PlayerTest {
 
-    private fun createPlayer(id: Int, name: String = "Player$id") = Player(
+    private fun createPlayer(id: Int, name: String = "Player$id") = User(
         id = id,
         username = name.lowercase(),
         passwordValidation = PasswordValidationInfo("val"),
@@ -28,7 +29,7 @@ class PlayerTest {
     @Test
     fun `deve lançar erro se idade for inválida`() {
         val ex = assertThrows(IllegalArgumentException::class.java) {
-            Player(
+            User(
                 id = 1,
                 username = "renata",
                 passwordValidation = PasswordValidationInfo("val"),
@@ -43,7 +44,7 @@ class PlayerTest {
 
     @Test
     fun `incrementCredit deve adicionar créditos corretamente`() {
-        val p = Player(
+        val p = User(
             id = 1,
             username = "renata",
             passwordValidation = PasswordValidationInfo("val"),
@@ -59,7 +60,7 @@ class PlayerTest {
 
     @Test
     fun `winCounter deve incrementar corretamente`() {
-        val p = Player(
+        val p = User(
             id = 1,
             username = "renata",
             passwordValidation = PasswordValidationInfo("val"),

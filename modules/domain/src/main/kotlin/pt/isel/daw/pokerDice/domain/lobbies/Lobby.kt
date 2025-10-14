@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.domain.lobbies
 
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
+import java.util.UUID
 
 // Lobby interno
 data class Lobby(
@@ -10,8 +11,9 @@ data class Lobby(
     val hostId: Int,
     val isPrivate: Boolean,
     val passwordValidationInfo: PasswordValidationInfo?,
-    val minPlayers: Int,
-    val maxPlayers: Int,
+    val minUsers: Int,
+    val maxUsers: Int,
     val rounds: Int,
     val minCreditToParticipate: Int,
+    var isRunning: Boolean =  false,
 )

@@ -16,9 +16,9 @@ import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
 import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomainConfig
 //import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements // se tivermos esta função
-import pt.isel.daw.pokerDice.domain.players.PlayersDomainConfig
-import pt.isel.daw.pokerDice.domain.players.Sha256TokenEncoder
-import pt.isel.daw.pokerDice.http.pipeline.AuthenticatedPlayerArgumentResolver
+import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
+import pt.isel.daw.pokerDice.domain.users.Sha256TokenEncoder
+import pt.isel.daw.pokerDice.http.pipeline.AuthenticatedUserArgumentResolver
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticationInterceptor
 import kotlin.time.Duration.Companion.hours
 
@@ -46,12 +46,12 @@ class PokerDiceApplication {
     fun clock() = Clock.System
 
     @Bean
-    fun playersDomainConfig() =
-        PlayersDomainConfig(
+    fun usersDomainConfig() =
+        UsersDomainConfig(
             tokenSizeInBytes = 256 / 8,
             tokenTtl = 24.hours,
             tokenRollingTtl = 1.hours,
-            maxTokensPerPlayer = 3,
+            maxTokensPerUser = 3,
         )
 
     @Bean
@@ -67,8 +67,8 @@ class PokerDiceApplication {
     @Bean
     fun lobbiesDomainConfig() =
         LobbiesDomainConfig(
-            minPlayersAllowed = 2,
-            maxPlayersAllowed = 5,
+            minUsersAllowed = 2,
+            maxUsersAllowed = 5,
             minRoundsAllowed = 2,
             maxRoundsAllowed = 10,
             minCreditAllowed = 20
@@ -79,14 +79,14 @@ class PokerDiceApplication {
 @Configuration
 class PipelineConfigurer(
     val authenticationInterceptor: AuthenticationInterceptor,
-    val authenticatedPlayerArgumentResolver: AuthenticatedPlayerArgumentResolver,
+    val authenticatedUserArgumentResolver: AuthenticatedUserArgumentResolver,
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         registry.addInterceptor(authenticationInterceptor)
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
-        resolvers.add(authenticatedPlayerArgumentResolver)
+        resolvers.add(authenticatedUserArgumentResolver)
     }
 }
 

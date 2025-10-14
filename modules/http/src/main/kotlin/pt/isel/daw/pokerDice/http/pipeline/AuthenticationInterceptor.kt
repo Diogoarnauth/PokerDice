@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
-import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
+import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 
 @Component
 class AuthenticationInterceptor(
@@ -20,19 +20,19 @@ class AuthenticationInterceptor(
     ): Boolean {
         if (handler is HandlerMethod &&
             handler.methodParameters.any {
-                it.parameterType == AuthenticatedPlayer::class.java
-            } //valida se o endPoint (@get...@post etc, exige algum AuthenticatedPlayer)
+                it.parameterType == AuthenticatedUser::class.java
+            } //valida se o endPoint (@get...@post etc, exige algum AuthenticatedUser)
         ) {
             // enforce authentication
-            val player =
+            val user =
                 authorizationHeaderProcessor
                     .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
-            return if (player == null) {
+            return if (user == null) {
                 response.status = 401
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
                 false
             } else {
-                AuthenticatedPlayerArgumentResolver.addPlayerTo(player, request)
+                AuthenticatedUserArgumentResolver.addUserTo(user, request)
                 true
             }
         }

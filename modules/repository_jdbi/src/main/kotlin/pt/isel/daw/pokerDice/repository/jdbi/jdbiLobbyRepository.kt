@@ -3,8 +3,9 @@ package pt.isel.daw.pokerDice.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
+import java.util.UUID
 
 class JdbiLobbyRepository(
     private val handle: Handle,
@@ -137,8 +138,8 @@ class JdbiLobbyRepository(
             passwordValidationInfo = if (is_private && !password_validation.isNullOrBlank())
                 PasswordValidationInfo(password_validation)
             else null,
-            minPlayers = min_players,
-            maxPlayers = max_players,
+            minUsers = min_players,
+            maxUsers = max_players,
             rounds = rounds,
             minCreditToParticipate = min_credit_to_participate
         )

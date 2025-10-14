@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.players
+package pt.isel.daw.pokerDice.domain.users
 
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
@@ -7,10 +7,10 @@ import java.util.Base64
 import org.springframework.security.crypto.password.PasswordEncoder
 
 @Component
-class PlayersDomain(
+class UsersDomain(
     private val passwordEncoder: PasswordEncoder, // erro
     private val tokenEncoder: TokenEncoder, // erro
-    private val config: PlayersDomainConfig, // erro
+    private val config: UsersDomainConfig, // erro
 ) {
     fun generateTokenValue(): String =
         ByteArray(config.tokenSizeInBytes).let { byteArray ->
@@ -64,5 +64,5 @@ class PlayersDomain(
     // TODO it could be better
     fun isSafePassword(password: String) = password.length > 4
 
-    val maxNumberOfTokensPerPlayer = config.maxTokensPerPlayer
+    val maxNumberOfTokensPerUser = config.maxTokensPerUser
 }

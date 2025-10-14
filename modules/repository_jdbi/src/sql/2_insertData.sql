@@ -1,5 +1,5 @@
--- Player
-/*INSERT INTO Player (token, username, passwordValidation, name, age, credit, winCounter)
+-- User
+/*INSERT INTO User (token, username, passwordValidation, name, age, credit, winCounter)
 VALUES
     ('a3e1f8b2-1c2d-4e5f-9a6b-7c8d9e0f1a2b', 'user1', 'pass1', 'Alice', 25, 100, 2),
     ('b4f2e9c3-2d3e-5f6a-8b7c-9d0e1f2a3b4c', 'user2', 'pass2', 'Bob', 30, 200, 5),

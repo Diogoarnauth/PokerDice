@@ -1,7 +1,7 @@
-package pt.isel.daw.pokerDice.http.model.PlayerModel
+package pt.isel.daw.pokerDice.http.model.UserModel
 import java.util.UUID
 
-data class PlayerGetByIdOutputModel(
+data class UserGetByIdOutputModel(
     val username: String,
     val token: UUID,
     val name: String

@@ -1,19 +1,20 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import pt.isel.daw.pokerDice.domain.players.Player
+import pt.isel.daw.pokerDice.domain.users.User
 import java.util.UUID
 
 data class Game(
     val id: UUID,
+    val lobbyId: UUID,
     val state: State,
     val nrPlayers: Int,
     val minCredits: Int,
-    val players: List<Player> = emptyList(),
+    val players: List<User> = emptyList(),
     val rounds: List<Round> = emptyList(),
-    val scores: MutableMap<Player, Int> = mutableMapOf(),
+    val scores: MutableMap<User, Int> = mutableMapOf(),
     val currentPlayerIndex: Int,
     val lastRoll: List<Dice>,
-    val lastCombination:CombinationType?
+    val lastCombination: CombinationType?
 // adicionar mais depois
 ) {
     enum class State {
@@ -38,5 +39,5 @@ data class Game(
     /**
      * Retorna o jogador atual (de acordo com o índice).
      */
-    val currentPlayer: Player ? get() = players.getOrNull(currentPlayerIndex)
+    val currentPlayer: User ? get() = players.getOrNull(currentPlayerIndex)
 }

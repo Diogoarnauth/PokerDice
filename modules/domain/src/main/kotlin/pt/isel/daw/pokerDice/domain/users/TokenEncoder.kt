@@ -1,4 +1,4 @@
-package pt.isel.daw.pokerDice.domain.players
+package pt.isel.daw.pokerDice.domain.users
 
 interface TokenEncoder {
     fun createValidationInformation(token: String): TokenValidationInfo

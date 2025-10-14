@@ -1,14 +1,14 @@
 package pt.isel.daw.pokerDice.http.pipeline
 
 import org.springframework.stereotype.Component
-import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
-import pt.isel.daw.pokerDice.services.PlayersService
+import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
+import pt.isel.daw.pokerDice.services.UsersService
 
 @Component
 class RequestTokenProcessor(
-    val playerService: PlayersService,
+    val playerService: UsersService,
 ) {
-    fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedPlayer? {
+    fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
         if (authorizationValue == null) {
             return null
         }
@@ -19,8 +19,8 @@ class RequestTokenProcessor(
         if (parts[0].lowercase() != SCHEME) {
             return null
         }
-        return playerService.getPlayerByToken(parts[1])?.let {
-            AuthenticatedPlayer(
+        return playerService.getUserByToken(parts[1])?.let {
+            AuthenticatedUser(
                 it,
                 parts[1],
             )

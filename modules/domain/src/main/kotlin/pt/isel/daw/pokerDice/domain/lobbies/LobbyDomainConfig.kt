@@ -6,15 +6,15 @@ import org.springframework.stereotype.Component
 class LobbiesDomainConfig(
     //val isPrivate: Boolean,
     //val password: String?,
-    val minPlayersAllowed: Int,
-     val maxPlayersAllowed: Int,
+    val minUsersAllowed: Int,
+     val maxUsersAllowed: Int,
     val minRoundsAllowed: Int,
     val maxRoundsAllowed: Int,
     val minCreditAllowed: Int,
 ){
     init{
-        require (minPlayersAllowed in 2..maxPlayersAllowed)
-        require (maxPlayersAllowed <= 6)
+        require (minUsersAllowed in 2..maxUsersAllowed)
+        require (maxUsersAllowed <= 6)
         require(minRoundsAllowed < maxRoundsAllowed)
         require(minRoundsAllowed >= 2 )
         require(maxRoundsAllowed <= 10 )

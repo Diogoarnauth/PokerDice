@@ -1,8 +1,8 @@
-package pt.isel.daw.pokerDice.domain.players
+package pt.isel.daw.pokerDice.domain.users
 
 import java.util.*
 
-data class Player(
+data class User(
     val id: Int,
     val token: UUID = UUID.randomUUID(),
     val username: String,

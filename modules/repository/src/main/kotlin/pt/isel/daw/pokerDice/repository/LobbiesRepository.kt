@@ -1,7 +1,7 @@
 package pt.isel.daw.pokerDice.repository
 
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 
 interface LobbiesRepository {
 

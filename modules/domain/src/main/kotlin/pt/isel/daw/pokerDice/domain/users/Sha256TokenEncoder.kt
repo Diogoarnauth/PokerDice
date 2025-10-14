@@ -1,7 +1,4 @@
-package pt.isel.daw.pokerDice.domain.players
-
-import pt.isel.daw.pokerDice.domain.players.TokenEncoder
-import pt.isel.daw.pokerDice.domain.players.TokenValidationInfo
+package pt.isel.daw.pokerDice.domain.users
 
 
 import java.security.MessageDigest

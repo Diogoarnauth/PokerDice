@@ -1,16 +1,16 @@
-package pt.isel.daw.pokerDice.domain.players
+package pt.isel.daw.pokerDice.domain.users
 import kotlin.time.Duration
 
-data class PlayersDomainConfig(
+data class UsersDomainConfig(
     val tokenSizeInBytes: Int,
     val tokenTtl: Duration,
     val tokenRollingTtl: Duration,
-    val maxTokensPerPlayer: Int,
+    val maxTokensPerUser: Int,
 ) {
     init {
         require(tokenSizeInBytes > 0)
         require(tokenTtl.isPositive())
         require(tokenRollingTtl.isPositive())
-        require(maxTokensPerPlayer > 0)
+        require(maxTokensPerUser > 0)
     }
 }

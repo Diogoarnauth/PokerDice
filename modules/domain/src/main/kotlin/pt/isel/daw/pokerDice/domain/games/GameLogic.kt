@@ -2,9 +2,8 @@ package pt.isel.daw.pokerDice.domain.games
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import pt.isel.daw.pokerDice.domain.players.Player
+import pt.isel.daw.pokerDice.domain.users.User
 import java.util.UUID
-import kotlin.random.Random
 import kotlin.time.Duration
 
 //organizar isto noutro sitio
@@ -60,9 +59,10 @@ class GameLogic(
     /**
      * Cria um novo game ainda sem jogadores
      */
-    fun createNewGame (nrPlayers : Int, minCredits: Int): Game {
+    fun createNewGame (nrPlayers : Int, minCredits: Int, lobbyId: UUID): Game {
         return Game(
             id = UUID.randomUUID(),
+            lobbyId = lobbyId,
             state = Game.State.WAITING_FOR_PLAYERS,
             nrPlayers = nrPlayers,
             minCredits = minCredits,
@@ -76,7 +76,7 @@ class GameLogic(
     /**
      * Adiciona, se possível, um novo jogador ao jogo.
      */
-    fun addPlayer (game: Game, playerCredits: Int, newPlayer: Player): GameResult {
+    fun addPlayer (game: Game, playerCredits: Int, newPlayer: User): GameResult {
         if (game.state != Game.State.WAITING_FOR_PLAYERS){
             return GameResult.InvalidState(" It is not possible to add players right now.")
         }
@@ -118,7 +118,7 @@ class GameLogic(
      * Aplica uma jogada (round). Para já, apenas faz validações básicas.
      * Mais tarde, vai ser expandido com a lógica do lançamento de dados.
      */
-    fun applyRound(game: Game, player: Player): GameResult {
+    fun applyRound(game: Game, player: User): GameResult {
         // 1. Verificar se o jogador pertence ao jogo
         if (player.id !in game.players.map { it.id }){
             return GameResult.NotAPlayer
@@ -221,8 +221,12 @@ class GameLogic(
 
     }
 
+    fun reshufle(){
 
-    fun determineRoundWinner (round: Round, players: List<Player>): Player?{
+    }
+
+
+    fun determineRoundWinner (round: Round, players: List<User>): User?{
         val bestScore = round.plays.maxOfOrNull { it.score } ?: return null
         val candidates = round.plays.filter { it.score == bestScore }
 

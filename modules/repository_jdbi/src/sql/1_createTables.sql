@@ -11,11 +11,12 @@ CREATE TABLE Lobby (
     minPlayers INT NOT NULL CHECK (minPlayers >= 2),
     maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
     rounds INT NOT NULL CHECK (rounds > 0),
-    min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10)
+    min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10),
+    isRunning BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 -- Tabela Player
-CREATE TABLE Player (
+CREATE TABLE User (
     id SERIAL PRIMARY KEY,
     token UUID NOT NULL,
     username VARCHAR(50) UNIQUE NOT NULL,
@@ -29,9 +30,9 @@ CREATE TABLE Player (
 
 ALTER TABLE Lobby
     ADD COLUMN host_id INT,
-    ADD CONSTRAINT fk_host FOREIGN KEY (host_id) REFERENCES Player(id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_host FOREIGN KEY (host_id) REFERENCES User(id) ON DELETE CASCADE;
 
-ALTER TABLE Player
+ALTER TABLE User
     ADD COLUMN lobby_id INT,
     ADD CONSTRAINT fk_lobby FOREIGN KEY (lobby_id) REFERENCES Lobby(id) ON DELETE SET NULL;
 
@@ -40,14 +41,14 @@ CREATE TABLE IF NOT EXISTS Game (
     id UUID PRIMARY KEY NOT NULL,
     lobby_id INT REFERENCES Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
     state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
-    nrPlayers INT NOT NULL,
+    nrUsers INT NOT NULL,
     minCredits INT NOT NULL CHECK (minCredits >= 0)
 );
 -- Tabela Round
 CREATE TABLE IF NOT EXISTS Round (
     id SERIAL PRIMARY KEY,
     game_id UUID REFERENCES Game(id) ON DELETE CASCADE,
-    winner INT REFERENCES Player(id) ON DELETE SET NULL,
+    winner INT REFERENCES User(id) ON DELETE SET NULL,
     bet INT NOT NULL CHECK (bet >= 10),
     roundOver BOOLEAN DEFAULT FALSE,
     timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
@@ -55,7 +56,7 @@ CREATE TABLE IF NOT EXISTS Round (
 
 create table IF NOT EXISTS APP_INVITE(
     id serial primary key,
-    inviterId integer references Player(id),
+    inviterId integer references User(id),
     inviteValidationInfo varchar(255) unique not null,
     state varchar(20) not null CHECK (state IN ('pending', 'used', 'expired')),
     createdAt bigint not null
@@ -65,6 +66,6 @@ create table IF NOT EXISTS TOKEN (
     tokenValidation varchar(255) primary key ,
     createdAt bigint not null,
     lastUsedAt bigint not null,
-    playerId integer,
-    foreign key (playerId) references Player(id) on delete cascade
+    userId integer,
+    foreign key (userId) references User(id) on delete cascade
 );

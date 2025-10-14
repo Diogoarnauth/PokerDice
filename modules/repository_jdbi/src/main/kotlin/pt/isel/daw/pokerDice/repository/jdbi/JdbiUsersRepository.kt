@@ -3,36 +3,36 @@ package pt.isel.daw.pokerDice.repository.jdbi
 import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
-import pt.isel.daw.pokerDice.domain.players.Player
-import pt.isel.daw.pokerDice.domain.players.Token
-import pt.isel.daw.pokerDice.domain.players.TokenValidationInfo
-import pt.isel.daw.pokerDice.repository.PlayersRepository
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.User
+import pt.isel.daw.pokerDice.domain.users.Token
+import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
+import pt.isel.daw.pokerDice.repository.UsersRepository
 import java.util.*
 
 
-class JdbiPlayersRepository(
+class JdbiUsersRepository(
     private val handle: Handle,
-) : PlayersRepository {
+) : UsersRepository {
 
-    /* override fun storePlayer(username: String, passwordValidation: PasswordValidationInfo): Int {
+    /* override fun storeUser(username: String, passwordValidation: PasswordValidationInfo): Int {
         TODO("Not yet implemented")
     }
         */
 
-    override fun getPlayerByUsername(username: String): Player? =
+    override fun getUserByUsername(username: String): User? =
         handle
-            .createQuery("select * from dbo.Player where username = :username")
+            .createQuery("select * from dbo.User where username = :username")
             .bind("username", username)
-            .mapTo<Player>()
+            .mapTo<User>()
             .singleOrNull()
 
 
-    override fun getPlayerById(id: Int): Player? =
+    override fun getUserById(id: Int): User? =
         handle
-            .createQuery("select * from dbo.Player where id = :id")
+            .createQuery("select * from dboUser where id = :id")
             .bind("id", id)
-            .mapTo<Player>()
+            .mapTo<User>()
             .singleOrNull()
 
 
@@ -60,7 +60,7 @@ class JdbiPlayersRepository(
     }
 
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<Player, Token>? =
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
         handle
             .createQuery(
                 """
@@ -69,29 +69,29 @@ class JdbiPlayersRepository(
                 where tokenvalidation = :tokenValidation
                 """.trimIndent(),
             ).bind("tokenValidation", tokenValidationInfo.validationInfo)
-            .mapTo<PlayerAndTokenModel>()
+            .mapTo<UserAndTokenModel>()
             .singleOrNull()
-            ?.playerAndToken
+            ?.userAndToken
 
 
 
-    override fun isPlayerStoredByUsername(username: String): Boolean =
+    override fun isUserStoredByUsername(username: String): Boolean =
         handle
             .createQuery("select count(*) from dbo.User where username = :username")
             .bind("username", username)
             .mapTo<Int>()
             .single() == 1
 
-    override fun updateLobbyIdForPlayer(playerId: Int, lobbyId: Int?) {
+    override fun updateLobbyIdForUser(userId: Int, lobbyId: Int?) {
             handle.createUpdate("UPDATE Player SET lobby_id = :lobbyId WHERE id = :playerId")
                 .bind("lobbyId", lobbyId)
-                .bind("playerId", playerId)
+                .bind("playerId", userId)
                 .execute()
 
     }
 
-    override fun countPlayersInLobby(lobbyId: Int): Int =
-        handle.createQuery("SELECT COUNT(*) FROM Player WHERE lobby_id = :lobbyId")
+    override fun countUsersInLobby(lobbyId: Int): Int =
+        handle.createQuery("SELECT COUNT(*) FROM User WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .mapTo<Int>()
             .one()
@@ -111,7 +111,7 @@ class JdbiPlayersRepository(
                         select tokenValidation from dbo.Token where userId = :userId 
                             order by lastUsedAt desc offset :offset );
                 """.trimIndent(),
-            ).bind("userId", token.playerId)
+            ).bind("userId", token.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
@@ -121,7 +121,7 @@ class JdbiPlayersRepository(
                 insert into dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
                 values (:userId, :tokenValidation, :createdAt, :lastUsedAt)
                 """.trimIndent(),
-            ).bind("userId", token.playerId)
+            ).bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .bind("createdAt", token.createdAt.epochSeconds)
             .bind("lastUsedAt", token.lastUsedAt.epochSeconds)
@@ -137,13 +137,13 @@ class JdbiPlayersRepository(
                 where userId = :userId and tokenValidation = :tokenValidation
                 """.trimIndent(),
             ).bind("lastUsedAt", now.epochSeconds)
-            .bind("userId", token.playerId)
+            .bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .execute()
     }
 
-   override fun clearLobbyForAllPlayers(lobbyId: Int) {
-        handle.createUpdate("UPDATE Player SET lobby_id = NULL WHERE lobby_id = :lobbyId")
+   override fun clearLobbyForAllUsers(lobbyId: Int) {
+        handle.createUpdate("UPDATE User SET lobby_id = NULL WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .execute()
     }
@@ -153,14 +153,14 @@ class JdbiPlayersRepository(
         TODO("Not yet implemented")
     }
 
-    override fun countPlayers(): Int =
-        handle.createQuery("SELECT COUNT(*) FROM dbo.Player")
+    override fun countUsers(): Int =
+        handle.createQuery("SELECT COUNT(*) FROM dbo.User")
             .mapTo<Int>()
             .one()
 
 
 
-    private data class PlayerAndTokenModel(
+    private data class UserAndTokenModel(
         val id: Int,
         val token: UUID,
         val username: String,
@@ -173,10 +173,10 @@ class JdbiPlayersRepository(
         var credit: Int,
         var winCounter: Int
     ) {
-        val playerAndToken: Pair<Player, Token>
+        val userAndToken: Pair<User, Token>
             get() =
                 Pair(
-                    Player(id, token,username, passwordValidation, name,age, credit, winCounter),
+                    User(id, token,username, passwordValidation, name,age, credit, winCounter),
                     Token(
                         tokenValidation,
                         id,

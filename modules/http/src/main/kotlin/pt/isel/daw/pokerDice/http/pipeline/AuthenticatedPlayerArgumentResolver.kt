@@ -1,6 +1,6 @@
 package pt.isel.daw.pokerDice.http.pipeline
 
-import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
+import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.core.MethodParameter
 import org.springframework.stereotype.Component
@@ -10,8 +10,8 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.method.support.ModelAndViewContainer
 
 @Component
-class AuthenticatedPlayerArgumentResolver : HandlerMethodArgumentResolver {
-    override fun supportsParameter(parameter: MethodParameter) = parameter.parameterType == AuthenticatedPlayer::class.java
+class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
+    override fun supportsParameter(parameter: MethodParameter) = parameter.parameterType == AuthenticatedUser::class.java
 
     override fun resolveArgument(
         parameter: MethodParameter,
@@ -22,22 +22,22 @@ class AuthenticatedPlayerArgumentResolver : HandlerMethodArgumentResolver {
         val request =
             webRequest.getNativeRequest(HttpServletRequest::class.java)
                 ?: throw IllegalStateException("TODO")
-        return getPlayerFrom(request) ?: throw IllegalStateException("TODO")
+        return getUserFrom(request) ?: throw IllegalStateException("TODO")
     }
 
     companion object {
-        private const val KEY = "AuthenticatedPlayerArgumentResolver"
+        private const val KEY = "AuthenticatedUserArgumentResolver"
 
-        fun addPlayerTo(
-            player: AuthenticatedPlayer,
+        fun addUserTo(
+            user: AuthenticatedUser,
             request: HttpServletRequest,
         ) {
-            return request.setAttribute(KEY, player)
+            return request.setAttribute(KEY, user)
         }
 
-        fun getPlayerFrom(request: HttpServletRequest): AuthenticatedPlayer? {
+        fun getUserFrom(request: HttpServletRequest): AuthenticatedUser? {
             return request.getAttribute(KEY)?.let {
-                it as? AuthenticatedPlayer
+                it as? AuthenticatedUser
             }
         }
     }

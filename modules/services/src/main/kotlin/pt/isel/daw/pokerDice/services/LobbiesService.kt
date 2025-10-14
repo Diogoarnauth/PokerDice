@@ -5,8 +5,7 @@ import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
-import pt.isel.daw.pokerDice.domain.players.PlayersDomain
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -66,24 +65,24 @@ class LobbiesService(
        return@run lobbyRepository.getLobbiesNotFull()
     }
 
-    fun leaveLobby(lobbyId: Int, playerId: Int): LeaveLobbyResult =
+    fun leaveLobby(lobbyId: Int, userId: Int): LeaveLobbyResult =
         transactionManager.run {
             val lobbiesRepo = it.lobbiesRepository
-            val playersRepo = it.playersRepository
+            val usersRepo = it.usersRepository
 
             // Verifica se o lobby existe
             val lobby = lobbiesRepo.getById(lobbyId)
                 ?: return@run failure(LeaveLobbyError.LobbyNotFound)
 
             // Verifica se o jogador pertence a este lobby
-            val player = playersRepo.getPlayerById(playerId)
+            val user = usersRepo.getUserById(userId)
                 ?: return@run failure(LeaveLobbyError.NotInLobby)
 
-            if (player.lobbyId != lobbyId)
+            if (user.lobbyId != lobbyId)
                 return@run failure(LeaveLobbyError.NotInLobby)
 
             // Remove o jogador do lobby (define lobby_id = NULL)
-            playersRepo.updateLobbyIdForPlayer(playerId, null)
+            usersRepo.updateLobbyIdForUser(userId, null)
 
             success(Unit)
         }
@@ -107,18 +106,18 @@ class LobbiesService(
         description: String,
         isPrivate: Boolean,
         passwordValidationInfo: PasswordValidationInfo?,
-        minPlayers: Int,
-        maxPlayers: Int,
+        minUsers: Int,
+        maxUsers: Int,
         rounds: Int,
         minCreditToParticipate: Int
     ): CreateLobbyResult {
 
         return transactionManager.run {
             val lobbyRepo = it.lobbiesRepository
-            val playerRepo = it.playersRepository
+            val userRepo = it.usersRepository
 
             // Verificar se o host existe e buscar os seus créditos
-            val host = playerRepo.getPlayerById(hostId)
+            val host = userRepo.getUserById(hostId)
                 ?: return@run failure(CreateLobbyError.CouldNotCreateLobby)
 
             //  Verificar se o host já é dono de outro lobby
@@ -144,8 +143,8 @@ class LobbiesService(
                 description,
                 isPrivate,
                 passwordValidationInfo,
-                minPlayers,
-                maxPlayers,
+                minUsers,
+                maxUsers,
                 rounds,
                 minCreditToParticipate
             )
@@ -159,53 +158,53 @@ class LobbiesService(
 
 
     /** Entrar num lobby */
-    fun joinLobby(lobbyId: Int, playerId: Int): JoinLobbyResult =
+    fun joinLobby(lobbyId: Int, userId: Int): JoinLobbyResult =
         transactionManager.run {
             val lobbiesRepo = it.lobbiesRepository
-            val playersRepo = it.playersRepository
+            val usersRepo = it.usersRepository
 
             // Verificar se o lobby existe
             val lobby = lobbiesRepo.getById(lobbyId)
                 ?: return@run failure(JoinLobbyError.LobbyNotFound)
 
-            // Verificar se o player existe
-            val player = playersRepo.getPlayerById(playerId)
+            // Verificar se o user existe
+            val user = usersRepo.getUserById(userId)
                 ?: return@run failure(JoinLobbyError.LobbyNotFound)
 
-            // Verificar se o player já está num lobby
-            if (player.lobbyId != null)
+            // Verificar se o user já está num lobby
+            if (user.lobbyId != null)
                 return@run failure(JoinLobbyError.AlreadyInLobby)
 
             //  Verificar se o lobby está cheio
-            val currentPlayers = playersRepo.countPlayersInLobby(lobbyId)
-            if (currentPlayers >= lobby.maxPlayers) // o maior nunca vai acontecer mas por precausão
+            val currentUsers = usersRepo.countUsersInLobby(lobbyId)
+            if (currentUsers >= lobby.maxUsers) // o maior nunca vai acontecer mas por precausão
                 return@run failure(JoinLobbyError.LobbyFull)
 
             //  Verificar se o jogador tem créditos suficientes
-            if (player.credit < lobby.minCreditToParticipate)
+            if (user.credit < lobby.minCreditToParticipate)
                 return@run failure(JoinLobbyError.InsufficientCredits)
 
             // Adicionar jogador ao lobby
-            playersRepo.updateLobbyIdForPlayer(playerId, lobbyId)
+            usersRepo.updateLobbyIdForUser(userId, lobbyId)
 
             success(Unit)
         }
 
-    fun closeLobby(lobbyId: Int, playerId: Int): CloseLobbyResult =
+    fun closeLobby(lobbyId: Int, userId: Int): CloseLobbyResult =
         transactionManager.run {
             val lobbiesRepo = it.lobbiesRepository
-            val playersRepo = it.playersRepository
+            val usersRepo = it.usersRepository
 
             // Verificar se o lobby existe
             val lobby = lobbiesRepo.getById(lobbyId)
                 ?: return@run failure(CloseLobbyError.LobbyNotFound)
 
             // Verificar se o jogador é o host
-            if (lobby.hostId != playerId)
+            if (lobby.hostId != userId)
                 return@run failure(CloseLobbyError.NotHost)
 
             // Remover todos os jogadores associados ao lobby
-            playersRepo.clearLobbyForAllPlayers(lobbyId)
+            usersRepo.clearLobbyForAllUsers(lobbyId)
 
             // Eliminar o lobby da base de dados
             lobbiesRepo.deleteLobbyById(lobbyId)

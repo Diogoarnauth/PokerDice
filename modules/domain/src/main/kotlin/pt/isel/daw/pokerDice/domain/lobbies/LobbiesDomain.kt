@@ -2,7 +2,7 @@ package pt.isel.daw.pokerDice.domain.lobbies
 
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 
 @Component
 class LobbiesDomain(

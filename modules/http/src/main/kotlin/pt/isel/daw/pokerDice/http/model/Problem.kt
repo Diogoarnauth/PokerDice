@@ -21,13 +21,13 @@ class Problem(
             .body<Any>(problem)
 
 
-        //Player Related
-        val playerAlreadyInvited = Problem(URI("${BASE_URL}player-already-invited"))
+        //User Related
+        val userAlreadyInvited = Problem(URI("${BASE_URL}user-already-invited"))
         val dontHavePermission = Problem(URI("${BASE_URL}permission-denied"))
-        val playerNotFound = Problem(URI("${BASE_URL}player-not-found"))
-        val playerAlreadyExists = Problem(URI("${BASE_URL}player-already-exists"))
-        val playerOrPasswordAreInvalid = Problem(URI("${BASE_URL}player-or-password-are-invalid"))
-        val playerNotAuthorized = Problem(URI("${BASE_URL}player-not-authorized"))
+        val userNotFound = Problem(URI("${BASE_URL}user-not-found"))
+        val userAlreadyExists = Problem(URI("${BASE_URL}user-already-exists"))
+        val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid"))
+        val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized"))
 
 
         //Invitation Related
@@ -58,8 +58,8 @@ class Problem(
 
 
 
-        //val playerNotInvited = Problem(URI("${BASE_URL}player-not-invited"))
-        //val playerNotInLobby = Problem(URI("${BASE_URL}player-not-in-channel"))
+        //val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
+        //val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))
         //val noUpdateProvided = Problem(URI("${BASE_URL}no-update-provided"))
     }
 }

@@ -1,6 +1,6 @@
 package pt.isel.daw.pokerDice.http.model.LobbyModel
 
-import pt.isel.daw.pokerDice.domain.players.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 
 class LobbyCreateInputModel (
     val name: String,
@@ -8,8 +8,8 @@ class LobbyCreateInputModel (
     //val hostId: Int
     val isPrivate: Boolean,
     val passwordValidationInfo: PasswordValidationInfo?,
-    val minPlayers : Int,
-    val maxPlayers : Int,
+    val minUsers : Int,
+    val maxUsers : Int,
     val rounds : Int,
     val minCreditToParticipate: Int
 )

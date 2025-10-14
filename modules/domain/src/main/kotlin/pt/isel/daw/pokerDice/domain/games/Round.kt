@@ -1,11 +1,11 @@
 package pt.isel.daw.pokerDice.domain.games
 
 import kotlinx.datetime.Instant
-import pt.isel.daw.pokerDice.domain.players.Player
+import pt.isel.daw.pokerDice.domain.users.User
 
 class Round (
     val id: Int,
-    var winner: Player? = null,
+    var winner: User? = null,
     var bet: Int,
     var roundOver : Boolean = false,
     val timeToPlay : Int, //possivelmente depois alterar para estrutura de tempo
@@ -25,7 +25,7 @@ class Round (
         plays.add(play)
     }
 
-    fun defineWinner(winner : Player){
+    fun defineWinner(winner : User){
         this.winner = winner
     }
     fun defineBet(amount: Int){ //ns se precisamos

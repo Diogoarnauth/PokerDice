@@ -2,7 +2,7 @@ package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import pt.isel.daw.pokerDice.domain.players.AuthenticatedPlayer
+import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.*
 import pt.isel.daw.pokerDice.http.model.LobbyModel.LobbyCreateInputModel
 import pt.isel.daw.pokerDice.http.model.LobbyModel.LobbyGetByIdOutputModel
@@ -26,17 +26,17 @@ class LobbiesController(
     // POST /lobbies → cria lobby (auth requerido)
     @PostMapping(LobbyUris.Lobbies.CREATE)
     fun create(
-        authenticatedPlayer: AuthenticatedPlayer,
+        authenticatedUser: AuthenticatedUser,
         @RequestBody body: LobbyCreateInputModel
     ): ResponseEntity<*> {
         val res = lobbies.createLobby(
-            authenticatedPlayer.player.id,
+            authenticatedUser.user.id,
             body.name,
             body.description,
             body.isPrivate,
             body.passwordValidationInfo,
-            body.minPlayers,
-            body.maxPlayers,
+            body.minUsers,
+            body.maxUsers,
             body.rounds,
             body.minCreditToParticipate
         )
@@ -80,8 +80,8 @@ class LobbiesController(
                           description = lobby.description,
                           hostId = lobby.hostId,
                           isPrivate = lobby.isPrivate,
-                          minPlayers = lobby.minPlayers,
-                          maxPlayers = lobby.maxPlayers,
+                          minUsers = lobby.minUsers,
+                          maxUsers = lobby.maxUsers,
                           rounds = lobby.rounds,
                           minCreditToParticipate = lobby.minCreditToParticipate
                       )
@@ -102,16 +102,16 @@ class LobbiesController(
 
 
 
-          // POST /lobbies/{id}/players → entrar no lobby
+          // POST /lobbies/{id}/users → entrar no lobby
           @PostMapping(LobbyUris.Lobbies.JOIN)
           fun join(
-              authenticatedPlayer: AuthenticatedPlayer,
+              authenticatedUser: AuthenticatedUser,
               @PathVariable id: String
           ): ResponseEntity<*> {
               val lobbyId = id.toIntOrNull()
                   ?: return Problem.response(400, Problem.invalidRequestContent)
 
-              val res = lobbies.joinLobby(lobbyId, authenticatedPlayer.player.id)
+              val res = lobbies.joinLobby(lobbyId, authenticatedUser.user.id)
 
               return when (res) {
                   is Success -> ResponseEntity.noContent().build<Unit>()
@@ -128,16 +128,16 @@ class LobbiesController(
           }
 
 
-          // DELETE /lobbies/{id}/players/me → sair do lobby
+          // DELETE /lobbies/{id}/users/me → sair do lobby
           @DeleteMapping(LobbyUris.Lobbies.LEAVE_ME)
           fun leave(
-              authenticatedPlayer: AuthenticatedPlayer,
+              authenticatedUser: AuthenticatedUser,
               @PathVariable id: String
           ): ResponseEntity<*> {
               val lobbyId = id.toIntOrNull()
                   ?: return Problem.response(400, Problem.invalidRequestContent)
 
-              val res = lobbies.leaveLobby(lobbyId, authenticatedPlayer.player.id)
+              val res = lobbies.leaveLobby(lobbyId, authenticatedUser.user.id)
 
               return when (res) {
                   is Success -> ResponseEntity.noContent().build<Unit>()
@@ -154,13 +154,13 @@ class LobbiesController(
     // DELETE /lobbies/{id} → o host encerra o lobby completamente
     @DeleteMapping(LobbyUris.Lobbies.CLOSE)
     fun closeLobby(
-        authenticatedPlayer: AuthenticatedPlayer,
+        authenticatedUser: AuthenticatedUser,
         @PathVariable id: String
     ): ResponseEntity<*> {
         val lobbyId = id.toIntOrNull()
             ?: return Problem.response(400, Problem.invalidRequestContent)
 
-        val res = lobbies.closeLobby(lobbyId, authenticatedPlayer.player.id)
+        val res = lobbies.closeLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
             is Success -> ResponseEntity.noContent().build<Unit>()

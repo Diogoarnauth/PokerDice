@@ -10,7 +10,8 @@ class JdbiLobbyRepository(
     private val handle: Handle,
 ) : LobbiesRepository {
     override fun existsByHost(hostId: Int): Boolean =
-        handle.createQuery("SELECT COUNT(*) FROM Lobby WHERE host_id = :hostId")
+        handle
+            .createQuery("SELECT COUNT(*) FROM dbo.Lobby WHERE host_id = :hostId")
             .bind("hostId", hostId)
             .mapTo<Int>()
             .single() > 0
@@ -27,7 +28,7 @@ class JdbiLobbyRepository(
         minCreditToParticipate: Int,
     ): Int? {
         val sql = """
-        INSERT INTO Lobby (
+        INSERT INTO dbo.Lobby (
             name, 
             description, 
             host_id, 
@@ -51,7 +52,8 @@ class JdbiLobbyRepository(
         RETURNING id
     """
 
-        return handle.createUpdate(sql)
+        return handle
+            .createUpdate(sql)
             .bind("name", name)
             .bind("description", description)
             .bind("hostId", hostId)
@@ -67,7 +69,8 @@ class JdbiLobbyRepository(
     }
 
     override fun deleteLobbyById(lobbyId: Int) {
-        handle.createUpdate("DELETE FROM Lobby WHERE id = :id")
+        handle
+            .createUpdate("DELETE FROM dbo.Lobby WHERE id = :id")
             .bind("id", lobbyId)
             .execute()
     }
@@ -78,15 +81,16 @@ class JdbiLobbyRepository(
                    l.password_validation, l.min_players, l.max_players, 
                    l.rounds, l.min_credit_to_participate,
                    COUNT(p.id) AS current_players
-            FROM Lobby l
-            LEFT JOIN Player p ON l.id = p.lobby_id
+            FROM dbo.Lobby l
+            LEFT JOIN dbo.Users p ON l.id = p.lobby_id
             GROUP BY l.id, l.name, l.description, l.host_id, l.is_private, 
                      l.password_validation, l.min_players, l.max_players, 
                      l.rounds, l.min_credit_to_participate
             HAVING COUNT(p.id) < l.max_players
         """
 
-        return handle.createQuery(sql)
+        return handle
+            .createQuery(sql)
             .mapTo<LobbyRow>()
             .map { it.toLobby() }
             .list()
@@ -97,11 +101,12 @@ class JdbiLobbyRepository(
         SELECT l.id, l.name, l.description, l.host_id, l.is_private, 
                l.password_validation, l.min_players, l.max_players, 
                l.rounds, l.min_credit_to_participate
-        FROM Lobby l
+        FROM dbo.Lobby l
         WHERE l.id = :id
     """
 
-        return handle.createQuery(sql)
+        return handle
+            .createQuery(sql)
             .bind("id", id)
             .mapTo<LobbyRow>()
             .singleOrNull()

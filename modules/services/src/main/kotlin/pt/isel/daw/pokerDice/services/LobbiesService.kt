@@ -62,10 +62,8 @@ sealed class CloseLobbyError {
 @Service
 class LobbiesService(
     private val transactionManager: TransactionManager,
-    // erro
     private val lobbiesDomain: LobbiesDomain,
     private val clock: Clock,
-    // erro
 ) {
     /** Lista todos os lobbies visíveis (ainda não cheios) */
     fun getVisibleLobbies(): List<Lobby> =

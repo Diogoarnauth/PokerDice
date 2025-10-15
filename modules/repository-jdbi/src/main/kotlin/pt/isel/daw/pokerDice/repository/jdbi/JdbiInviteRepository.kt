@@ -12,7 +12,7 @@ class JdbiInviteRepository(
 ) : InviteRepository {
     override fun getAppInviteByValidationInfo(inviteValidationInfo: InviteValidationInfo): AppInvite? =
         handle
-            .createQuery("select * from app_invite where invitevalidationinfo = :inviteValidationInfo")
+            .createQuery("select * from dbo.app_invite where invitevalidationinfo = :inviteValidationInfo")
             .bind("inviteValidationInfo", inviteValidationInfo.validationInfo)
             .mapTo<AppInviteModel>()
             .singleOrNull()
@@ -23,7 +23,7 @@ class JdbiInviteRepository(
         state: String,
     ): Int =
         handle
-            .createUpdate("update app_invite set state = :state where id = :id")
+            .createUpdate("update dbo.app_invite set state = :state where id = :id")
             .bind("state", state)
             .bind("id", inviteId)
             .execute()
@@ -37,7 +37,7 @@ class JdbiInviteRepository(
 
         handle
             .createUpdate(
-                "insert into app_invite(inviterid, invitevalidationinfo, state, createdat) " +
+                "insert into dbo.app_invite(inviterid, invitevalidationinfo, state, createdat) " +
                     "values (:inviterId, :inviteValidationInfo, :state, :createdAt)",
             ).bind("inviterId", inviterId)
             .bind("inviteValidationInfo", inviteValidationInfo.validationInfo)

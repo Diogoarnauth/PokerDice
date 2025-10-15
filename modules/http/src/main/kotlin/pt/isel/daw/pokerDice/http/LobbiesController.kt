@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -34,7 +35,7 @@ class LobbiesController(
     // POST /lobbies → cria lobby (auth requerido)
     @PostMapping(LobbyUris.Lobbies.CREATE)
     fun create(
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @RequestBody body: LobbyCreateInputModel,
     ): ResponseEntity<*> {
         val res =
@@ -119,7 +120,7 @@ class LobbiesController(
     // POST /lobbies/{id}/users → entrar no lobby
     @PostMapping(LobbyUris.Lobbies.JOIN)
     fun join(
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val lobbyId =
@@ -148,7 +149,7 @@ class LobbiesController(
     // DELETE /lobbies/{id}/users/me → sair do lobby
     @DeleteMapping(LobbyUris.Lobbies.LEAVE_ME)
     fun leave(
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val lobbyId =
@@ -175,7 +176,7 @@ class LobbiesController(
     // DELETE /lobbies/{id} → o host encerra o lobby completamente
     @DeleteMapping(LobbyUris.Lobbies.CLOSE)
     fun closeLobby(
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable id: String,
     ): ResponseEntity<*> {
         val lobbyId =

@@ -132,7 +132,7 @@ class GameLogic(
             if (updatedPlayers.size == game.nrPlayers) {
                 // todos os jogadores estão prontos -> o jogo começa
                 game.copy(
-                    // n pode ter game.copy
+                    // n pode ter game.copy TODO(" ")
                     players = updatedPlayers,
                     state = Game.State.RUNNING,
                 )

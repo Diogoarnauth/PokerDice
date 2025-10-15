@@ -22,7 +22,7 @@ class JdbiGamesRepository(
         handle
             .createUpdate(
                 """
-                insert into games(
+                insert into dbo.game(
                     id, state, nr_players, min_credits,
                     players, rounds, scores,
                     current_player_index, last_roll, last_combination
@@ -49,7 +49,7 @@ class JdbiGamesRepository(
         handle
             .createQuery(
                 """
-                select * from games where id = :id
+                select * from dbo.game where id = :id
                 """.trimIndent(),
             ).bind("id", id)
             .mapTo<GameDbModel>()
@@ -60,7 +60,7 @@ class JdbiGamesRepository(
         handle
             .createUpdate(
                 """
-                update games set
+                update dbo.game set
                     state = :state,
                     players = :players,
                     rounds = :rounds,

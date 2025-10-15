@@ -19,14 +19,14 @@ class JdbiUsersRepository(
 
     override fun getUserByUsername(username: String): User? =
         handle
-            .createQuery("select * from User where username = :username")
+            .createQuery("select * from dbo.Users where username = :username")
             .bind("username", username)
             .mapTo<User>()
             .singleOrNull()
 
     override fun getUserById(id: Int): User? =
         handle
-            .createQuery("select * from User where id = :id")
+            .createQuery("select * from dbo.Users where id = :id")
             .bind("id", id)
             .mapTo<User>()
             .singleOrNull()
@@ -42,7 +42,7 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-            insert into "user" (username, name, age, password)
+            insert into dbo.Users (username, name, age, passwordvalidation)
             values (:username, :name, :age, :password)
             """,
             ).bind("username", username)
@@ -57,18 +57,18 @@ class JdbiUsersRepository(
         handle
             .createQuery(
                 """
-                select id,token, username, name, age, password, passwordValidation,tokenValidation ,createdAt,lastUsedAt, credit, winCounter from Token
-                join User on Token.userid = User.id
+                select id,token, username, name, age, passwordValidation,tokenValidation ,createdAt,lastUsedAt, credit, winCounter from Token
+                join dbo.users on dbo.token.userid = dbo.users.id
                 where tokenvalidation = :tokenValidation
                 """.trimIndent(),
             ).bind("tokenValidation", tokenValidationInfo.validationInfo)
             .mapTo<UserAndTokenModel>()
             .singleOrNull()
-            ?.userAndToken
+            ?.userAndToken // TODO ("CHECK THIS)
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
-            .createQuery("select count(*) from User where username = :username")
+            .createQuery("select count(*) from dbo.users where username = :username")
             .bind("username", username)
             .mapTo<Int>()
             .single() == 1
@@ -78,7 +78,7 @@ class JdbiUsersRepository(
         lobbyId: Int?,
     ) {
         handle
-            .createUpdate("UPDATE Player SET lobby_id = :lobbyId WHERE id = :playerId")
+            .createUpdate("UPDATE dbo.users SET lobby_id = :lobbyId WHERE id = :playerId")
             .bind("lobbyId", lobbyId)
             .bind("playerId", userId)
             .execute()
@@ -86,7 +86,7 @@ class JdbiUsersRepository(
 
     override fun countUsersInLobby(lobbyId: Int): Int =
         handle
-            .createQuery("SELECT COUNT(*) FROM User WHERE lobby_id = :lobbyId")
+            .createQuery("SELECT COUNT(*) FROM dbo.users WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .mapTo<Int>()
             .one()
@@ -99,10 +99,10 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-                delete from Token 
+                delete from dbo.Token 
                 where userId = :userId 
                     and tokenValidation in (
-                        select tokenValidation from Token where userId = :userId 
+                        select tokenValidation from dbo.Token where userId = :userId 
                             order by lastUsedAt desc offset :offset );
                 """.trimIndent(),
             ).bind("userId", token.userId)
@@ -112,7 +112,7 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-                insert into Token(userId, tokenValidation, createdAt, lastUsedAt) 
+                insert into dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
                 values (:userId, :tokenValidation, :createdAt, :lastUsedAt)
                 """.trimIndent(),
             ).bind("userId", token.userId)
@@ -129,7 +129,7 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-                update Token 
+                update dbo.Token 
                 set lastUsedAt = :lastUsedAt 
                 where userId = :userId and tokenValidation = :tokenValidation
                 """.trimIndent(),
@@ -141,7 +141,7 @@ class JdbiUsersRepository(
 
     override fun clearLobbyForAllUsers(lobbyId: Int) {
         handle
-            .createUpdate("UPDATE User SET lobby_id = NULL WHERE lobby_id = :lobbyId")
+            .createUpdate("UPDATE dbo.Users SET lobby_id = NULL WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .execute()
     }
@@ -152,7 +152,7 @@ class JdbiUsersRepository(
 
     override fun countUsers(): Int =
         handle
-            .createQuery("SELECT COUNT(*) FROM User")
+            .createQuery("SELECT COUNT(*) FROM dbo.users")
             .mapTo<Int>()
             .one()
 

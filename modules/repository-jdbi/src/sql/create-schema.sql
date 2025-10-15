@@ -3,7 +3,6 @@ CREATE SCHEMA IF NOT EXISTS dbo;
 -- Tabela Player
 CREATE TABLE dbo.Users (
                         id SERIAL PRIMARY KEY,
-                        token UUID NOT NULL,
                         username VARCHAR(50) UNIQUE NOT NULL,
                         passwordValidation VARCHAR(255) NOT NULL,
                         name VARCHAR(100) NOT NULL,

@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
+import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -73,6 +74,7 @@ class UserController(
 
     @PostMapping(UserUris.Users.TOKEN)
     fun token(
+        // working
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val res = userService.createToken(input.username, input.password)
@@ -100,6 +102,7 @@ class UserController(
 
     @GetMapping(UserUris.Users.GET_BY_ID)
     fun getById(
+        // WORKING TODO("VERIFICAR O PORQUE DE APARECER BODY")
         @PathVariable id: Int,
     ): ResponseEntity<*> {
         val res = userService.getById(id)
@@ -112,7 +115,6 @@ class UserController(
                     .body(
                         UserGetByIdOutputModel(
                             username = user.username,
-                            token = user.token,
                             name = user.name,
                         ),
                     )
@@ -127,8 +129,12 @@ class UserController(
     }
 
     @PostMapping(UserUris.Users.INVITE)
-    fun appInvite(AuthenticatedUser: AuthenticatedUser): ResponseEntity<*> {
-        val res = userService.createAppInvite(AuthenticatedUser.user.id)
+    fun appInvite(
+        @AuthenticationPrincipal
+        authenticatedUser: AuthenticatedUser,
+    ): ResponseEntity<*> {
+        println("User id: ${authenticatedUser.user.id}")
+        val res = userService.createAppInvite(authenticatedUser.user.id)
         return when (res) {
             is Success ->
                 ResponseEntity

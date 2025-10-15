@@ -65,6 +65,30 @@ class UsersService(
     private val inviteDomain: InviteDomain,
     private val clock: Clock,
 ) {
+    fun bootstrapFirstUser(
+        username: String,
+        name: String,
+        age: Int,
+        password: String,
+    ): Int =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
+            usersRepository.create(
+                username = username,
+                name = name,
+                age = age,
+                inviteCode = "BOOTSTRAP",
+                passwordValidationInfo = passwordValidationInfo,
+            )
+        }
+
+    fun hasAnyUser(): Boolean =
+        transactionManager.run {
+            val usersRepository = it.usersRepository
+            return@run usersRepository.countUsers() > 0
+        }
+
     fun createAppInvite(userId: Int): CreatingAppInviteResult =
         transactionManager.run {
             val inviteRepository = it.inviteRepository
@@ -167,13 +191,18 @@ class UsersService(
     }
 
     fun getUserByToken(token: String): User? {
+        println(" token: $token")
         if (!userDomain.canBeToken(token)) {
+            println("retornei null")
             return null
         }
         return transactionManager.run {
             val usersRepository = it.usersRepository
+            println(usersRepository)
             val tokenValidationInfo = userDomain.createTokenValidationInformation(token)
+            println("token validation info: $tokenValidationInfo")
             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
+            println("user and token: $userAndToken")
             if (userAndToken != null && userDomain.isTokenTimeValid(clock, userAndToken.second)) {
                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 userAndToken.first
@@ -182,31 +211,4 @@ class UsersService(
             }
         }
     }
-
-    fun hasAnyUser(): Boolean =
-        transactionManager.run {
-            val usersRepository = it.usersRepository
-            println("olaaaa plssss")
-            println(usersRepository.toString())
-            println("count: ${usersRepository.countUsers()}")
-            return@run usersRepository.countUsers() > 0
-        }
-
-    fun bootstrapFirstUser(
-        username: String,
-        name: String,
-        age: Int,
-        password: String,
-    ): Int =
-        transactionManager.run {
-            val usersRepository = it.usersRepository
-            val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
-            usersRepository.create(
-                username = username,
-                name = name,
-                age = age,
-                inviteCode = "BOOTSTRAP",
-                passwordValidationInfo = passwordValidationInfo,
-            )
-        }
 }

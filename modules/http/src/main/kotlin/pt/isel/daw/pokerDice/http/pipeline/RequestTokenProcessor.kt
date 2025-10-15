@@ -9,16 +9,23 @@ class RequestTokenProcessor(
     val playerService: UsersService,
 ) {
     fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
+        println("Authorization value: $authorizationValue")
         if (authorizationValue == null) {
             return null
         }
         val parts = authorizationValue.trim().split(" ")
         if (parts.size != 2) {
+            println("parts $parts")
             return null
         }
         if (parts[0].lowercase() != SCHEME) {
+            println("parts ${parts[0].lowercase()}")
+
             return null
         }
+
+        println("CORREU BEM")
+
         return playerService.getUserByToken(parts[1])?.let {
             AuthenticatedUser(
                 it,

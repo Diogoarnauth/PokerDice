@@ -57,14 +57,18 @@ class JdbiUsersRepository(
         handle
             .createQuery(
                 """
-                select id,token, username, name, age, passwordValidation,tokenValidation ,createdAt,lastUsedAt, credit, winCounter from Token
-                join dbo.users on dbo.token.userid = dbo.users.id
-                where tokenvalidation = :tokenValidation
-                """.trimIndent(),
+        SELECT 
+            u.id, u.username, u.name, u.age, u.passwordValidation, 
+            t.tokenValidation, t.createdAt, t.lastUsedAt, u.credit, u.winCounter
+        FROM dbo.Token t
+        JOIN dbo.Users u ON t.userId = u.id
+        WHERE t.tokenValidation = :tokenValidation
+    """,
             ).bind("tokenValidation", tokenValidationInfo.validationInfo)
             .mapTo<UserAndTokenModel>()
             .singleOrNull()
-            ?.userAndToken // TODO ("CHECK THIS)
+            ?.userAndToken
+    // TODO ("CHECK THIS)
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
@@ -173,7 +177,7 @@ class JdbiUsersRepository(
         val userAndToken: Pair<User, Token>
             get() =
                 Pair(
-                    User(id, token, username, passwordValidation, name, age, credit, winCounter),
+                    User(id, username, passwordValidation, name, age, credit, winCounter),
                     Token(
                         tokenValidation,
                         id,

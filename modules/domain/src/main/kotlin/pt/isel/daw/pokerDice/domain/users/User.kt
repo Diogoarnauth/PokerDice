@@ -1,10 +1,7 @@
 package pt.isel.daw.pokerDice.domain.users
 
-import java.util.UUID
-
 data class User(
     val id: Int,
-    val token: UUID = UUID.randomUUID(),
     val username: String,
     val passwordValidation: PasswordValidationInfo,
     // dúvidas, qual a diferença entre ambas

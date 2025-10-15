@@ -26,7 +26,9 @@ class AuthenticationInterceptor(
             val user =
                 authorizationHeaderProcessor
                     .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
+            println("ola estou aqui com erro no use $user")
             return if (user == null) {
+                println("VENHO DAQUI")
                 response.status = 401
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
                 false

@@ -1,7 +1,7 @@
 CREATE SCHEMA IF NOT EXISTS dbo;
 
 -- Tabela Player
-CREATE TABLE dbo.Users (
+CREATE TABLE dbo.users (
                         id SERIAL PRIMARY KEY,
                         username VARCHAR(50) UNIQUE NOT NULL,
                         passwordValidation VARCHAR(255) NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE dbo.Users (
 );
 
 -- Tabela Lobby
-CREATE TABLE dbo.Lobby (
+CREATE TABLE dbo.lobby (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     description TEXT,
@@ -26,27 +26,27 @@ CREATE TABLE dbo.Lobby (
     min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10)
 );
 
-ALTER TABLE dbo.Lobby
+ALTER TABLE dbo.lobby
     ADD COLUMN host_id INT,
-    ADD CONSTRAINT fk_host FOREIGN KEY (host_id) REFERENCES dbo.Users (id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_host FOREIGN KEY (host_id) REFERENCES dbo.users (id) ON DELETE CASCADE;
 
-ALTER TABLE dbo.Users
+ALTER TABLE dbo.users
     ADD COLUMN lobby_id INT,
     ADD CONSTRAINT fk_lobby FOREIGN KEY (lobby_id) REFERENCES dbo.Lobby(id) ON DELETE SET NULL;
 
 -- Tabela Game
-CREATE TABLE IF NOT EXISTS dbo.Game (
+CREATE TABLE IF NOT EXISTS dbo.game (
     id UUID PRIMARY KEY NOT NULL,
-    lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
+    lobby_id INT REFERENCES dbo.lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
     state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
     nrUsers INT NOT NULL,
     minCredits INT NOT NULL CHECK (minCredits >= 0)
 );
 -- Tabela Round
-CREATE TABLE IF NOT EXISTS dbo.Round (
+CREATE TABLE IF NOT EXISTS dbo.round (
     id SERIAL PRIMARY KEY,
-    game_id UUID REFERENCES dbo.Game(id) ON DELETE CASCADE,
-    winner INT REFERENCES dbo.Users(id) ON DELETE SET NULL,
+    game_id UUID REFERENCES dbo.game(id) ON DELETE CASCADE,
+    winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
     bet INT NOT NULL CHECK (bet >= 10),
     roundOver BOOLEAN DEFAULT FALSE,
     timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
@@ -65,5 +65,5 @@ create table IF NOT EXISTS dbo.token (
     createdAt bigint not null,
     lastUsedAt bigint not null,
     userId integer,
-    foreign key (userId) references dbo.Users(id) on delete cascade
+    foreign key (userId) references dbo.users(id) on delete cascade
 );

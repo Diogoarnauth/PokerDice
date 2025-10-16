@@ -15,14 +15,14 @@ class JdbiUsersRepository(
 ) : UsersRepository {
     override fun getUserByUsername(username: String): User? =
         handle
-            .createQuery("select * from dbo.Users where username = :username")
+            .createQuery("SELECT * FROM dbo.Users WHERE username = :username")
             .bind("username", username)
             .mapTo<User>()
             .singleOrNull()
 
     override fun getUserById(id: Int): User? =
         handle
-            .createQuery("select * from dbo.Users where id = :id")
+            .createQuery("SELECT * FROM dbo.Users WHERE id = :id")
             .bind("id", id)
             .mapTo<User>()
             .singleOrNull()
@@ -37,8 +37,8 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-            insert into dbo.Users (username, name, age, passwordvalidation)
-            values (:username, :name, :age, :password)
+            INSERT INTO dbo.Users (username, name, age, passwordvalidation)
+            VALUES (:username, :name, :age, :password)
             """,
             ).bind("username", username)
             .bind("name", name)
@@ -49,30 +49,28 @@ class JdbiUsersRepository(
             .one()
 
     override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
-        print(tokenValidationInfo.validationInfo)
         val response =
             handle
                 .createQuery(
                     """
-                SELECT 
-                    u.id,
-                    u.username,
-                    u.passwordValidation,
-                    u.name,
-                    u.age,
-                    u.credit,
-                    u.winCounter,
-                    t.tokenValidation,
-                    t.createdAt,
-                    t.lastUsedAt,
-                    t.userId 
-                FROM dbo.token t
-                JOIN dbo.users u ON t.userId = u.id
-                WHERE t.tokenValidation = :tokenValidation
-                """,
+            SELECT 
+                u.id,
+                u.username,
+                u.passwordValidation,
+                u.name,
+                u.age,
+                u.credit,
+                u.winCounter,
+                t.tokenValidation,
+                t.createdAt,
+                t.lastUsedAt,
+                t.userId 
+            FROM dbo.Token t
+            JOIN dbo.Users u ON t.userId = u.id
+            WHERE t.tokenValidation = :tokenValidation
+            """,
                 ).bind("tokenValidation", tokenValidationInfo.validationInfo)
                 .map { rs, _ ->
-                    println("Antes de construir user")
                     val user =
                         User(
                             id = rs.getInt("id"),
@@ -83,16 +81,14 @@ class JdbiUsersRepository(
                             credit = rs.getInt("credit"),
                             winCounter = rs.getInt("winCounter"),
                         )
-                    println("user: $user")
 
                     val token =
                         Token(
                             tokenValidationInfo = TokenValidationInfo(rs.getString("tokenValidation")),
-                            createdAt = Instant.ofEpochMilli(rs.getLong("createdAt")),
-                            lastUsedAt = Instant.ofEpochMilli(rs.getLong("lastUsedAt")),
+                            createdAt = rs.getTimestamp("createdAt").toInstant(),
+                            lastUsedAt = rs.getTimestamp("lastUsedAt").toInstant(),
                             userId = rs.getInt("userId"),
                         )
-                    println("token: $token")
 
                     Pair(user, token)
                 }.findOne()
@@ -103,17 +99,18 @@ class JdbiUsersRepository(
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
-            .createQuery("select count(*) from dbo.users where username = :username")
+            .createQuery("SELECT COUNT(*) FROM dbo.Users WHERE username = :username")
             .bind("username", username)
             .mapTo<Int>()
             .single() == 1
 
+    //
     override fun updateLobbyIdForUser(
         userId: Int,
         lobbyId: Int?,
     ) {
         handle
-            .createUpdate("UPDATE dbo.users SET lobby_id = :lobbyId WHERE id = :playerId")
+            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
             .bind("lobbyId", lobbyId)
             .bind("playerId", userId)
             .execute()
@@ -121,7 +118,7 @@ class JdbiUsersRepository(
 
     override fun countUsersInLobby(lobbyId: Int): Int =
         handle
-            .createQuery("SELECT COUNT(*) FROM dbo.users WHERE lobby_id = :lobbyId")
+            .createQuery("SELECT COUNT(*) FROM dbo.Users WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .mapTo<Int>()
             .one()
@@ -130,8 +127,7 @@ class JdbiUsersRepository(
         token: Token,
         maxTokens: Int,
     ) {
-        println("token ${token.createdAt}")
-
+        // Apagar tokens antigos se exceder maxTokens
         handle
             .createUpdate(
                 """
@@ -143,12 +139,13 @@ class JdbiUsersRepository(
                       WHERE userId = :userId 
                       ORDER BY lastUsedAt DESC 
                       OFFSET :offset
-                  );
+                  )
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
+        // Inserir novo token
         handle
             .createUpdate(
                 """
@@ -169,9 +166,9 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-                update dbo.Token 
-                set lastUsedAt = :lastUsedAt 
-                where userId = :userId and tokenValidation = :tokenValidation
+                UPDATE dbo.Token 
+                SET lastUsedAt = :lastUsedAt 
+                WHERE userId = :userId AND tokenValidation = :tokenValidation
                 """.trimIndent(),
             ).bind("lastUsedAt", Timestamp.from(now))
             .bind("userId", token.userId)
@@ -192,7 +189,7 @@ class JdbiUsersRepository(
 
     override fun countUsers(): Int =
         handle
-            .createQuery("SELECT COUNT(*) FROM dbo.users")
+            .createQuery("SELECT COUNT(*) FROM dbo.Users")
             .mapTo<Int>()
             .one()
 

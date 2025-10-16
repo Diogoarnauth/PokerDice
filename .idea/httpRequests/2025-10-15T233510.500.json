@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-10-15T22:35:09.932+00:00",
+  "status": 500,
+  "error": "Internal Server Error",
+  "path": "/api/invite"
+}

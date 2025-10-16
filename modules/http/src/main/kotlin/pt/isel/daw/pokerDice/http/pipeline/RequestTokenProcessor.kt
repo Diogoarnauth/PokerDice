@@ -15,16 +15,11 @@ class RequestTokenProcessor(
         }
         val parts = authorizationValue.trim().split(" ")
         if (parts.size != 2) {
-            println("parts $parts")
             return null
         }
         if (parts[0].lowercase() != SCHEME) {
-            println("parts ${parts[0].lowercase()}")
-
             return null
         }
-
-        println("CORREU BEM")
 
         return playerService.getUserByToken(parts[1])?.let {
             AuthenticatedUser(

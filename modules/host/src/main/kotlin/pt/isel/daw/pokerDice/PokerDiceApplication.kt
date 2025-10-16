@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice
 
+import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
 import org.slf4j.LoggerFactory
@@ -19,7 +20,6 @@ import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticatedUserArgumentResolver
 import pt.isel.daw.pokerDice.http.pipeline.AuthenticationInterceptor
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
-import java.time.Clock
 import kotlin.time.Duration.Companion.hours
 
 @SpringBootApplication
@@ -43,7 +43,7 @@ class PokerDiceApplication {
     fun passwordEncoder() = BCryptPasswordEncoder()
 
     @Bean
-    fun clock() = Clock.systemUTC()
+    fun clock() = Clock.System
 
     @Bean
     fun usersDomainConfig() =

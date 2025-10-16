@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/666832e2-d154-42d7-bde7-f5940bdbc491/console.sql" value="666832e2-d154-42d7-bde7-f5940bdbc491" />
     <file url="file://$PROJECT_DIR$/modules/repository-jdbi/src/main/kotlin/pt/isel/daw/pokerDice/repository/jdbi/JdbiUsersRepository.kt" value="666832e2-d154-42d7-bde7-f5940bdbc491" />
+    <file url="file://$PROJECT_DIR$/modules/repository-jdbi/src/sql/create-schema.sql" value="334920c1-3845-419d-b84e-723625c18eed" />
     <file url="file://$PROJECT_DIR$/modules/repository-jdbi/src/sql/insert-test-data.sql" value="666832e2-d154-42d7-bde7-f5940bdbc491" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/334920c1-3845-419d-b84e-723625c18eed/console.sql" value="334920c1-3845-419d-b84e-723625c18eed" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/334920c1-3845-419d-b84e-723625c18eed/console_1.sql" value="334920c1-3845-419d-b84e-723625c18eed" />
   </component>
 </project>

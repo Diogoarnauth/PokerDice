@@ -19,14 +19,14 @@ class JdbiUsersRepository(
 
     override fun getUserByUsername(username: String): User? =
         handle
-            .createQuery("select * from dbo.Users where username = :username")
+            .createQuery("SELECT * FROM dbo.users WHERE username = :username")
             .bind("username", username)
             .mapTo<User>()
             .singleOrNull()
 
     override fun getUserById(id: Int): User? =
         handle
-            .createQuery("select * from dbo.Users where id = :id")
+            .createQuery("SELECT * FROM dbo.Users WHERE id = :id")
             .bind("id", id)
             .mapTo<User>()
             .singleOrNull()
@@ -42,8 +42,8 @@ class JdbiUsersRepository(
         handle
             .createUpdate(
                 """
-            insert into dbo.Users (username, name, age, passwordvalidation)
-            values (:username, :name, :age, :password)
+            INSERT INTO dbo.Users (username, name, age, passwordvalidation)
+            VALUES (:username, :name, :age, :password)
             """,
             ).bind("username", username)
             .bind("name", name)
@@ -72,7 +72,7 @@ class JdbiUsersRepository(
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
-            .createQuery("select count(*) from dbo.users where username = :username")
+            .createQuery("SELECT COUNT(*) FROM dbo.Users WHERE username = :username")
             .bind("username", username)
             .mapTo<Int>()
             .single() == 1
@@ -82,7 +82,7 @@ class JdbiUsersRepository(
         lobbyId: Int?,
     ) {
         handle
-            .createUpdate("UPDATE dbo.users SET lobby_id = :lobbyId WHERE id = :playerId")
+            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
             .bind("lobbyId", lobbyId)
             .bind("playerId", userId)
             .execute()
@@ -90,7 +90,7 @@ class JdbiUsersRepository(
 
     override fun countUsersInLobby(lobbyId: Int): Int =
         handle
-            .createQuery("SELECT COUNT(*) FROM dbo.users WHERE lobby_id = :lobbyId")
+            .createQuery("SELECT COUNT(*) FROM dbo.Users WHERE lobby_id = :lobbyId")
             .bind("lobbyId", lobbyId)
             .mapTo<Int>()
             .one()
@@ -100,24 +100,30 @@ class JdbiUsersRepository(
         token: Token,
         maxTokens: Int,
     ) {
+        // Apagar tokens antigos se exceder maxTokens
         handle
             .createUpdate(
                 """
-                delete from dbo.Token 
-                where userId = :userId 
-                    and tokenValidation in (
-                        select tokenValidation from dbo.Token where userId = :userId 
-                            order by lastUsedAt desc offset :offset );
+                DELETE FROM dbo.Token 
+                WHERE userId = :userId 
+                  AND tokenValidation IN (
+                      SELECT tokenValidation 
+                      FROM dbo.Token 
+                      WHERE userId = :userId 
+                      ORDER BY lastUsedAt DESC 
+                      OFFSET :offset
+                  )
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
+        // Inserir novo token
         handle
             .createUpdate(
                 """
-                insert into dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
-                values (:userId, :tokenValidation, :createdAt, :lastUsedAt)
+                INSERT INTO dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
+                VALUES (:userId, :tokenValidation, :createdAt, :lastUsedAt)
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
@@ -164,11 +170,14 @@ class JdbiUsersRepository(
         val id: Int,
         val token: UUID,
         val username: String,
+        val passwordValidation: PasswordValidationInfo,
         val name: String,
         val age: Int,
         val passwordValidation: PasswordValidationInfo,
         // possivelmente retirar depois
         val tokenValidation: TokenValidationInfo,
+        var credit: Int,
+        val winCounter: Int,
         val createdAt: Long,
         val lastUsedAt: Long,
         var credit: Int,

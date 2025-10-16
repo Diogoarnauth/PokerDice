@@ -204,6 +204,7 @@ class UsersService(
             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
             println("user and token: $userAndToken")
             if (userAndToken != null && userDomain.isTokenTimeValid(clock, userAndToken.second)) {
+                println("dentro do 1º if")
                 usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 userAndToken.first
             } else {

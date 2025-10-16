@@ -1,4 +1,4 @@
-package pt.isel.daw.tictactoe
+package pt.isel.daw.pokerDice
 
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant

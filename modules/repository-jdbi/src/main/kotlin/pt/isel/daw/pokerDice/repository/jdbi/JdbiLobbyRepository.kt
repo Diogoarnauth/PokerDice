@@ -75,26 +75,53 @@ class JdbiLobbyRepository(
             .execute()
     }
 
-    override fun getLobbiesNotFull(): List<Lobby> {
-        val sql = """
-            SELECT l.id, l.name, l.description, l.host_id, l.is_private, 
-                   l.password_validation, l.min_players, l.max_players, 
-                   l.rounds, l.min_credit_to_participate,
-                   COUNT(p.id) AS current_players
+    override fun getLobbiesNotFull(): List<Lobby> =
+        handle
+            .createQuery(
+                """
+            SELECT 
+                l.id, 
+                l.name, 
+                l.description, 
+                l.is_private, 
+                l.password_validation, 
+                l.minPlayers, 
+                l.maxPlayers, 
+                l.rounds, 
+                l.min_credit_to_participate,
+                COUNT(p.id) AS current_players
             FROM dbo.Lobby l
             LEFT JOIN dbo.Users p ON l.id = p.lobby_id
-            GROUP BY l.id, l.name, l.description, l.host_id, l.is_private, 
-                     l.password_validation, l.min_players, l.max_players, 
-                     l.rounds, l.min_credit_to_participate
-            HAVING COUNT(p.id) < l.max_players
-        """
-
-        return handle
-            .createQuery(sql)
-            .mapTo<LobbyRow>()
-            .map { it.toLobby() }
-            .list()
-    }
+            GROUP BY 
+                l.id, 
+                l.name, 
+                l.description, 
+                l.is_private, 
+                l.password_validation, 
+                l.minPlayers, 
+                l.maxPlayers, 
+                l.rounds, 
+                l.min_credit_to_participate
+            HAVING COUNT(p.id) < l.maxPlayers
+            """,
+            ).map { rs, _ ->
+                Lobby(
+                    id = rs.getInt("id"),
+                    name = rs.getString("name"),
+                    description = rs.getString("description"),
+                    hostId = 0, // não existe host_id na tabela atual
+                    isPrivate = rs.getBoolean("is_private"),
+                    passwordValidationInfo =
+                        rs
+                            .getString("password_validation")
+                            ?.let { PasswordValidationInfo(it) },
+                    minUsers = rs.getInt("minPlayers"),
+                    maxUsers = rs.getInt("maxPlayers"),
+                    rounds = rs.getInt("rounds"),
+                    minCreditToParticipate = rs.getInt("min_credit_to_participate"),
+                    isRunning = false, // valor default
+                )
+            }.list()
 
     override fun getById(id: Int): Lobby? {
         val sql = """

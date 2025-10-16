@@ -1,8 +1,8 @@
 package pt.isel.daw.pokerDice.repository
 
+import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.invite.AppInvite
 import pt.isel.daw.pokerDice.domain.invite.InviteValidationInfo
-import java.time.Instant
 
 interface InviteRepository {
     fun getAppInviteByValidationInfo(inviteValidationInfo: InviteValidationInfo): AppInvite?

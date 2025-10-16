@@ -1,10 +1,10 @@
 package pt.isel.daw.pokerDice.repository
 
+import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
-import java.time.Instant
 
 // mudar depois
 

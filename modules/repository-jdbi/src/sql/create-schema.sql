@@ -32,12 +32,12 @@ ALTER TABLE dbo.lobby
 
 ALTER TABLE dbo.users
     ADD COLUMN lobby_id INT,
-    ADD CONSTRAINT fk_lobby FOREIGN KEY (lobby_id) REFERENCES dbo.Lobby(id) ON DELETE SET NULL;
+    ADD CONSTRAINT fk_lobby FOREIGN KEY (lobby_id) REFERENCES dbo.lobby(id) ON DELETE SET NULL;
 
 -- Tabela Game
 CREATE TABLE IF NOT EXISTS dbo.game (
     id UUID PRIMARY KEY NOT NULL,
-    lobby_id INT REFERENCES dbo.lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
+    lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
     state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
     nrUsers INT NOT NULL,
     minCredits INT NOT NULL CHECK (minCredits >= 0)

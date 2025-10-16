@@ -1,8 +1,8 @@
 package pt.isel.daw.pokerDice.domain.games
 
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.users.User
-import java.time.Clock
-import java.time.Instant
 import java.util.UUID
 import kotlin.time.Duration
 
@@ -176,7 +176,7 @@ class GameLogic(
         }
 
         // 4. Preparar dados de timestamp
-        val now = Instant.now(clock)
+        val now = clock.now()
         val diceRolls = List(5) { Dice.random() }
 
         // 5. Determinar a combinação e pontuação
@@ -208,7 +208,7 @@ class GameLogic(
                 playerId = player.id,
                 dice = diceRolls,
                 score = score,
-                timestamp = Instant.now(clock),
+                timestamp = now,
             )
         currentRound.addPlay(play)
 

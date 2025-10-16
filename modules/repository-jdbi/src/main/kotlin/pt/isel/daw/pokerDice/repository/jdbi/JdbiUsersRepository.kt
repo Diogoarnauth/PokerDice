@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.repository.jdbi
 
+import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
@@ -7,15 +8,17 @@ import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.UsersRepository
-import java.sql.Timestamp
-import java.time.Instant
 
 class JdbiUsersRepository(
     private val handle: Handle,
 ) : UsersRepository {
+    /* override fun storeUser(username: String, passwordValidation: PasswordValidationInfo): Int {
+        TODO("Not yet implemented")
+    }*/
+
     override fun getUserByUsername(username: String): User? =
         handle
-            .createQuery("SELECT * FROM dbo.Users WHERE username = :username")
+            .createQuery("SELECT * FROM dbo.users WHERE username = :username")
             .bind("username", username)
             .mapTo<User>()
             .singleOrNull()
@@ -28,6 +31,7 @@ class JdbiUsersRepository(
             .singleOrNull()
 
     override fun create(
+        // testar e saber se apenas temos de retornar o id... quanto ao token??
         username: String,
         name: String,
         age: Int,
@@ -48,11 +52,10 @@ class JdbiUsersRepository(
             .mapTo(Int::class.java)
             .one()
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
-        val response =
-            handle
-                .createQuery(
-                    """
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
+        handle
+            .createQuery(
+                """
             SELECT 
                 u.id,
                 u.username,
@@ -69,8 +72,20 @@ class JdbiUsersRepository(
             JOIN dbo.Users u ON t.userId = u.id
             WHERE t.tokenValidation = :tokenValidation
             """,
-                ).bind("tokenValidation", tokenValidationInfo.validationInfo)
-                .map { rs, _ ->
+            ).bind("tokenValidation", tokenValidationInfo.validationInfo)
+            .map { rs, _ ->
+                UserAndTokenModel(
+                    id = rs.getInt("id"),
+                    username = rs.getString("username"),
+                    passwordValidation = PasswordValidationInfo(rs.getString("passwordValidation")),
+                    name = rs.getString("name"),
+                    age = rs.getInt("age"),
+                    credit = rs.getInt("credit"),
+                    winCounter = rs.getInt("winCounter"),
+                    tokenValidation = TokenValidationInfo(rs.getString("tokenValidation")),
+                    createdAt = rs.getLong("createdAt"),
+                    lastUsedAt = rs.getLong("lastUsedAt"),
+                    /*
                     val user =
                         User(
                             id = rs.getInt("id"),
@@ -88,14 +103,10 @@ class JdbiUsersRepository(
                             createdAt = rs.getTimestamp("createdAt").toInstant(),
                             lastUsedAt = rs.getTimestamp("lastUsedAt").toInstant(),
                             userId = rs.getInt("userId"),
-                        )
-
-                    Pair(user, token)
-                }.findOne()
-                .orElse(null)
-
-        return response
-    }
+                        )*/
+                )
+            }.singleOrNull()
+            ?.userAndToken
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
@@ -104,7 +115,6 @@ class JdbiUsersRepository(
             .mapTo<Int>()
             .single() == 1
 
-    //
     override fun updateLobbyIdForUser(
         userId: Int,
         lobbyId: Int?,
@@ -124,6 +134,7 @@ class JdbiUsersRepository(
             .one()
 
     override fun createToken(
+        // testar, perceber se percebe quando o maxtokens foi atingido
         token: Token,
         maxTokens: Int,
     ) {
@@ -154,8 +165,8 @@ class JdbiUsersRepository(
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
-            .bind("createdAt", Timestamp.from(token.createdAt))
-            .bind("lastUsedAt", Timestamp.from(token.lastUsedAt))
+            .bind("createdAt", token.createdAt.epochSeconds)
+            .bind("lastUsedAt", token.lastUsedAt.epochSeconds)
             .execute()
     }
 
@@ -170,7 +181,7 @@ class JdbiUsersRepository(
                 SET lastUsedAt = :lastUsedAt 
                 WHERE userId = :userId AND tokenValidation = :tokenValidation
                 """.trimIndent(),
-            ).bind("lastUsedAt", Timestamp.from(now))
+            ).bind("lastUsedAt", now.epochSeconds)
             .bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .execute()
@@ -212,8 +223,8 @@ class JdbiUsersRepository(
                     Token(
                         tokenValidation,
                         id,
-                        Instant.ofEpochSecond(createdAt),
-                        Instant.ofEpochSecond(lastUsedAt),
+                        Instant.fromEpochSeconds(createdAt),
+                        Instant.fromEpochSeconds(lastUsedAt),
                     ),
                 )
     }

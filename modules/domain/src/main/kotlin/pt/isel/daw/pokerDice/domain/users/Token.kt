@@ -1,5 +1,5 @@
 package pt.isel.daw.pokerDice.domain.users
-import java.time.Instant
+import kotlinx.datetime.Instant
 
 class Token(
     val tokenValidationInfo: TokenValidationInfo,

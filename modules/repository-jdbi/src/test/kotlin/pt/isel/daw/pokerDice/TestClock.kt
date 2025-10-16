@@ -1,27 +1,16 @@
 package pt.isel.daw.pokerDice
 
-import java.time.Clock
-import java.time.Duration
-import java.time.Instant
-import java.time.ZoneId
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
+import kotlin.time.Duration
 
-class TestClock(
-    initialInstant: Instant = Instant.ofEpochSecond(0),
-) : Clock() {
-    // Relógio interno
-    private var testNow: Instant = initialInstant
+class TestClock : Clock {
+    // Initialized this way to reduce precision to seconds
+    private var testNow: Instant = Instant.fromEpochSeconds(Clock.System.now().epochSeconds)
 
-    /** Avança o relógio em uma duração */
     fun advance(duration: Duration) {
         testNow = testNow.plus(duration)
     }
 
-    /** Retorna o instante atual do relógio */
-    override fun instant(): Instant = testNow
-
-    /** Retorna o fuso horário do relógio */
-    override fun getZone(): ZoneId = ZoneId.systemDefault()
-
-    /** Retorna um relógio com o fuso horário especificado */
-    override fun withZone(zone: ZoneId): Clock = this
+    override fun now() = testNow
 }

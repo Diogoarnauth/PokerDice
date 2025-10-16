@@ -1,6 +1,8 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
+import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.invite.InviteDomain
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.User
@@ -9,8 +11,6 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
-import java.time.Clock
-import java.time.Instant
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -95,7 +95,7 @@ class UsersService(
             val newInvite = inviteDomain.generateInviteValue()
             val inviteValidationInfo = inviteDomain.createInviteValidationInformation(newInvite)
             val state = inviteDomain.validState
-            val now = Instant.now(clock)
+            val now = clock.now()
             val invite = inviteRepository.createAppInvite(userId, inviteValidationInfo, state, now)
             if (invite == null) {
                 failure(CreatingAppInviteError.CreatingInviteError)
@@ -160,9 +160,7 @@ class UsersService(
                 }
             }
             val tokenValue = userDomain.generateTokenValue()
-            val now = Instant.now(clock)
-            println("Dentro do services")
-            println("now: $now")
+            val now = clock.now()
             val newToken =
                 Token(
                     userDomain.createTokenValidationInformation(tokenValue),
@@ -193,6 +191,7 @@ class UsersService(
     }
 
     fun getUserByToken(token: String): User? {
+        println(" token: $token")
         if (!userDomain.canBeToken(token)) {
             println("retornei null")
             return null
@@ -206,7 +205,7 @@ class UsersService(
             println("user and token: $userAndToken")
             if (userAndToken != null && userDomain.isTokenTimeValid(clock, userAndToken.second)) {
                 println("dentro do 1º if")
-                usersRepository.updateTokenLastUsed(userAndToken.second, Instant.now(clock))
+                usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
                 userAndToken.first
             } else {
                 null

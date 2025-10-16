@@ -4,7 +4,11 @@ import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import java.util.Base64
+import kotlin.time.toJavaDuration
 
 @Component
 class InviteDomain(
@@ -31,7 +35,7 @@ class InviteDomain(
         createdAt: Instant,
         clock: Clock,
     ): Boolean {
-        val now = clock.now()
-        return (now - createdAt) <= expireInviteTime
+        val now = Instant.now(clock)
+        return Duration.between(createdAt, now) <= expireInviteTime.toJavaDuration()
     }
 }

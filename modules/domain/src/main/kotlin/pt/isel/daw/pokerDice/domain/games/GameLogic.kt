@@ -176,7 +176,7 @@ class GameLogic(
         }
 
         // 4. Preparar dados de timestamp
-        val now = clock.now()
+        val now = Instant.now(clock)
         val diceRolls = List(5) { Dice.random() }
 
         // 5. Determinar a combinação e pontuação

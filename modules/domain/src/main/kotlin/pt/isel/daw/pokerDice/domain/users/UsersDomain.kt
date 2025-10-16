@@ -5,7 +5,11 @@ import kotlinx.datetime.Instant
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
+import java.time.Clock
+import java.time.Duration
+import java.time.Instant
 import java.util.Base64
+import kotlin.time.toJavaDuration
 
 @Component
 class UsersDomain(
@@ -46,15 +50,25 @@ class UsersDomain(
         clock: Clock,
         token: Token,
     ): Boolean {
-        val now = clock.now()
-        return token.createdAt <= now &&
-            (now - token.createdAt) <= config.tokenTtl &&
-            (now - token.lastUsedAt) <= config.tokenRollingTtl
+        val now = Instant.now(clock)
+        println("isTokenValid")
+        println("createdAt = ${token.createdAt}")
+        println("lastUsedAt = ${token.lastUsedAt}")
+        println("tokenTtl = ${config.tokenTtl}")
+        println("tokenRollingTtl = ${config.tokenRollingTtl}")
+
+        val response =
+            token.createdAt <= now &&
+                Duration.between(token.createdAt, now) <= config.tokenTtl.toJavaDuration() &&
+                Duration.between(token.lastUsedAt, now) <= config.tokenRollingTtl.toJavaDuration()
+
+        println("response: $response")
+        return response
     }
 
     fun getTokenExpiration(token: Token): Instant {
-        val absoluteExpiration = token.createdAt + config.tokenTtl
-        val rollingExpiration = token.lastUsedAt + config.tokenRollingTtl
+        val absoluteExpiration = token.createdAt.plus(config.tokenTtl.toJavaDuration())
+        val rollingExpiration = token.lastUsedAt.plus(config.tokenRollingTtl.toJavaDuration())
         return if (absoluteExpiration < rollingExpiration) {
             absoluteExpiration
         } else {
@@ -64,7 +78,6 @@ class UsersDomain(
 
     fun createTokenValidationInformation(token: String): TokenValidationInfo = tokenEncoder.createValidationInformation(token)
 
-    // TODO it could be better
     fun isSafePassword(password: String) = password.length > 4
 
     val maxNumberOfTokensPerUser = config.maxTokensPerUser

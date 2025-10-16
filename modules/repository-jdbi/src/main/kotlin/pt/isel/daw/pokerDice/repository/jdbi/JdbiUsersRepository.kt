@@ -1,14 +1,14 @@
 package pt.isel.daw.pokerDice.repository.jdbi
 
-import kotlinx.datetime.Instant
 import org.jdbi.v3.core.Handle
+import org.jdbi.v3.core.Sql
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.UsersRepository
-import java.util.UUID
+import java.time.Instant
 
 class JdbiUsersRepository(
     private val handle: Handle,
@@ -53,22 +53,66 @@ class JdbiUsersRepository(
             .mapTo(Int::class.java)
             .one()
 
-    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? =
-        handle
-            .createQuery(
-                """
+    override fun getTokenByTokenValidationInfo(tokenValidationInfo: TokenValidationInfo): Pair<User, Token>? {
+        print(tokenValidationInfo.validationInfo)
+        val response =
+            handle
+                .createQuery(
+                    """
         SELECT 
-            u.id, u.username, u.name, u.age, u.passwordValidation, 
-            t.tokenValidation, t.createdAt, t.lastUsedAt, u.credit, u.winCounter
-        FROM dbo.Token t
-        JOIN dbo.Users u ON t.userId = u.id
+            u.id,
+            u.username,
+            u.passwordValidation,
+            u.name,
+            u.age,
+            u.credit,
+            u.winCounter,
+            t.tokenValidation,
+            t.createdAt,
+            t.lastUsedAt,
+            t.userId 
+        FROM dbo.token t
+        JOIN dbo.users u ON t.userId = u.id
         WHERE t.tokenValidation = :tokenValidation
-    """,
-            ).bind("tokenValidation", tokenValidationInfo.validationInfo)
-            .mapTo<UserAndTokenModel>()
-            .singleOrNull()
-            ?.userAndToken
-    // TODO ("CHECK THIS)
+        """,
+                ).bind("tokenValidation", tokenValidationInfo.validationInfo)
+                .map { rs, _ ->
+                    print("Antes de construir user")
+                    // Construir User
+                    val user =
+                        User(
+                            id = rs.getInt("id"),
+                            username = rs.getString("username"),
+                            passwordValidation = PasswordValidationInfo(rs.getString("passwordValidation")),
+                            name = rs.getString("name"),
+                            age = rs.getInt("age"),
+                            credit = rs.getInt("credit"),
+                            winCounter = rs.getInt("winCounter"),
+                        )
+                    print("user: $user")
+
+                    // Construir Token
+                    val token =
+                        Token(
+                            tokenValidationInfo = TokenValidationInfo(rs.getString("tokenValidation")),
+                            createdAt =
+                                java.sql.Timestamp
+                                    .from(rs.getTimestamp("createdAt").toInstant())
+                                    .toInstant(),
+                            lastUsedAt =
+                                java.sql.Timestamp
+                                    .from(rs.getTimestamp("lastUsedAt").toInstant())
+                                    .toInstant(),
+                            userId = rs.getInt("userId"),
+                        )
+                    print("token: $token")
+
+                    Pair(user, token)
+                }.findOne()
+                .orElse(null)
+
+        return response
+    }
 
     override fun isUserStoredByUsername(username: String): Boolean =
         handle
@@ -96,33 +140,40 @@ class JdbiUsersRepository(
             .one()
 
     override fun createToken(
-        // testar, perceber se percebe quando o maxtokens foi atingido
         token: Token,
         maxTokens: Int,
     ) {
+        println("token ${token.createdAt}")
+
+        // Apagar tokens antigos se exceder maxTokens
         handle
             .createUpdate(
                 """
-                delete from dbo.Token 
-                where userId = :userId 
-                    and tokenValidation in (
-                        select tokenValidation from dbo.Token where userId = :userId 
-                            order by lastUsedAt desc offset :offset );
+                DELETE FROM dbo.Token 
+                WHERE userId = :userId 
+                  AND tokenValidation IN (
+                      SELECT tokenValidation 
+                      FROM dbo.Token 
+                      WHERE userId = :userId 
+                      ORDER BY lastUsedAt DESC 
+                      OFFSET :offset
+                  );
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("offset", maxTokens - 1)
             .execute()
 
+        // Inserir novo token com java.sql.Timestamp
         handle
             .createUpdate(
                 """
-                insert into dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
-                values (:userId, :tokenValidation, :createdAt, :lastUsedAt)
+                INSERT INTO dbo.Token(userId, tokenValidation, createdAt, lastUsedAt) 
+                VALUES (:userId, :tokenValidation, :createdAt, :lastUsedAt)
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
-            .bind("createdAt", token.createdAt.epochSeconds)
-            .bind("lastUsedAt", token.lastUsedAt.epochSeconds)
+            .bind("createdAt", java.sql.Timestamp.from(token.createdAt))
+            .bind("lastUsedAt", java.sql.Timestamp.from(token.lastUsedAt))
             .execute()
     }
 
@@ -162,17 +213,15 @@ class JdbiUsersRepository(
 
     private data class UserAndTokenModel(
         val id: Int,
-        val token: UUID,
         val username: String,
+        val passwordValidation: PasswordValidationInfo,
         val name: String,
         val age: Int,
-        val passwordValidation: PasswordValidationInfo,
-        // possivelmente retirar depois
         val tokenValidation: TokenValidationInfo,
+        var credit: Int,
+        val winCounter: Int,
         val createdAt: Long,
         val lastUsedAt: Long,
-        var credit: Int,
-        var winCounter: Int,
     ) {
         val userAndToken: Pair<User, Token>
             get() =

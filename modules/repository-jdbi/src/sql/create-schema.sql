@@ -52,15 +52,15 @@ CREATE TABLE IF NOT EXISTS dbo.Round (
     timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
 );
 
-create table IF NOT EXISTS dbo.APP_INVITE(
+create table IF NOT EXISTS dbo.app_invite(
     id serial primary key,
-    inviterId integer references dbo.Users(id),
+    inviterId integer references dbo.users(id),
     inviteValidationInfo varchar(255) unique not null,
     state varchar(20) not null CHECK (state IN ('pending', 'used', 'expired')),
     createdAt bigint not null
 );
 
-create table IF NOT EXISTS dbo.TOKEN (
+create table IF NOT EXISTS dbo.token (
     tokenValidation varchar(255) primary key ,
     createdAt bigint not null,
     lastUsedAt bigint not null,

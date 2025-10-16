@@ -11,6 +11,8 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import java.time.Clock
+import java.time.Instant
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -95,7 +97,7 @@ class UsersService(
             val newInvite = inviteDomain.generateInviteValue()
             val inviteValidationInfo = inviteDomain.createInviteValidationInformation(newInvite)
             val state = inviteDomain.validState
-            val now = clock.now()
+            val now = Instant.now(clock)
             val invite = inviteRepository.createAppInvite(userId, inviteValidationInfo, state, now)
             if (invite == null) {
                 failure(CreatingAppInviteError.CreatingInviteError)
@@ -160,7 +162,9 @@ class UsersService(
                 }
             }
             val tokenValue = userDomain.generateTokenValue()
-            val now = clock.now()
+            val now = Instant.now(clock)
+            println("Dentro do services")
+            println("now: $now")
             val newToken =
                 Token(
                     userDomain.createTokenValidationInformation(tokenValue),
@@ -191,7 +195,6 @@ class UsersService(
     }
 
     fun getUserByToken(token: String): User? {
-        println(" token: $token")
         if (!userDomain.canBeToken(token)) {
             println("retornei null")
             return null
@@ -204,7 +207,8 @@ class UsersService(
             val userAndToken = usersRepository.getTokenByTokenValidationInfo(tokenValidationInfo)
             println("user and token: $userAndToken")
             if (userAndToken != null && userDomain.isTokenTimeValid(clock, userAndToken.second)) {
-                usersRepository.updateTokenLastUsed(userAndToken.second, clock.now())
+                println("dentro do 1º if")
+                usersRepository.updateTokenLastUsed(userAndToken.second, Instant.now(clock))
                 userAndToken.first
             } else {
                 null

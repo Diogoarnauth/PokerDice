@@ -1,4 +1,5 @@
 package pt.isel.daw.pokerDice.domain.users
+
 import kotlin.time.Duration
 
 data class UsersDomainConfig(

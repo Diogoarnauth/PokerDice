@@ -12,10 +12,12 @@ import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.http.model.Problem
 import pt.isel.daw.pokerDice.http.model.inviteModel.InviteAppOutputModel
 import pt.isel.daw.pokerDice.http.model.userModel.BootstrapRegisterInputModel
+import pt.isel.daw.pokerDice.http.model.userModel.DepositInputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserCreateInputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserCreateTokenInputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserGetByIdOutputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserTokenCreateOutputModel
+import pt.isel.daw.pokerDice.services.DepositError
 import pt.isel.daw.pokerDice.services.TokenCreationError
 import pt.isel.daw.pokerDice.services.UserGetByIdError
 import pt.isel.daw.pokerDice.services.UserRegisterError
@@ -36,6 +38,25 @@ class UserController(
         }
         val id = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
         return ResponseEntity.ok(id)
+    }
+
+    @PostMapping("/deposit")
+    fun deposit(
+        @RequestBody input: DepositInputModel,
+        @AuthenticationPrincipal
+        authenticatedUser: AuthenticatedUser,
+    ): ResponseEntity<*> {
+        val res = userService.deposit(input.value, authenticatedUser.user)
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok("Deposit successful. New balance: $res")
+
+            is Failure ->
+                when (res.value) {
+                    DepositError.InvalidAmount ->
+                        Problem.response(404, Problem.userNotFound)
+                }
+        }
     }
 
     @PostMapping(UserUris.Users.CREATE)
@@ -60,15 +81,7 @@ class UserController(
                     UserRegisterError.InvitationDontExist -> Problem.response(400, Problem.invitationDontExist)
                     UserRegisterError.InvitationUsed -> Problem.response(400, Problem.invitationUsed)
                     UserRegisterError.InvitationExpired -> Problem.response(400, Problem.invitationExpired)
-
-                    else -> {
-                        TODO()
-                    } // dúvidas
                 }
-
-            else -> {
-                TODO()
-            } // dúvidas
         }
     }
 
@@ -88,21 +101,12 @@ class UserController(
                 when (res.value) {
                     TokenCreationError.UserOrPasswordAreInvalid ->
                         Problem.response(400, Problem.userOrPasswordAreInvalid)
-
-                    else -> {
-                        TODO()
-                    }
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
     @GetMapping(UserUris.Users.GET_BY_ID)
     fun getById(
-        // WORKING TODO("VERIFICAR O PORQUE DE APARECER BODY")
         @PathVariable id: Int,
     ): ResponseEntity<*> {
         val res = userService.getById(id)
@@ -133,7 +137,6 @@ class UserController(
         @AuthenticationPrincipal
         authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<*> {
-        println("User id: ${authenticatedUser.user.id}")
         val res = userService.createAppInvite(authenticatedUser.user.id)
         return when (res) {
             is Success ->

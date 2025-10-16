@@ -27,6 +27,7 @@ class Problem(
         val userAlreadyExists = Problem(URI("${BASE_URL}user-already-exists"))
         val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid"))
         val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized"))
+        val badDeposit = Problem(URI("${BASE_URL}bad-deposit"))
 
         // Invitation Related
         val invitationDontExist = Problem(URI("${BASE_URL}invite-dont-exist"))

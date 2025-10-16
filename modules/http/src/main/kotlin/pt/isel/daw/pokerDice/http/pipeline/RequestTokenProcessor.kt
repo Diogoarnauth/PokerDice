@@ -9,7 +9,6 @@ class RequestTokenProcessor(
     val playerService: UsersService,
 ) {
     fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
-        println("Authorization value: $authorizationValue")
         if (authorizationValue == null) {
             return null
         }

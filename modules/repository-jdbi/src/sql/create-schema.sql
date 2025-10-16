@@ -18,8 +18,6 @@ CREATE TABLE dbo.lobby (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     --host_id INT NOT NULL REFERENCES Player(id) ON DELETE CASCADE,
-    is_private BOOLEAN NOT NULL DEFAULT FALSE,
-    password_validation VARCHAR(255),
     minPlayers INT NOT NULL CHECK (minPlayers >= 2),
     maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
     rounds INT NOT NULL CHECK (rounds > 0),
@@ -52,7 +50,7 @@ CREATE TABLE IF NOT EXISTS dbo.round (
     timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
 );
 
-create table IF NOT EXISTS dbo.app_invite(
+CREATE TABLE IF NOT EXISTS dbo.app_invite(
     id serial primary key,
     inviterId integer references dbo.users(id),
     inviteValidationInfo varchar(255) unique not null,
@@ -60,7 +58,7 @@ create table IF NOT EXISTS dbo.app_invite(
     createdAt bigint not null
 );
 
-create table IF NOT EXISTS dbo.token (
+CREATE TABLE IF NOT EXISTS dbo.token (
     tokenValidation varchar(255) primary key ,
     createdAt bigint not null,
     lastUsedAt bigint not null,

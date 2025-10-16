@@ -85,25 +85,6 @@ class JdbiUsersRepository(
                     tokenValidation = TokenValidationInfo(rs.getString("tokenValidation")),
                     createdAt = rs.getLong("createdAt"),
                     lastUsedAt = rs.getLong("lastUsedAt"),
-                    /*
-                    val user =
-                        User(
-                            id = rs.getInt("id"),
-                            username = rs.getString("username"),
-                            passwordValidation = PasswordValidationInfo(rs.getString("passwordValidation")),
-                            name = rs.getString("name"),
-                            age = rs.getInt("age"),
-                            credit = rs.getInt("credit"),
-                            winCounter = rs.getInt("winCounter"),
-                        )
-
-                    val token =
-                        Token(
-                            tokenValidationInfo = TokenValidationInfo(rs.getString("tokenValidation")),
-                            createdAt = rs.getTimestamp("createdAt").toInstant(),
-                            lastUsedAt = rs.getTimestamp("lastUsedAt").toInstant(),
-                            userId = rs.getInt("userId"),
-                        )*/
                 )
             }.singleOrNull()
             ?.userAndToken
@@ -167,6 +148,17 @@ class JdbiUsersRepository(
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .bind("createdAt", token.createdAt.epochSeconds)
             .bind("lastUsedAt", token.lastUsedAt.epochSeconds)
+            .execute()
+    }
+
+    override fun updateUserCredit(
+        userId: Int,
+        credit: Int,
+    ) {
+        handle
+            .createUpdate("UPDATE dbo.Users SET credit = :credit WHERE id = :userId")
+            .bind("credit", credit)
+            .bind("userId", userId)
             .execute()
     }
 

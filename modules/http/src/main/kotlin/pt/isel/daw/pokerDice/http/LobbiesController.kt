@@ -23,13 +23,13 @@ import pt.isel.daw.pokerDice.utils.Success
 
 @RestController
 class LobbiesController(
-    private val lobbies: LobbiesService,
+    private val lobbiesServices: LobbiesService,
 ) {
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
     @GetMapping(LobbyUris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
-        // val list = lobbies.getVisibleLobbies() TODO("NEVER USED")
-        return ResponseEntity.ok(lobbies)
+        val lista = lobbiesServices.getVisibleLobbies() // TODO ("NEVER USED")
+        return ResponseEntity.ok(lista)
     }
 
     // POST /lobbies → cria lobby (auth requerido)
@@ -39,12 +39,12 @@ class LobbiesController(
         @RequestBody body: LobbyCreateInputModel,
     ): ResponseEntity<*> {
         val res =
-            lobbies.createLobby(
+            lobbiesServices.createLobby(
                 authenticatedUser.user.id,
                 body.name,
                 body.description,
-                body.isPrivate,
-                body.passwordValidationInfo,
+                // body.isPrivate,
+                // body.passwordValidationInfo,
                 body.minUsers,
                 body.maxUsers,
                 body.rounds,
@@ -81,7 +81,7 @@ class LobbiesController(
             id.toIntOrNull()
                 ?: return Problem.response(400, Problem.invalidRequestContent)
 
-        val res = lobbies.getLobbyById(lobbyId)
+        val res = lobbiesServices.getLobbyById(lobbyId)
 
         return when (res) {
             is Success -> {
@@ -92,7 +92,7 @@ class LobbiesController(
                         name = lobby.name,
                         description = lobby.description,
                         hostId = lobby.hostId,
-                        isPrivate = lobby.isPrivate,
+                        // isPrivate = lobby.isPrivate,
                         minUsers = lobby.minUsers,
                         maxUsers = lobby.maxUsers,
                         rounds = lobby.rounds,
@@ -127,7 +127,7 @@ class LobbiesController(
             id.toIntOrNull()
                 ?: return Problem.response(400, Problem.invalidRequestContent)
 
-        val res = lobbies.joinLobby(lobbyId, authenticatedUser.user.id)
+        val res = lobbiesServices.joinLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
             is Success -> ResponseEntity.noContent().build<Unit>()
@@ -156,7 +156,7 @@ class LobbiesController(
             id.toIntOrNull()
                 ?: return Problem.response(400, Problem.invalidRequestContent)
 
-        val res = lobbies.leaveLobby(lobbyId, authenticatedUser.user.id)
+        val res = lobbiesServices.leaveLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
             is Success -> ResponseEntity.noContent().build<Unit>()
@@ -183,7 +183,7 @@ class LobbiesController(
             id.toIntOrNull()
                 ?: return Problem.response(400, Problem.invalidRequestContent)
 
-        val res = lobbies.closeLobby(lobbyId, authenticatedUser.user.id)
+        val res = lobbiesServices.closeLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
             is Success -> ResponseEntity.noContent().build<Unit>()

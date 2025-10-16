@@ -16,6 +16,7 @@ object UserUris {
         const val GET_BY_ID = "$PREFIX/users/{id}"
         const val HOME = "$PREFIX/me"
         const val INVITE = "$PREFIX/invite"
+        const val DEPOSIT = "$PREFIX/deposit"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
 

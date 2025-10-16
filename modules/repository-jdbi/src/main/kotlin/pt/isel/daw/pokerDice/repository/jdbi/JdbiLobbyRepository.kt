@@ -3,7 +3,6 @@ package pt.isel.daw.pokerDice.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
 
 class JdbiLobbyRepository(
@@ -20,8 +19,8 @@ class JdbiLobbyRepository(
         hostId: Int,
         name: String,
         description: String,
-        isPrivate: Boolean,
-        passwordValidationInfo: PasswordValidationInfo?,
+        // isPrivate: Boolean,
+        // passwordValidationInfo: PasswordValidationInfo?,
         minPlayers: Int,
         maxPlayers: Int,
         rounds: Int,
@@ -32,8 +31,6 @@ class JdbiLobbyRepository(
             name, 
             description, 
             host_id, 
-            is_private, 
-            password_validation, 
             minPlayers, 
             maxPlayers, 
             rounds, 
@@ -42,8 +39,6 @@ class JdbiLobbyRepository(
             :name, 
             :description, 
             :hostId, 
-            :isPrivate, 
-            :passwordValidation, 
             :minPlayers, 
             :maxPlayers, 
             :rounds, 
@@ -57,8 +52,6 @@ class JdbiLobbyRepository(
             .bind("name", name)
             .bind("description", description)
             .bind("hostId", hostId)
-            .bind("isPrivate", isPrivate)
-            .bind("passwordValidation", passwordValidationInfo?.validationInfo) // null se público
             .bind("minPlayers", minPlayers)
             .bind("maxPlayers", maxPlayers)
             .bind("rounds", rounds)
@@ -83,8 +76,6 @@ class JdbiLobbyRepository(
                 l.id, 
                 l.name, 
                 l.description, 
-                l.is_private, 
-                l.password_validation, 
                 l.minPlayers, 
                 l.maxPlayers, 
                 l.rounds, 
@@ -96,8 +87,6 @@ class JdbiLobbyRepository(
                 l.id, 
                 l.name, 
                 l.description, 
-                l.is_private, 
-                l.password_validation, 
                 l.minPlayers, 
                 l.maxPlayers, 
                 l.rounds, 
@@ -109,24 +98,20 @@ class JdbiLobbyRepository(
                     id = rs.getInt("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
-                    hostId = 0, // não existe host_id na tabela atual
-                    isPrivate = rs.getBoolean("is_private"),
-                    passwordValidationInfo =
-                        rs
-                            .getString("password_validation")
-                            ?.let { PasswordValidationInfo(it) },
+                    hostId = 0,
+                    // não existe host_id na tabela atual
                     minUsers = rs.getInt("minPlayers"),
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
-                    isRunning = false, // valor default
+                    isRunning = false,
+                    // valor default
                 )
             }.list()
 
     override fun getById(id: Int): Lobby? {
         val sql = """
-        SELECT l.id, l.name, l.description, l.host_id, l.is_private, 
-               l.password_validation, l.min_players, l.max_players, 
+        SELECT l.id, l.name, l.description, l.host_id, l.min_players, l.max_players, 
                l.rounds, l.min_credit_to_participate
         FROM dbo.Lobby l
         WHERE l.id = :id
@@ -147,8 +132,8 @@ private data class LobbyRow(
     val name: String,
     val description: String,
     val host_id: Int,
-    val is_private: Boolean,
-    val password_validation: String?,
+    // val is_private: Boolean,
+    // val password_validation: String?,
     val min_players: Int,
     val max_players: Int,
     val rounds: Int,
@@ -161,13 +146,6 @@ private data class LobbyRow(
             name = name,
             description = description,
             hostId = host_id,
-            isPrivate = is_private,
-            passwordValidationInfo =
-                if (is_private && !password_validation.isNullOrBlank()) {
-                    PasswordValidationInfo(password_validation)
-                } else {
-                    null
-                },
             minUsers = min_players,
             maxUsers = max_players,
             rounds = rounds,

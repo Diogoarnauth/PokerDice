@@ -4,7 +4,6 @@ import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -117,8 +116,8 @@ class LobbiesService(
         hostId: Int,
         name: String,
         description: String,
-        isPrivate: Boolean,
-        passwordValidationInfo: PasswordValidationInfo?,
+        // isPrivate: Boolean,
+        // passwordValidationInfo: PasswordValidationInfo?,
         minUsers: Int,
         maxUsers: Int,
         rounds: Int,
@@ -148,10 +147,12 @@ class LobbiesService(
                 return@run failure(CreateLobbyError.NotEnoughCredit)
             }
 
-            // Verificar segurança da password se for privado
+            /* Verificar segurança da password se for privado
             if (isPrivate && (passwordValidationInfo == null || passwordValidationInfo.validationInfo.length < 8)) {
                 return@run failure(CreateLobbyError.InsecurePassword)
-            }
+            }*/
+
+            // TODO ("APANHAR ERROS 500 QUE VÊM DO SV PARA APRESENTAR AO USER")
 
             // Criar o lobby
             val lobbyId =
@@ -159,8 +160,8 @@ class LobbiesService(
                     hostId,
                     name,
                     description,
-                    isPrivate,
-                    passwordValidationInfo,
+                    // isPrivate,
+                    // passwordValidationInfo,
                     minUsers,
                     maxUsers,
                     rounds,

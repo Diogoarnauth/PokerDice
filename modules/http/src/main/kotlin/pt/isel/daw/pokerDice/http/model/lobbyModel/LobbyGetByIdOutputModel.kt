@@ -5,7 +5,7 @@ data class LobbyGetByIdOutputModel(
     val name: String,
     val description: String,
     val hostId: Int,
-    val isPrivate: Boolean,
+    // val isPrivate: Boolean,
     val minUsers: Int,
     val maxUsers: Int,
     val rounds: Int,

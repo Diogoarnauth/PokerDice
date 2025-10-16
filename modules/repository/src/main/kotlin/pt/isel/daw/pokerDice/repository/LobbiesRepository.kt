@@ -1,7 +1,6 @@
 package pt.isel.daw.pokerDice.repository
 
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 
 interface LobbiesRepository {
     fun getLobbiesNotFull(): List<Lobby>
@@ -14,8 +13,8 @@ interface LobbiesRepository {
         hostId: Int,
         name: String,
         description: String,
-        isPrivate: Boolean,
-        passwordValidationInfo: PasswordValidationInfo?,
+        // isPrivate: Boolean,
+        // passwordValidationInfo: PasswordValidationInfo?,
         minPlayers: Int,
         maxPlayers: Int,
         rounds: Int,

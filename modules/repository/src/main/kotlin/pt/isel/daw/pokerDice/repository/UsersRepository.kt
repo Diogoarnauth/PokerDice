@@ -35,6 +35,11 @@ interface UsersRepository {
         lobbyId: Int?,
     )
 
+    fun updateUserCredit(
+        userId: Int,
+        credit: Int,
+    )
+
     fun createToken(
         token: Token,
         maxTokens: Int,

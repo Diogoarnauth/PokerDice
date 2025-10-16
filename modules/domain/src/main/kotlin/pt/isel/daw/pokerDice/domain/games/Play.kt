@@ -1,6 +1,6 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Instant
+import java.time.Instant
 
 data class Play(
     val playerId: Int,

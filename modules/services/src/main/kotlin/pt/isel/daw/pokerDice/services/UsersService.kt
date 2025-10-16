@@ -1,8 +1,6 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.invite.InviteDomain
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.User

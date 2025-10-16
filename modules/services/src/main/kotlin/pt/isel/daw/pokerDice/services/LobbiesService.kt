@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice.services
 
-import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
@@ -9,6 +8,7 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import java.time.Clock
 
 typealias CreateLobbyResult = Either<CreateLobbyError, Int>
 

@@ -1,6 +1,6 @@
 package pt.isel.daw.pokerDice.domain.invite
 
-import kotlinx.datetime.Instant
+import java.time.Instant
 
 data class AppInvite(
     val id: Int,

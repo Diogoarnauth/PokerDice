@@ -1,8 +1,8 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.users.User
+import java.time.Clock
+import java.time.Instant
 import java.util.UUID
 import kotlin.time.Duration
 
@@ -208,7 +208,7 @@ class GameLogic(
                 playerId = player.id,
                 dice = diceRolls,
                 score = score,
-                timestamp = now,
+                timestamp = Instant.now(clock),
             )
         currentRound.addPlay(play)
 

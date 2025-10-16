@@ -1,7 +1,7 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.users.User
+import java.time.Instant
 
 class Round(
     val id: Int,

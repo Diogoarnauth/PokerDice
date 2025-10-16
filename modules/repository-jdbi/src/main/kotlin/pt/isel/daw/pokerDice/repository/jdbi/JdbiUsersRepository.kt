@@ -1,22 +1,18 @@
 package pt.isel.daw.pokerDice.repository.jdbi
 
 import org.jdbi.v3.core.Handle
-import org.jdbi.v3.core.Sql
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.TokenValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.UsersRepository
+import java.sql.Timestamp
 import java.time.Instant
 
 class JdbiUsersRepository(
     private val handle: Handle,
 ) : UsersRepository {
-    /* override fun storeUser(username: String, passwordValidation: PasswordValidationInfo): Int {
-        TODO("Not yet implemented")
-    }*/
-
     override fun getUserByUsername(username: String): User? =
         handle
             .createQuery("select * from dbo.Users where username = :username")
@@ -32,7 +28,6 @@ class JdbiUsersRepository(
             .singleOrNull()
 
     override fun create(
-        // testar e saber se apenas temos de retornar o id... quanto ao token??
         username: String,
         name: String,
         age: Int,
@@ -59,26 +54,25 @@ class JdbiUsersRepository(
             handle
                 .createQuery(
                     """
-        SELECT 
-            u.id,
-            u.username,
-            u.passwordValidation,
-            u.name,
-            u.age,
-            u.credit,
-            u.winCounter,
-            t.tokenValidation,
-            t.createdAt,
-            t.lastUsedAt,
-            t.userId 
-        FROM dbo.token t
-        JOIN dbo.users u ON t.userId = u.id
-        WHERE t.tokenValidation = :tokenValidation
-        """,
+                SELECT 
+                    u.id,
+                    u.username,
+                    u.passwordValidation,
+                    u.name,
+                    u.age,
+                    u.credit,
+                    u.winCounter,
+                    t.tokenValidation,
+                    t.createdAt,
+                    t.lastUsedAt,
+                    t.userId 
+                FROM dbo.token t
+                JOIN dbo.users u ON t.userId = u.id
+                WHERE t.tokenValidation = :tokenValidation
+                """,
                 ).bind("tokenValidation", tokenValidationInfo.validationInfo)
                 .map { rs, _ ->
-                    print("Antes de construir user")
-                    // Construir User
+                    println("Antes de construir user")
                     val user =
                         User(
                             id = rs.getInt("id"),
@@ -89,23 +83,16 @@ class JdbiUsersRepository(
                             credit = rs.getInt("credit"),
                             winCounter = rs.getInt("winCounter"),
                         )
-                    print("user: $user")
+                    println("user: $user")
 
-                    // Construir Token
                     val token =
                         Token(
                             tokenValidationInfo = TokenValidationInfo(rs.getString("tokenValidation")),
-                            createdAt =
-                                java.sql.Timestamp
-                                    .from(rs.getTimestamp("createdAt").toInstant())
-                                    .toInstant(),
-                            lastUsedAt =
-                                java.sql.Timestamp
-                                    .from(rs.getTimestamp("lastUsedAt").toInstant())
-                                    .toInstant(),
+                            createdAt = Instant.ofEpochMilli(rs.getLong("createdAt")),
+                            lastUsedAt = Instant.ofEpochMilli(rs.getLong("lastUsedAt")),
                             userId = rs.getInt("userId"),
                         )
-                    print("token: $token")
+                    println("token: $token")
 
                     Pair(user, token)
                 }.findOne()
@@ -145,7 +132,6 @@ class JdbiUsersRepository(
     ) {
         println("token ${token.createdAt}")
 
-        // Apagar tokens antigos se exceder maxTokens
         handle
             .createUpdate(
                 """
@@ -163,7 +149,6 @@ class JdbiUsersRepository(
             .bind("offset", maxTokens - 1)
             .execute()
 
-        // Inserir novo token com java.sql.Timestamp
         handle
             .createUpdate(
                 """
@@ -172,8 +157,8 @@ class JdbiUsersRepository(
                 """.trimIndent(),
             ).bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
-            .bind("createdAt", java.sql.Timestamp.from(token.createdAt))
-            .bind("lastUsedAt", java.sql.Timestamp.from(token.lastUsedAt))
+            .bind("createdAt", Timestamp.from(token.createdAt))
+            .bind("lastUsedAt", Timestamp.from(token.lastUsedAt))
             .execute()
     }
 
@@ -188,7 +173,7 @@ class JdbiUsersRepository(
                 set lastUsedAt = :lastUsedAt 
                 where userId = :userId and tokenValidation = :tokenValidation
                 """.trimIndent(),
-            ).bind("lastUsedAt", now.epochSeconds)
+            ).bind("lastUsedAt", Timestamp.from(now))
             .bind("userId", token.userId)
             .bind("tokenValidation", token.tokenValidationInfo.validationInfo)
             .execute()
@@ -230,8 +215,8 @@ class JdbiUsersRepository(
                     Token(
                         tokenValidation,
                         id,
-                        Instant.fromEpochSeconds(createdAt),
-                        Instant.fromEpochSeconds(lastUsedAt),
+                        Instant.ofEpochSecond(createdAt),
+                        Instant.ofEpochSecond(lastUsedAt),
                     ),
                 )
     }

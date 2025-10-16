@@ -1,7 +1,5 @@
 package pt.isel.daw.pokerDice.domain.users
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.security.SecureRandom

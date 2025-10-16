@@ -1,7 +1,5 @@
 package pt.isel.daw.pokerDice.domain.invite
 
-import kotlinx.datetime.Clock
-import kotlinx.datetime.Instant
 import org.springframework.stereotype.Component
 import java.security.SecureRandom
 import java.time.Clock

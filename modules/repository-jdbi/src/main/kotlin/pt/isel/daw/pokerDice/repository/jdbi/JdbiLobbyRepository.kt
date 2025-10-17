@@ -19,8 +19,6 @@ class JdbiLobbyRepository(
         hostId: Int,
         name: String,
         description: String,
-        // isPrivate: Boolean,
-        // passwordValidationInfo: PasswordValidationInfo?,
         minPlayers: Int,
         maxPlayers: Int,
         rounds: Int,
@@ -65,6 +63,17 @@ class JdbiLobbyRepository(
         handle
             .createUpdate("DELETE FROM dbo.Lobby WHERE id = :id")
             .bind("id", lobbyId)
+            .execute()
+    }
+
+    override fun updateLobbyIdForUser(
+        userId: Int,
+        lobbyId: Int?,
+    ) {
+        handle
+            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
+            .bind("lobbyId", lobbyId)
+            .bind("playerId", userId)
             .execute()
     }
 

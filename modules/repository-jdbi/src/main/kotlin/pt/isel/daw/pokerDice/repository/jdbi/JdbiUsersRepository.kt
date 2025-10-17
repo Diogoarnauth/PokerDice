@@ -96,17 +96,6 @@ class JdbiUsersRepository(
             .mapTo<Int>()
             .single() == 1
 
-    override fun updateLobbyIdForUser(
-        userId: Int,
-        lobbyId: Int?,
-    ) {
-        handle
-            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
-            .bind("lobbyId", lobbyId)
-            .bind("playerId", userId)
-            .execute()
-    }
-
     override fun countUsersInLobby(lobbyId: Int): Int =
         handle
             .createQuery("SELECT COUNT(*) FROM dbo.Users WHERE lobby_id = :lobbyId")

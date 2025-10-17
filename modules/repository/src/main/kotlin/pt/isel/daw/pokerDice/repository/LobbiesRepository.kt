@@ -9,12 +9,15 @@ interface LobbiesRepository {
 
     fun existsByHost(hostId: Int): Boolean
 
+    fun updateLobbyIdForUser(
+        userId: Int,
+        lobbyId: Int?,
+    )
+
     fun createLobby(
         hostId: Int,
         name: String,
         description: String,
-        // isPrivate: Boolean,
-        // passwordValidationInfo: PasswordValidationInfo?,
         minPlayers: Int,
         maxPlayers: Int,
         rounds: Int,

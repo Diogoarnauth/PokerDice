@@ -30,11 +30,6 @@ interface UsersRepository {
 
     fun isUserStoredByUsername(username: String): Boolean
 
-    fun updateLobbyIdForUser(
-        userId: Int,
-        lobbyId: Int?,
-    )
-
     fun updateUserCredit(
         userId: Int,
         credit: Int,

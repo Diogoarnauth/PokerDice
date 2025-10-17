@@ -80,9 +80,11 @@ class LobbiesService(
             val usersRepo =
                 it.usersRepository
 
-                    // Verifica se o lobby existe
-                    // val lobby = lobbiesRepo.getById(lobbyId) TODO("NEVER USED")
-                    ?: return@run failure(LeaveLobbyError.LobbyNotFound)
+            if (userId == lobbiesRepo.getById(lobbyId)?.hostId) {
+                closeLobby(lobbyId, userId)
+                return@run success(Unit)
+                // TODO("VER O MELHOR MÉTODO PARA FAZER ESTA ALTERAÇÃO ENTRE CLOSE E LEAVE")
+            }
 
             // Verifica se o jogador pertence a este lobby
             val user =
@@ -92,9 +94,10 @@ class LobbiesService(
             if (user.lobbyId != lobbyId) {
                 return@run failure(LeaveLobbyError.NotInLobby)
             }
+            // TODO("SE FOR O HOST AO FAZER LEAVE DA KICK A TODOS NO LOBBY")
 
             // Remove o jogador do lobby (define lobby_id = NULL)
-            usersRepo.updateLobbyIdForUser(userId, null)
+            lobbiesRepo.updateLobbyIdForUser(userId, null)
 
             success(Unit)
         }
@@ -116,8 +119,6 @@ class LobbiesService(
         hostId: Int,
         name: String,
         description: String,
-        // isPrivate: Boolean,
-        // passwordValidationInfo: PasswordValidationInfo?,
         minUsers: Int,
         maxUsers: Int,
         rounds: Int,
@@ -150,6 +151,10 @@ class LobbiesService(
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
+            if (minCreditToParticipate <= 0) {
+                return@run failure(CreateLobbyError.InvalidSettings)
+            }
+
             if (maxUsers > 10) {
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
@@ -170,13 +175,14 @@ class LobbiesService(
                     hostId,
                     name,
                     description,
-                    // isPrivate,
-                    // passwordValidationInfo,
                     minUsers,
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
                 )
+
+            // UPDATE LOBBY ID FOR USER
+            lobbyRepo.updateLobbyIdForUser(hostId, lobbyId)
 
             if (lobbyId != null) {
                 success(lobbyId)
@@ -223,7 +229,7 @@ class LobbiesService(
             }
 
             // Adicionar jogador ao lobby
-            usersRepo.updateLobbyIdForUser(userId, lobbyId)
+            lobbiesRepo.updateLobbyIdForUser(userId, lobbyId)
 
             success(Unit)
         }

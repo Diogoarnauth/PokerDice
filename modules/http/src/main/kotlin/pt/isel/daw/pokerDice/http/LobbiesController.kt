@@ -12,7 +12,6 @@ import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
 import pt.isel.daw.pokerDice.http.model.lobbyModel.LobbyCreateInputModel
 import pt.isel.daw.pokerDice.http.model.lobbyModel.LobbyGetByIdOutputModel
-import pt.isel.daw.pokerDice.services.CloseLobbyError
 import pt.isel.daw.pokerDice.services.CreateLobbyError
 import pt.isel.daw.pokerDice.services.JoinLobbyError
 import pt.isel.daw.pokerDice.services.LeaveLobbyError
@@ -42,8 +41,6 @@ class LobbiesController(
                 authenticatedUser.user.id,
                 body.name,
                 body.description,
-                // body.isPrivate,
-                // body.passwordValidationInfo,
                 body.minUsers,
                 body.maxUsers,
                 body.rounds,
@@ -55,7 +52,7 @@ class LobbiesController(
                 ResponseEntity
                     .status(201)
                     .header("Location", LobbyUris.Lobbies.BY_ID.replace("{id}", res.value.toString()))
-                    .build<Unit>()
+                    .body(mapOf("lobbyId" to res.value))
 
             is Failure ->
                 when (res.value) {
@@ -65,8 +62,6 @@ class LobbiesController(
                     CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(409, Problem.HostAlreadyOnAnotherLobby)
                     CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit)
                     CreateLobbyError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
-
-                    else -> Problem.response(500, Problem.internalServerError)
                 }
         }
     }
@@ -116,7 +111,7 @@ class LobbiesController(
         val res = lobbiesServices.joinLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
-            is Success -> ResponseEntity.noContent().build<Unit>()
+            is Success -> ResponseEntity.ok(mapOf("message" to "Joined lobby $lobbyId"))
 
             is Failure ->
                 when (res.value) {
@@ -125,14 +120,10 @@ class LobbiesController(
                     JoinLobbyError.AlreadyInLobby -> Problem.response(409, Problem.alreadyInLobby)
                     JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit)
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
-    // DELETE /lobbies/{id}/users/me → sair do lobby
+    // DELETE /lobbies/{id}/leave → sair do lobby
     @DeleteMapping(LobbyUris.Lobbies.LEAVE_ME)
     fun leave(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
@@ -144,21 +135,20 @@ class LobbiesController(
 
         val res = lobbiesServices.leaveLobby(lobbyId, authenticatedUser.user.id)
 
+        // TODO("404 NOT FOUND CASO EU SEJA O HOST DESSE LOBBY, MAS POSSO DAR CLOSE")
+
         return when (res) {
-            is Success -> ResponseEntity.noContent().build<Unit>()
+            is Success -> ResponseEntity.ok(mapOf("message" to "Left lobby $lobbyId"))
 
             is Failure ->
                 when (res.value) {
                     LeaveLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     LeaveLobbyError.NotInLobby -> Problem.response(409, Problem.notInLobby)
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
+/*
     // DELETE /lobbies/{id} → o host encerra o lobby completamente
     @DeleteMapping(LobbyUris.Lobbies.CLOSE)
     fun closeLobby(
@@ -172,16 +162,12 @@ class LobbiesController(
         val res = lobbiesServices.closeLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
-            is Success -> ResponseEntity.noContent().build<Unit>()
+            is Success -> ResponseEntity.ok(mapOf("message" to "Lobby $lobbyId closed"))
             is Failure ->
                 when (res.value) {
                     CloseLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     CloseLobbyError.NotHost -> Problem.response(403, Problem.onlyHostCanCloseLobby)
                 }
-
-            else -> {
-                TODO()
-            }
         }
-    }
+    }*/
 }

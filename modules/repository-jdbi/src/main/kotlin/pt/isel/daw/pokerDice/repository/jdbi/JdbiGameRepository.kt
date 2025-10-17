@@ -5,87 +5,87 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import org.jdbi.v3.core.statement.Update
 import org.postgresql.util.PGobject
-import pt.isel.daw.pokerDice.domain.games.CombinationType
-import pt.isel.daw.pokerDice.domain.games.Dice
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.domain.games.Round
-import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.GamesRepository
 import java.util.UUID
+import kotlin.collections.emptyList
 
 class JdbiGamesRepository(
     private val handle: Handle,
 ) : GamesRepository {
-    override fun insert(game: Game) {
+    override fun createGame(game: Game): Int =
         handle
             .createUpdate(
                 """
-                insert into dbo.game(
-                    id, state, nr_players, min_credits,
-                    players, rounds, scores,
-                    current_player_index, last_roll, last_combination
-                ) values (
-                    :id, :state, :nrPlayers, :minCredits,
-                    :players, :rounds, :scores,
-                    :currentPlayerIndex, :lastRoll, :lastCombination
+                INSERT INTO dbo.Game (
+                    lobby_id,
+                    state,
+                    rounds_counter,
+                    winner,
+                    round_results
+                ) VALUES (
+                    :lobbyId, :state, :roundsCounter, :winner, :roundResults
                 )
+                RETURNING id
                 """.trimIndent(),
-            ).bind("id", game.id)
-            .bind("state", game.state.name)
-            .bind("nrPlayers", game.nrPlayers)
-            .bind("minCredits", game.minCredits)
-            .bindJson("players", game.players)
-            .bindJson("rounds", game.rounds)
-            .bindJson("scores", game.scores)
-            .bind("currentPlayerIndex", game.currentPlayerIndex)
-            .bindJson("lastRoll", game.lastRoll)
-            .bind("lastCombination", game.lastCombination?.name)
-            .execute()
-    }
+            ).bind("lobbyId", game.lobby_id)
+            .bind("state", game.state)
+            .bind("roundsCounter", game.rounds_counter)
+            .bind("winner", game.winner)
+            .bindJson("roundResults", game.round_result)
+            .mapTo<Int>()
+            .one()
 
-    override fun getById(id: UUID): Game? =
+    override fun getGameById(id: Int): Game? =
         handle
             .createQuery(
                 """
-                select * from dbo.game where id = :id
+                SELECT id, lobbyId, state, roundsCounter, winner, roundResults
+                FROM dbo.Game
+                WHERE id = :id
                 """.trimIndent(),
             ).bind("id", id)
             .mapTo<GameDbModel>()
             .singleOrNull()
             ?.toDomain()
 
-    override fun update(game: Game) {
+    override fun getGameByLobbyId(lobbyId: Int): Game? =
+        handle
+            .createQuery(
+                """
+                SELECT id, lobbyId, state, roundsCounter, winner, roundResults
+                FROM dbo.Game
+                WHERE lobbyId = :lobbyId
+                  AND state = 'RUNNING'
+                """.trimIndent(),
+            ).bind("lobbyId", lobbyId)
+            .mapTo<GameDbModel>()
+            .singleOrNull()
+            ?.toDomain()
+
+    override fun updateGameState(
+        gameId: Int,
+        newState: String,
+    ) {
         handle
             .createUpdate(
                 """
-                update dbo.game set
-                    state = :state,
-                    players = :players,
-                    rounds = :rounds,
-                    scores = :scores,
-                    current_player_index = :currentPlayerIndex,
-                    last_roll = :lastRoll,
-                    last_combination = :lastCombination
-                where id = :id
+                UPDATE dbo.Game
+                SET state = :newState
+                WHERE id = :id
                 """.trimIndent(),
-            ).bind("id", game.id)
-            .bind("state", game.state.name)
-            .bindJson("players", game.players)
-            .bindJson("rounds", game.rounds)
-            .bindJson("scores", game.scores)
-            .bind("currentPlayerIndex", game.currentPlayerIndex)
-            .bindJson("lastRoll", game.lastRoll)
-            .bind("lastCombination", game.lastCombination?.name)
+            ).bind("id", gameId)
+            .bind("newState", newState)
             .execute()
     }
 
-    // --- helpers ---
-    private fun Update.bindJson(
+    // ---------- Helpers ----------
+    private fun org.jdbi.v3.core.statement.Update.bindJson(
         name: String,
         value: Any?,
-    ): Update {
+    ): org.jdbi.v3.core.statement.Update {
         val json = value?.let { objectMapper.writeValueAsString(it) }
         return bind(
             name,
@@ -101,42 +101,26 @@ class JdbiGamesRepository(
     }
 }
 
-/**
- * Modelo intermédio entre DB e domínio
- */
+// ---------- Data model intermédio (DB <-> domínio) ----------
 data class GameDbModel(
     val id: UUID,
     val lobbyId: UUID,
-    val state: String,
-    val nrPlayers: Int,
-    val minCredits: Int,
-    val players: String,
-    val rounds: String,
-    val scores: String,
-    val currentPlayerIndex: Int,
-    val lastRoll: String,
-    val lastCombination: String?,
+    val state: Game.State,
+    val roundsCounter: Int,
+    val winner: Int?,
+    val roundResults: Int?,
 ) {
     fun toDomain(): Game {
         val mapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
-
-        val playersList: List<User> = mapper.readValue(players)
-        val roundsList: List<Round> = mapper.readValue(rounds)
-        val scoresMap: MutableMap<User, Int> = mapper.readValue(scores)
-        val rollList: List<Dice> = mapper.readValue(lastRoll)
+        val roundResultsObj = roundResults?.let { mapper.readValue<List<String>>(it) } ?: emptyList()
 
         return Game(
             id = id,
-            lobbyId = lobbyId,
-            state = Game.State.valueOf(state),
-            nrPlayers = nrPlayers,
-            minCredits = minCredits,
-            players = playersList,
-            rounds = roundsList,
-            scores = scoresMap,
-            currentPlayerIndex = currentPlayerIndex,
-            lastRoll = rollList,
-            lastCombination = lastCombination?.let { CombinationType.valueOf(it) },
+            lobby_id = lobbyId,
+            state = state,
+            rounds_counter = roundsCounter,
+            winner = winner,
+            round_result = Int,
         )
     }
 }

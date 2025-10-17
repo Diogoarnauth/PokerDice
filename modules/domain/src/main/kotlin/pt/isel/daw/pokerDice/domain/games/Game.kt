@@ -5,17 +5,18 @@ import java.util.UUID
 
 data class Game(
     val id: UUID,
-    val lobbyId: UUID,
+    val lobby_id: UUID,
     val state: State,
     val nrPlayers: Int,
-    val minCredits: Int,
+    // val minCredits: Int,
     val players: List<User> = emptyList(),
-    val rounds: List<Round> = emptyList(),
-    val scores: MutableMap<User, Int> = mutableMapOf(),
+    val rounds_counter: Int,
+    val winner: Int? = null,
+    val round_result: Int? = null,
+    // val scores: MutableMap<User, Int> = mutableMapOf(),
     val currentPlayerIndex: Int,
-    val lastRoll: List<Dice>,
-    val lastCombination: CombinationType?,
-// adicionar mais depois
+    // val lastRoll: List<Dice>,
+    // val lastCombination: CombinationType?,
 ) {
     enum class State {
         WAITING_FOR_PLAYERS,

@@ -3,7 +3,7 @@ import pt.isel.daw.pokerDice.domain.games.Game
 import java.util.UUID
 
 interface GamesRepository {
-    fun insert(game: Game)
+    fun createGame(game: Game)
 
     fun getById(id: UUID): Game?
 

@@ -41,6 +41,8 @@ class LobbiesController(
                 authenticatedUser.user.id,
                 body.name,
                 body.description,
+                // body.isPrivate,
+                // body.passwordValidationInfo,
                 body.minUsers,
                 body.maxUsers,
                 body.rounds,
@@ -52,7 +54,7 @@ class LobbiesController(
                 ResponseEntity
                     .status(201)
                     .header("Location", LobbyUris.Lobbies.BY_ID.replace("{id}", res.value.toString()))
-                    .body(mapOf("lobbyId" to res.value))
+                    .build<Unit>()
 
             is Failure ->
                 when (res.value) {
@@ -168,6 +170,10 @@ class LobbiesController(
                     CloseLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     CloseLobbyError.NotHost -> Problem.response(403, Problem.onlyHostCanCloseLobby)
                 }
+
+            else -> {
+                TODO()
+            }
         }
     }*/
 }

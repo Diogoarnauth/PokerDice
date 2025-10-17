@@ -37,6 +37,9 @@ CREATE TABLE IF NOT EXISTS dbo.game (
                                         id UUID PRIMARY KEY NOT NULL,
                                         lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
                                         state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
+                                        rounds_counter INT DEFAULT 0 CHECK (rounds_counter >= 0),
+                                        winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
+                                        round_results JSONB,
                                         nrUsers INT NOT NULL,
                                         minCredits INT NOT NULL CHECK (minCredits >= 0)
 );

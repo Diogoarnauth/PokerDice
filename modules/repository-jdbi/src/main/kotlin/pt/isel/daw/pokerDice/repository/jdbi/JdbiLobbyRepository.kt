@@ -112,16 +112,26 @@ class JdbiLobbyRepository(
     override fun getById(id: Int): Lobby? {
         val sql = """
         SELECT *
-        FROM dbo.Lobby l
+        FROM dbo.lobby l
         WHERE l.id = :id
     """
 
         return handle
             .createQuery(sql)
             .bind("id", id)
-            .mapTo<LobbyRow>()
-            .singleOrNull()
-            ?.toLobby()
+            .map { rs, _ ->
+                Lobby(
+                    id = rs.getInt("id"),
+                    name = rs.getString("name"),
+                    description = rs.getString("description"),
+                    hostId = rs.getInt("host_id"),
+                    minUsers = rs.getInt("minPlayers"),
+                    maxUsers = rs.getInt("maxPlayers"),
+                    rounds = rs.getInt("rounds"),
+                    minCreditToParticipate = rs.getInt("min_credit_to_participate"),
+                    isRunning = false,
+                )
+            }.singleOrNull()
     }
 }
 

@@ -17,7 +17,6 @@ import pt.isel.daw.pokerDice.services.CreateLobbyError
 import pt.isel.daw.pokerDice.services.JoinLobbyError
 import pt.isel.daw.pokerDice.services.LeaveLobbyError
 import pt.isel.daw.pokerDice.services.LobbiesService
-import pt.isel.daw.pokerDice.services.LobbyGetByIdError
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 
@@ -92,7 +91,6 @@ class LobbiesController(
                         name = lobby.name,
                         description = lobby.description,
                         hostId = lobby.hostId,
-                        // isPrivate = lobby.isPrivate,
                         minUsers = lobby.minUsers,
                         maxUsers = lobby.maxUsers,
                         rounds = lobby.rounds,
@@ -101,19 +99,7 @@ class LobbiesController(
                 )
             }
 
-            is Failure ->
-                when (res.value) {
-                    LobbyGetByIdError.LobbyNotFound ->
-                        Problem.response(404, Problem.lobbyNotFound)
-
-                    else -> {
-                        TODO()
-                    }
-                }
-
-            else -> {
-                TODO()
-            }
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }
 

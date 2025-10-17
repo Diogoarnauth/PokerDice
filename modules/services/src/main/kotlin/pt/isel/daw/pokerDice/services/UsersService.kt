@@ -27,16 +27,25 @@ typealias UserCreationResult = Either<UserCreationError, Int>
 
 sealed class TokenCreationError {
     data object UserOrPasswordAreInvalid : TokenCreationError()
+
+    data object UserNotFound : TokenCreationError()
+
+    data object TokenLimitReached : TokenCreationError()
 }
+
 typealias TokenCreationResult = Either<TokenCreationError, TokenExternalInfo>
 
 sealed class UserGetByIdError {
     data object UserNotFound : UserGetByIdError()
+
+    data object InvalidUserId : UserGetByIdError()
     // data class InvalidToken(val tokenValue: String) : UserGetByIdError() //dúvida :não sei se é necessário
 }
 
 sealed class DepositError {
-    data object InvalidAmount : DepositError() // TODO()
+    data object InvalidAmount : DepositError() // TODO(melhorar isto)
+
+    data object UserNotFound : DepositError()
 }
 
 typealias UserGetByIdResult = Either<UserGetByIdError, User>
@@ -54,11 +63,15 @@ sealed class UserRegisterError {
 
     data object UserAlreadyExists : UserRegisterError()
 
+    // TODO("acrescentar mais erros de validação")
+
     data object InsecurePassword : UserRegisterError()
 }
 
 sealed class CreatingAppInviteError {
     data object CreatingInviteError : CreatingAppInviteError()
+
+    data object UserNotFound : CreatingAppInviteError()
 }
 
 typealias CreatingAppInviteResult = Either<CreatingAppInviteError, String>
@@ -106,8 +119,13 @@ class UsersService(
                 return@run failure(DepositError.InvalidAmount)
             }
 
-            val newCredit = user.credit + amount
+            val existingUser =
+                usersRepository.getUserById(user.id)
+                    ?: return@run failure(DepositError.UserNotFound)
+
+            val newCredit = existingUser.credit + amount
             usersRepository.updateUserCredit(user.id, newCredit)
+
             success(newCredit)
         }
 
@@ -169,18 +187,20 @@ class UsersService(
         password: String,
     ): TokenCreationResult {
         if (username.isBlank() || password.isBlank()) {
-            failure(TokenCreationError.UserOrPasswordAreInvalid)
+            return failure(TokenCreationError.UserOrPasswordAreInvalid)
         }
+
         return transactionManager.run {
             val usersRepository = it.usersRepository
+
             val user: User =
                 usersRepository.getUserByUsername(username)
                     ?: return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
+
             if (!userDomain.validatePassword(password, user.passwordValidation)) {
-                if (!userDomain.validatePassword(password, user.passwordValidation)) {
-                    return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
-                }
+                return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
             }
+
             val tokenValue = userDomain.generateTokenValue()
             val now = clock.now()
             val newToken =
@@ -191,7 +211,7 @@ class UsersService(
                     lastUsedAt = now,
                 )
             usersRepository.createToken(newToken, userDomain.maxNumberOfTokensPerUser)
-            Either.Right(
+            success(
                 TokenExternalInfo(
                     tokenValue,
                     userDomain.getTokenExpiration(newToken),

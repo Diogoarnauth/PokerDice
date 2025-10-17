@@ -111,8 +111,7 @@ class JdbiLobbyRepository(
 
     override fun getById(id: Int): Lobby? {
         val sql = """
-        SELECT l.id, l.name, l.description, l.host_id, l.min_players, l.max_players, 
-               l.rounds, l.min_credit_to_participate
+        SELECT *
         FROM dbo.Lobby l
         WHERE l.id = :id
     """
@@ -126,14 +125,12 @@ class JdbiLobbyRepository(
     }
 }
 
-// 🔹 Classe auxiliar interna para mapear o resultado SQL
+// Classe auxiliar interna para mapear o resultado SQL
 private data class LobbyRow(
     val id: Int,
     val name: String,
     val description: String,
     val host_id: Int,
-    // val is_private: Boolean,
-    // val password_validation: String?,
     val min_players: Int,
     val max_players: Int,
     val rounds: Int,

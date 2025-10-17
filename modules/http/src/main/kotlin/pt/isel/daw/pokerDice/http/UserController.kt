@@ -34,7 +34,7 @@ class UserController(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
         if (userService.hasAnyUser()) {
-            return ResponseEntity.status(403).body("Bootstrap already done")
+            return Problem.response(403, Problem.userAlreadyExists)
         }
         val id = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
         return ResponseEntity.ok(id)
@@ -43,18 +43,18 @@ class UserController(
     @PostMapping("/deposit")
     fun deposit(
         @RequestBody input: DepositInputModel,
-        @AuthenticationPrincipal
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<*> {
         val res = userService.deposit(input.value, authenticatedUser.user)
+
         return when (res) {
             is Success ->
-                ResponseEntity.ok("Deposit successful. New balance: $res")
+                ResponseEntity.ok("Deposit successful. New balance: ${res.value}")
 
             is Failure ->
                 when (res.value) {
-                    DepositError.InvalidAmount ->
-                        Problem.response(404, Problem.userNotFound)
+                    DepositError.InvalidAmount -> Problem.response(400, Problem.badDeposit)
+                    DepositError.UserNotFound -> Problem.response(404, Problem.userNotFound)
                 }
         }
     }
@@ -101,6 +101,10 @@ class UserController(
                 when (res.value) {
                     TokenCreationError.UserOrPasswordAreInvalid ->
                         Problem.response(400, Problem.userOrPasswordAreInvalid)
+                    TokenCreationError.TokenLimitReached ->
+                        Problem.response(400, Problem.userNotAuthorized)
+                    TokenCreationError.UserNotFound ->
+                        Problem.response(404, Problem.userNotFound)
                 }
         }
     }
@@ -128,6 +132,9 @@ class UserController(
                 when (res.value) {
                     UserGetByIdError.UserNotFound ->
                         Problem.response(404, Problem.userNotFound)
+
+                    UserGetByIdError.InvalidUserId ->
+                        Problem.response(400, Problem.invalidRequestContent)
                 }
         }
     }

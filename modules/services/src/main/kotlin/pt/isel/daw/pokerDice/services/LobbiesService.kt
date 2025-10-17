@@ -142,6 +142,18 @@ class LobbiesService(
                 return@run failure(CreateLobbyError.HostAlreadyOnAnotherLobby)
             }
 
+            if (minUsers <= 2) { // TODO("FUNÇÃO QUE VERIFICA AS CONDIÇÕES DE CRIAÇÃO DO LOBBY")
+                return@run failure(CreateLobbyError.InvalidSettings)
+            }
+
+            if (maxUsers < minUsers) {
+                return@run failure(CreateLobbyError.InvalidSettings)
+            }
+
+            if (maxUsers > 10) {
+                return@run failure(CreateLobbyError.InvalidSettings)
+            }
+
             //  Verificar se o host tem saldo suficiente
             if (host.credit < minCreditToParticipate) {
                 return@run failure(CreateLobbyError.NotEnoughCredit)

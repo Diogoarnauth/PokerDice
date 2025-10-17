@@ -28,7 +28,8 @@ class LobbiesController(
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
     @GetMapping(LobbyUris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
-        val lista = lobbiesServices.getVisibleLobbies() // TODO ("NEVER USED")
+        // WORKING
+        val lista = lobbiesServices.getVisibleLobbies()
         return ResponseEntity.ok(lista)
     }
 
@@ -105,15 +106,7 @@ class LobbiesController(
                 when (res.value) {
                     LobbyGetByIdError.LobbyNotFound ->
                         Problem.response(404, Problem.lobbyNotFound)
-
-                    else -> {
-                        TODO()
-                    }
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
@@ -139,10 +132,6 @@ class LobbiesController(
                     JoinLobbyError.AlreadyInLobby -> Problem.response(409, Problem.alreadyInLobby)
                     JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit)
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
@@ -166,10 +155,6 @@ class LobbiesController(
                     LeaveLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     LeaveLobbyError.NotInLobby -> Problem.response(409, Problem.notInLobby)
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 
@@ -192,10 +177,6 @@ class LobbiesController(
                     CloseLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     CloseLobbyError.NotHost -> Problem.response(403, Problem.onlyHostCanCloseLobby)
                 }
-
-            else -> {
-                TODO()
-            }
         }
     }
 }

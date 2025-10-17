@@ -147,12 +147,10 @@ class LobbiesService(
                 return@run failure(CreateLobbyError.NotEnoughCredit)
             }
 
-            /* Verificar segurança da password se for privado
-            if (isPrivate && (passwordValidationInfo == null || passwordValidationInfo.validationInfo.length < 8)) {
-                return@run failure(CreateLobbyError.InsecurePassword)
-            }*/
-
-            // TODO ("APANHAR ERROS 500 QUE VÊM DO SV PARA APRESENTAR AO USER")
+                /* Verificar segurança da password se for privado
+                if (isPrivate && (passwordValidationInfo == null || passwordValidationInfo.validationInfo.length < 8)) {
+                    return@run failure(CreateLobbyError.InsecurePassword)
+                }*/
 
             // Criar o lobby
             val lobbyId =

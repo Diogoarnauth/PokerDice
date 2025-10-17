@@ -62,9 +62,9 @@ class LobbiesController(
                 when (res.value) {
                     CreateLobbyError.InvalidSettings -> Problem.response(400, Problem.invalidLobbySettings)
                     CreateLobbyError.CouldNotCreateLobby -> Problem.response(400, Problem.lobbyAlreadyExists)
-                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(400, Problem.HostAlreadyHasAnOpenLobby)
-                    CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(400, Problem.HostAlreadyOnAnotherLobby)
-                    CreateLobbyError.NotEnoughCredit -> Problem.response(400, Problem.NotEnoughCredit)
+                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(403, Problem.HostAlreadyHasAnOpenLobby)
+                    CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(409, Problem.HostAlreadyOnAnotherLobby)
+                    CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit)
                     CreateLobbyError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
 
                     else -> Problem.response(500, Problem.internalServerError)

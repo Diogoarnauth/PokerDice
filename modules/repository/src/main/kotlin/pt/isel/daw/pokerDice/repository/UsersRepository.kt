@@ -49,6 +49,8 @@ interface UsersRepository {
 
     fun clearLobbyForAllUsers(lobbyId: Int)
 
+    fun getAllUsersInLobby(lobbyId: Int): List<User>
+
     fun countUsersInLobby(lobbyId: Int): Int
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int

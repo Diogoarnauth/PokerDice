@@ -6,8 +6,6 @@ data class Lobby(
     val name: String,
     val description: String,
     val hostId: Int,
-    // val isPrivate: Boolean,
-    // val passwordValidationInfo: PasswordValidationInfo?,
     val minUsers: Int,
     val maxUsers: Int,
     val rounds: Int,

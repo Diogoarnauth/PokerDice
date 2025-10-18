@@ -1,18 +1,19 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Instant
-import pt.isel.daw.pokerDice.domain.users.User
-
-class Round(
+// Round.kt
+data class Round(
     val id: Int,
-    var winner: User? = null,
-    var bet: Int,
-    var roundOver: Boolean = false,
-    val timeToPlay: Int,
-    // possivelmente depois alterar para estrutura de tempo
-    val plays: MutableList<Play> = mutableListOf(),
-    var startTime: Instant? = null,
+    val gameId: Int,
+    val roundWinners: Int? = null,
+    val roundNumber: Int,
+    var bet: Int?,
+    // null caso ele desista de jogar o round
+    // turno ou id ?
+    var roundStatus: Boolean,
 ) {
+    // TODO("")
+
+    /*
     init {
         require(id > 0) { "ID must be greater than zero." }
         require(winner == null) { "A new round can´t start with an winner defined" }
@@ -37,5 +38,5 @@ class Round(
 
     fun endRound() {
         roundOver = true
-    }
+    }*/
 }

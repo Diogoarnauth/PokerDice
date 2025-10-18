@@ -52,6 +52,9 @@ class Problem(
         val internalServerError = Problem(URI("${BASE_URL}InternalServerError"))
         val invalidRequestContent = Problem(URI("${BASE_URL}invalid-content"))
 
+        val gameAlreadyRunning = Problem(URI("${BASE_URL}game-already-running"))
+        val notEnoughPlayers = Problem(URI("${BASE_URL}not-enough-players"))
+
         // val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
         // val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))
         // val noUpdateProvided = Problem(URI("${BASE_URL}no-update-provided"))

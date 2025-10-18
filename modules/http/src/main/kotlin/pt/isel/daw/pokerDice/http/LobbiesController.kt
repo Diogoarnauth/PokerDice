@@ -41,8 +41,6 @@ class LobbiesController(
                 authenticatedUser.user.id,
                 body.name,
                 body.description,
-                // body.isPrivate,
-                // body.passwordValidationInfo,
                 body.minUsers,
                 body.maxUsers,
                 body.rounds,

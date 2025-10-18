@@ -1,10 +1,6 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
-import pt.isel.daw.pokerDice.domain.users.User
-import java.util.UUID
-import kotlin.time.Duration
 
 // organizar isto noutro sitio
 enum class CombinationType {
@@ -77,14 +73,15 @@ object PokerDiceScorer {
         return sorted.zipWithNext().all { (a, b) -> b - a == 1 }
     }
 }
+/*
 
 class GameLogic(
     private val clock: Clock,
     private val duration: Duration,
 ) {
     /**
-     * Cria um novo game ainda sem jogadores
-     */
+ * Cria um novo game ainda sem jogadores
+ */
     fun createNewGame(
         nrPlayers: Int,
         minCredits: Int,
@@ -103,8 +100,8 @@ class GameLogic(
         )
 
     /**
-     * Adiciona, se possível, um novo jogador ao jogo.
-     */
+ * Adiciona, se possível, um novo jogador ao jogo.
+ */
     fun addPlayer(
         game: Game,
         playerCredits: Int,
@@ -148,9 +145,9 @@ class GameLogic(
     }
 
     /**
-     * Aplica uma jogada (round). Para já, apenas faz validações básicas.
-     * Mais tarde, vai ser expandido com a lógica do lançamento de dados.
-     */
+ * Aplica uma jogada (round). Para já, apenas faz validações básicas.
+ * Mais tarde, vai ser expandido com a lógica do lançamento de dados.
+ */
     fun applyRound(
         game: Game,
         player: User,
@@ -288,8 +285,8 @@ class GameLogic(
     }
 
     /**
-     * Determina o tipo de combinação obtida.
-     */
+ * Determina o tipo de combinação obtida.
+ */
     private fun determineCombination(roll: List<Dice>): CombinationType {
         val counts =
             roll
@@ -308,3 +305,6 @@ class GameLogic(
         }
     }
 }
+
+
+TODO("REBUILD COM AS NOVAS CLASSES E RESPETIVOS PARAMETROS")*/

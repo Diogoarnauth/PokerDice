@@ -17,6 +17,14 @@ class LobbiesDomain(
         validationInfo.validationInfo,
     )
 
+    fun countPlayersInLobby(lobbyID: Int): List<Int> {
+        TODO("Implement lobby availability management")
+    }
+
+    fun markLobbyAsAvailable(lobbyID: Int) {
+        TODO("Implement lobby availability management")
+    }
+
     fun createPasswordValidationInformation(password: String) =
         PasswordValidationInfo(
             validationInfo = passwordEncoder.encode(password),

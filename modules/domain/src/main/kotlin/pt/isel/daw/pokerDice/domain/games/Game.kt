@@ -1,8 +1,8 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import pt.isel.daw.pokerDice.domain.users.User
 import java.util.UUID
 
+/*
 data class Game(
     val id: UUID,
     val lobby_id: UUID,
@@ -34,12 +34,32 @@ data class Game(
     }
 
     /**
-     * Verifica se o jogo está completo (todos os jogadores entraram).
-     */
+ * Verifica se o jogo está completo (todos os jogadores entraram).
+ */
     val isFull: Boolean get() = players.size >= nrPlayers
 
     /**
-     * Retorna o jogador atual (de acordo com o índice).
-     */
+ * Retorna o jogador atual (de acordo com o índice).
+ */
     val currentPlayer: User? get() = players.getOrNull(currentPlayerIndex)
+}
+*/
+
+data class Game(
+    val id: UUID,
+    val lobbyId: Int,
+    var state: GameStatus,
+    var nrUsers: Int,
+    var gameWinner: Int? = null,
+    val minCredits: Int,
+    var roundCounter: Int?,
+) {
+    enum class GameStatus {
+        FINISHED,
+        RUNNING,
+        ;
+
+        val isEnded: Boolean get() = this == GameStatus.FINISHED
+        val isRunning: Boolean get() = this == GameStatus.RUNNING
+    }
 }

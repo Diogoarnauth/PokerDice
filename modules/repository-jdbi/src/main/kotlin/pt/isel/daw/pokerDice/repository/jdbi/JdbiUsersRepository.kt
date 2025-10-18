@@ -103,6 +103,13 @@ class JdbiUsersRepository(
             .mapTo<Int>()
             .one()
 
+    override fun getAllUsersInLobby(lobbyId: Int): List<User> =
+        handle
+            .createQuery("SELECT * FROM dbo.Users WHERE lobby_id = :lobbyId")
+            .bind("lobbyId", lobbyId)
+            .mapTo<User>()
+            .list()
+
     override fun createToken(
         // testar, perceber se percebe quando o maxtokens foi atingido
         token: Token,

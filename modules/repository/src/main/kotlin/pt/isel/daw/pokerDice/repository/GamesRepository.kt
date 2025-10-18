@@ -1,11 +1,21 @@
 package pt.isel.daw.pokerDice.repository
+
 import pt.isel.daw.pokerDice.domain.games.Game
-import java.util.UUID
 
 interface GamesRepository {
-    fun createGame(game: Game)
+    fun createGame(game: Game): Int?
 
-    fun getById(id: UUID): Game?
+    fun getGameById(id: Int): Game?
 
-    fun update(game: Game)
+    fun getGameByLobbyId(lobbyId: Int): Game?
+
+    fun updateGameState(
+        gameId: Int,
+        state: Game.GameStatus,
+    )
+/*
+    fun setCurrentRound(
+        gameId: Int,
+        roundId: Int,
+    )*/
 }

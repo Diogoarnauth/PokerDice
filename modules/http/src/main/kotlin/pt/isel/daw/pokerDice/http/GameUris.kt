@@ -10,11 +10,10 @@ object GameUris {
         const val ROOT = "$PREFIX/games"
         const val BY_ID = "$ROOT/{gameId}"
         const val START = "$ROOT/{lobbyId}/start"
-        const val ROUND = "$ROOT/{gameId}/round"
         const val ROLL = "$ROOT/{gameId}/roll"
         const val REROLL = "$ROOT/{gameId}/reroll"
         const val LEAVE = "$ROOT/{gameId}/leave"
-        const val END_TURN = "$ROOT/{gameId}/end-turn"
+        const val END_TURN = "$ROOT/{gameId}/end"
         const val STATUS = "$ROOT/{gameId}/status"
         const val RESULT = "$ROOT/{gameId}/final-result"
 

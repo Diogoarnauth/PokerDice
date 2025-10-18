@@ -1,7 +1,5 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import java.util.UUID
-
 // Round.kt
 data class Round(
     val id: Int?,

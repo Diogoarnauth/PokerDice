@@ -7,7 +7,6 @@ import org.jdbi.v3.core.kotlin.mapTo
 import org.postgresql.util.PGobject
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.repository.GamesRepository
-import java.util.UUID
 
 class JdbiGamesRepository(
     private val handle: Handle,
@@ -60,7 +59,8 @@ class JdbiGamesRepository(
                     lobbyId = rs.getInt("lobby_id"),
                     state = rs.getString("state"),
                     roundsCounter = rs.getInt("rounds_counter"),
-                    winner = rs.getObject("winner")?.let { rs.getInt("winner") }, // nullable seguro
+                    winner = rs.getObject("winner")?.let { rs.getInt("winner") },
+                    // nullable seguro
                     nrUsers = rs.getInt("nrUsers"),
                 ).toDomain()
             }.singleOrNull()

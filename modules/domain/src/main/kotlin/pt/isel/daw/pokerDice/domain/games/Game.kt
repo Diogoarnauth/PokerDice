@@ -1,7 +1,5 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import java.util.UUID
-
 /*
 data class Game(
     val id: UUID,
@@ -56,9 +54,11 @@ data class Game(
     enum class GameStatus {
         FINISHED,
         RUNNING,
+        WAITING_FOR_PLAYERS,
         ;
 
         val isEnded: Boolean get() = this == GameStatus.FINISHED
         val isRunning: Boolean get() = this == GameStatus.RUNNING
+        val isWaitingForPlayers: Boolean get() = this == GameStatus.WAITING_FOR_PLAYERS
     }
 }

@@ -14,6 +14,8 @@ interface LobbiesRepository {
         lobbyId: Int?,
     )
 
+    fun markGameAsStartedInLobby(lobbyId: Int)
+
     fun createLobby(
         hostId: Int,
         name: String,

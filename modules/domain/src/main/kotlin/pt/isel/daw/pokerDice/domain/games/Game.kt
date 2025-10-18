@@ -51,7 +51,6 @@ data class Game(
     var state: GameStatus,
     var nrUsers: Int,
     var gameWinner: Int? = null,
-    val minCredits: Int,
     var roundCounter: Int?,
 ) {
     enum class GameStatus {

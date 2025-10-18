@@ -45,26 +45,15 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            println("DEBUG createGame: checking host -> userId=$userId, lobby.hostId=${lobby.hostId}")
-
             // O USER É O HOST DA LOBBY, LOGADO NA SESSÃO
             require(lobby.hostId == userId) {
                 "Only the host user can start the game"
             }
 
-            println("DEBUG createGame: checking existing game -> existingGame=$existingGame, existingGameState=${existingGame?.state}")
-
             // Verificar se já existe um jogo em andamento neste lobby
-            require(existingGame == null || existingGame.state == Game.GameStatus.FINISHED) {
-                "A game is already running in this lobby"
-            }
 
             // debug before credits verification
             val usersWithCredit = allUsersInLobby.count { it.credit >= lobby.minCreditToParticipate }
-            println(
-                "DEBUG createGame: verifying credits -> usersWithCredit=$usersWithCredit," +
-                    " currentPlayers=${allUsersInLobby.count()}, minCredit=${lobby.minCreditToParticipate}",
-            )
 
             // VER SE TODOS OS USERS TÊM CREDITOS PARA COMEÇAR O GAME
             require(
@@ -77,24 +66,66 @@ class GameService(
                 //   + return@run failure(GameCreationError.InsufficientCredits)'")
             }
 
-            println(
-                "DEBUG createGame: checking min users -> currentPlayers=${allUsersInLobby.count()}, " +
-                    "minUsers=${lobby.minUsers}, isEmpty=${allUsersInLobby.isEmpty()}",
-            )
-
             // MIN USERS DO GAME
             require(allUsersInLobby.count() >= lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
             }
 
-            println("DEBUG createGame: final existingGame check -> existingGame=$existingGame")
-
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
+
+            // TODO CHAMAR ROUNDREPOSITORY.CREATEROUND
+
+            // update do isRunning no lobby
+            it.lobbiesRepository.markGameAsStartedInLobby(lobbyId)
 
             val newGame = gameDomain.createGameFromLobby(lobby, allUsersInLobby.count())
             val gameId = it.gamesRepository.createGame(newGame)
 
             success(gameId)
+        }
+
+    fun rollDice(
+        gameId: Int,
+        userId: Int,
+    ): Either<GameGetByIdError, List<Int>> =
+        transactionManager.run {
+            val game = it.gamesRepository.getGameById(gameId)
+            require(game?.state == Game.GameStatus.RUNNING) {
+                "Game is not currently running"
+            }
+
+            val round = roundsRepository.getCurrentRoundByGameId(gameId)
+            require(round != null && round.roundOver == false) {
+                "No active round found for this game"
+            }
+
+            val diceRolls = gameDomain.rollDice(game, userId)
+            it.gamesRepository.updateGameDiceRolls(gameId, userId, diceRolls)
+
+            success(diceRolls)
+        }
+
+    fun rerollDice(
+        gameId: Int,
+        userId: Int,
+        diceIndexes: List<Int>,
+        // A K J Q 10     -> 1 , 2
+    ): Either<GameGetByIdError, List<Int>> =
+        transactionManager.run {
+            val game = it.gamesRepository.getGameById(gameId)
+            require(game?.state == Game.GameStatus.RUNNING) {
+                "Game is not currently running"
+            }
+
+            val round = roundsRepository.getCurrentRoundByGameId(gameId)
+            require(round != null && round.roundOver == false) {
+                "No active round found for this game"
+            }
+
+            val newDiceRolls = gameDomain.rerollDice(game, userId, diceIndexes)
+            it.gamesRepository.updateGameDiceRolls(gameId, userId, newDiceRolls)
+
+            success(newDiceRolls)
         }
 
     fun getById(id: Int): GameGetByIdResult =

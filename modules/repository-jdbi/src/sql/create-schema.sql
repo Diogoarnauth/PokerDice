@@ -18,6 +18,7 @@ CREATE TABLE dbo.lobby (
                            name VARCHAR(100) NOT NULL,
                            description TEXT,
     --host_id INT NOT NULL REFERENCES Player(id) ON DELETE CASCADE,
+                           isRunning BOOLEAN NOT NULL DEFAULT FALSE,
                            minPlayers INT NOT NULL CHECK (minPlayers >= 2),
                            maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
                            rounds INT NOT NULL CHECK (rounds > 0),
@@ -39,8 +40,7 @@ CREATE TABLE IF NOT EXISTS dbo.game (
                                         state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
                                         rounds_counter INT DEFAULT 0 CHECK (rounds_counter >= 0),
                                         winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
-                                        nrUsers INT NOT NULL,
-                                        minCredits INT NOT NULL CHECK (minCredits >= 0)
+                                        nrUsers INT NOT NULL
 );
 
 -- Tabela Round

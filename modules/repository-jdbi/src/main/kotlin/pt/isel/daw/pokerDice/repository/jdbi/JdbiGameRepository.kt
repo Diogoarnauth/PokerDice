@@ -20,15 +20,13 @@ class JdbiGamesRepository(
                 state,
                 rounds_counter,
                 winner,
-                nrUsers,
-                minCredits
+                nrUsers
             ) VALUES (
                 :lobbyId,
                 :state,
                 :roundsCounter,
                 :winner,
-                :nrUsers,
-                :minCredits
+                :nrUsers
             )
             RETURNING id
             """.trimIndent()
@@ -40,7 +38,6 @@ class JdbiGamesRepository(
             .bind("roundsCounter", game.roundCounter)
             .bind("winner", game.gameWinner)
             .bind("nrUsers", game.nrUsers)
-            .bind("minCredits", game.minCredits)
             .executeAndReturnGeneratedKeys("id")
             .mapTo<Int>()
             .singleOrNull()
@@ -52,7 +49,7 @@ class JdbiGamesRepository(
         handle
             .createQuery(
                 """
-                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers, minCredits
+                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers
                 FROM dbo.game
                 WHERE id = :id
                 """.trimIndent(),
@@ -65,7 +62,7 @@ class JdbiGamesRepository(
         handle
             .createQuery(
                 """
-                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers, minCredits
+                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers
                 FROM dbo.game
                 WHERE lobby_id = :lobbyId
                   AND state = 'RUNNING'
@@ -79,7 +76,7 @@ class JdbiGamesRepository(
 
     override fun updateGameState(
         gameId: Int,
-        newState: Game.GameStatus,
+        state: Game.GameStatus,
     ) {
         handle
             .createUpdate(
@@ -89,7 +86,7 @@ class JdbiGamesRepository(
                 WHERE id = :id
                 """.trimIndent(),
             ).bind("id", gameId)
-            .bind("newState", newState.name)
+            .bind("newState", state.name)
             .execute()
     }
 /*
@@ -138,7 +135,6 @@ data class GameDbModel(
     val roundsCounter: Int,
     val winner: Int?,
     val nrUsers: Int,
-    val minCredits: Int,
     val currentRoundId: Int?,
 ) {
     fun toDomain(): Game =
@@ -149,7 +145,6 @@ data class GameDbModel(
             roundCounter = roundsCounter,
             gameWinner = winner,
             nrUsers = nrUsers,
-            minCredits = minCredits,
             // currentRoundId = currentRoundId,
         )
 }

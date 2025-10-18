@@ -66,6 +66,13 @@ class JdbiLobbyRepository(
             .execute()
     }
 
+    override fun markGameAsStartedInLobby(lobbyId: Int) {
+        handle
+            .createUpdate("UPDATE dbo.Lobby SET isRunning = TRUE WHERE id = :lobbyId")
+            .bind("lobbyId", lobbyId)
+            .execute()
+    }
+
     override fun updateLobbyIdForUser(
         userId: Int,
         lobbyId: Int?,

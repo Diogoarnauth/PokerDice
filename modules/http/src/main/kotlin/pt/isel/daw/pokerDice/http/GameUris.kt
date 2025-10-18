@@ -12,6 +12,7 @@ object GameUris {
         const val START = "$ROOT/{lobbyId}/start"
         const val ROLL = "$ROOT/{gameId}/roll"
         const val REROLL = "$ROOT/{gameId}/reroll"
+        const val LEAVE = "$ROOT/{gameId}/leave"
         const val END_TURN = "$ROOT/{gameId}/end-turn"
         const val STATUS = "$ROOT/{gameId}/status"
         const val RESULT = "$ROOT/{gameId}/final-result"
@@ -23,6 +24,8 @@ object GameUris {
         fun roll(gameId: String): URI = URI(UriTemplate(ROLL).expand(gameId).toString())
 
         fun reroll(gameId: String): URI = URI(UriTemplate(REROLL).expand(gameId).toString())
+
+        fun leave(gameId: String): URI = URI(UriTemplate(LEAVE).expand(gameId).toString())
 
         fun endTurn(gameId: String): URI = URI(UriTemplate(END_TURN).expand(gameId).toString())
 

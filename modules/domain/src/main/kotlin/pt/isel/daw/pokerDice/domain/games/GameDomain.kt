@@ -36,7 +36,6 @@ class GameDomain {
             roundCounter = 0,
             gameWinner = null,
             nrUsers = nrUsers,
-            minCredits = lobby.minCreditToParticipate,
         )
     // TODO ("TMB PODE COMEÇAR O JOGO QUANDO PASSAR O TEMPO E JA TIVER O N MIN)
 

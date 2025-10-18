@@ -5,9 +5,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
+import pt.isel.daw.pokerDice.http.model.lobbyModel.LobbyCreateInputModel
 import pt.isel.daw.pokerDice.services.GameCreationError
 import pt.isel.daw.pokerDice.services.GameService
 import pt.isel.daw.pokerDice.utils.Failure
@@ -38,6 +40,45 @@ class GameController(
         }
     }
 
+    @PostMapping(GameUris.Games.ROLL)
+    fun rollDice(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val res = gameService.rollDice(gameId, authenticatedUser.user.id)
+        return when (res) {
+            is Success -> ResponseEntity.ok(res.value)
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
+    @PostMapping(GameUris.Games.REROLL)
+    fun rerollDice(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
+        @PathVariable gameId: Int,
+        @RequestBody body: DiceInputModel,
+    ): ResponseEntity<*> {
+        val indexes = diceIndexes.split(",").mapNotNull { it.toIntOrNull() }
+        val res = gameService.rerollDice(gameId, authenticatedUser.user.id, indexes)
+        return when (res) {
+            is Success -> ResponseEntity.ok(res.value)
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
+    @PostMapping(GameUris.Games.END_TURN)
+    fun endTurn(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val res = gameService.endTurn(gameId, authenticatedUser.user.id)
+        return when (res) {
+            is Success -> ResponseEntity.ok(res.value)
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
+    @PostMapping
     @GetMapping(GameUris.Games.BY_ID)
     fun getById(
         @PathVariable gameId: Int,

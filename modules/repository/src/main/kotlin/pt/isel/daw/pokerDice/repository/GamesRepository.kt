@@ -13,9 +13,9 @@ interface GamesRepository {
         gameId: Int,
         state: Game.GameStatus,
     )
-/*
-    fun setCurrentRound(
+
+    fun updateCurrentRound(
         gameId: Int,
         roundId: Int,
-    )*/
+    )
 }

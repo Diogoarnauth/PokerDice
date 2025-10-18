@@ -47,6 +47,9 @@ class Problem(
         val notInLobby = Problem(URI("${BASE_URL}notInLobby"))
         val onlyHostCanCloseLobby = Problem(URI("${BASE_URL}onlyHostCanCloseLobby"))
 
+        // Game generic
+        val gameNotFound = Problem(URI("${BASE_URL}gameNotFound"))
+
         // Generic
         val insecurePassword = Problem(URI("${BASE_URL}insecure-password"))
         val internalServerError = Problem(URI("${BASE_URL}InternalServerError"))

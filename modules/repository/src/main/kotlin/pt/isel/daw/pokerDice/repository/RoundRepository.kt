@@ -8,9 +8,5 @@ interface RoundRepository {
         round: Round,
     ): Int
 
-    fun getRoundsByGameId(
-        gameId: Int,
-        page: Int,
-        pageSize: Int,
-    ): List<Round>
+    fun getRoundsByGameId(gameId: Int): List<Round>
 }

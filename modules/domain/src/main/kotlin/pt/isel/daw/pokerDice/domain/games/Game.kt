@@ -46,12 +46,12 @@ data class Game(
 */
 
 data class Game(
-    val id: UUID,
+    val id: Int? = null,
     val lobbyId: Int,
     var state: GameStatus,
     var nrUsers: Int,
     var gameWinner: Int? = null,
-    var roundCounter: Int?,
+    var roundCounter: Int,
 ) {
     enum class GameStatus {
         FINISHED,

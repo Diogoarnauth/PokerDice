@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
-import pt.isel.daw.pokerDice.http.model.lobbyModel.LobbyCreateInputModel
 import pt.isel.daw.pokerDice.services.GameCreationError
 import pt.isel.daw.pokerDice.services.GameService
 import pt.isel.daw.pokerDice.utils.Failure
@@ -56,29 +55,38 @@ class GameController(
     fun rerollDice(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
-        @RequestBody body: DiceInputModel,
+        @RequestBody dicePositionsMask: String,
     ): ResponseEntity<*> {
-        val indexes = diceIndexes.split(",").mapNotNull { it.toIntOrNull() }
-        val res = gameService.rerollDice(gameId, authenticatedUser.user.id, indexes)
+        // Exemplo: "01010" → [1, 3]
+        val diceIndexes =
+            dicePositionsMask
+                .trim()
+                .mapIndexedNotNull { index, c -> if (c == '1') index else null }
+
+        val res = gameService.rerollDice(gameId, authenticatedUser.user.id, diceIndexes)
         return when (res) {
             is Success -> ResponseEntity.ok(res.value)
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }
 
+    /*
     @PostMapping(GameUris.Games.END_TURN)
     fun endTurn(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
+
         val res = gameService.endTurn(gameId, authenticatedUser.user.id)
+
         return when (res) {
             is Success -> ResponseEntity.ok(res.value)
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }
 
-    @PostMapping
+     */
+
     @GetMapping(GameUris.Games.BY_ID)
     fun getById(
         @PathVariable gameId: Int,
@@ -91,7 +99,7 @@ class GameController(
     }
 
     @PostMapping(GameUris.Games.END_TURN)
-    fun endTurn(
+    fun endGame(
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
         gameService.endGame(gameId)

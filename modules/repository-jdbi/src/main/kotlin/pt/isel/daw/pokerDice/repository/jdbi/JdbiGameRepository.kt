@@ -54,9 +54,16 @@ class JdbiGamesRepository(
                 WHERE id = :id
                 """.trimIndent(),
             ).bind("id", id)
-            .mapTo<GameDbModel>()
-            .singleOrNull()
-            ?.toDomain()
+            .map { rs, _ ->
+                GameDbModel(
+                    id = rs.getInt("id"),
+                    lobbyId = rs.getInt("lobby_id"),
+                    state = rs.getString("state"),
+                    roundsCounter = rs.getInt("rounds_counter"),
+                    winner = rs.getObject("winner")?.let { rs.getInt("winner") }, // nullable seguro
+                    nrUsers = rs.getInt("nrUsers"),
+                ).toDomain()
+            }.singleOrNull()
 
     override fun getGameByLobbyId(lobbyId: Int): Game? =
         handle
@@ -89,23 +96,25 @@ class JdbiGamesRepository(
             .bind("newState", state.name)
             .execute()
     }
-/*
-    override fun setCurrentRound(
+
+    override fun updateCurrentRound(
         gameId: Int,
         roundId: Int,
     ) {
+        val sql =
+            """
+            UPDATE dbo.game
+            SET current_round_id = :roundId,
+                round_counter = round_counter + 1
+            WHERE id = :gameId
+            """.trimIndent()
+
         handle
-            .createUpdate(
-                """
-                UPDATE dbo.round
-                SET  = :roundId
-                WHERE id = :id
-                """.trimIndent(),
-            ).bind("id", gameId)
+            .createUpdate(sql)
+            .bind("gameId", gameId)
             .bind("roundId", roundId)
             .execute()
     }
-*/
 
     private fun org.jdbi.v3.core.statement.Update.bindJson(
         name: String,
@@ -129,13 +138,13 @@ class JdbiGamesRepository(
 // ------------------ DB Model ------------------
 
 data class GameDbModel(
-    val id: UUID,
+    val id: Int,
     val lobbyId: Int,
     val state: String,
     val roundsCounter: Int,
     val winner: Int?,
     val nrUsers: Int,
-    val currentRoundId: Int?,
+    val currentRoundId: Int? = null,
 ) {
     fun toDomain(): Game =
         Game(

@@ -30,7 +30,6 @@ class GameDomain {
         nrUsers: Int,
     ): Game =
         Game(
-            id = java.util.UUID.randomUUID(),
             lobbyId = lobby.id,
             state = Game.GameStatus.RUNNING,
             roundCounter = 0,

@@ -1,15 +1,17 @@
 package pt.isel.daw.pokerDice.domain.games
 
+import java.util.UUID
+
 // Round.kt
 data class Round(
-    val id: Int,
+    val id: Int?,
     val gameId: Int,
     val roundWinners: Int? = null,
-    val roundNumber: Int,
+    var roundNumber: Int,
     var bet: Int?,
     // null caso ele desista de jogar o round
     // turno ou id ?
-    var roundStatus: Boolean,
+    var roundOver: Boolean,
 ) {
     // TODO("")
 

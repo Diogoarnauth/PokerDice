@@ -87,7 +87,8 @@ class GameService(
     fun rollDice(
         gameId: Int,
         userId: Int,
-    ): Either<GameGetByIdError, List<Int>> =
+    ): Either<GameGetByIdError, List<Int>> = TODO()
+    /*
         transactionManager.run {
             val game = it.gamesRepository.getGameById(gameId)
             require(game?.state == Game.GameStatus.RUNNING) {
@@ -105,12 +106,17 @@ class GameService(
             success(diceRolls)
         }
 
+     */
+
     fun rerollDice(
         gameId: Int,
         userId: Int,
         diceIndexes: List<Int>,
         // A K J Q 10     -> 1 , 2
     ): Either<GameGetByIdError, List<Int>> =
+        TODO()
+
+        /*
         transactionManager.run {
             val game = it.gamesRepository.getGameById(gameId)
             require(game?.state == Game.GameStatus.RUNNING) {
@@ -128,6 +134,8 @@ class GameService(
             success(newDiceRolls)
         }
 
+         */
+
     fun getById(id: Int): GameGetByIdResult =
         transactionManager.run {
             val game =
@@ -142,4 +150,11 @@ class GameService(
             it.gamesRepository.updateGameState(gameId, Game.GameStatus.FINISHED)
             lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
         }
+
+    fun endTurn(
+        gameId: Int,
+        userId: Int,
+    ) {
+        TODO()
+    }
 }

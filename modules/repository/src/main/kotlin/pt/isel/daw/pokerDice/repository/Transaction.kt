@@ -5,6 +5,7 @@ interface Transaction {
     val inviteRepository: InviteRepository
     val lobbiesRepository: LobbiesRepository
     val gamesRepository: GamesRepository
+    val roundRepository: RoundRepository
 
     // val gamesRepository: GamesRepository
 

@@ -1,7 +1,6 @@
 package pt.isel.daw.pokerDice.repository
 
 import pt.isel.daw.pokerDice.domain.games.Turn
-import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 
 interface TurnsRepository {
     fun createTurn(

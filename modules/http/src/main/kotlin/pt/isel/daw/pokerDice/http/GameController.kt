@@ -88,7 +88,7 @@ class GameController(
         }
     }
 
-    @PostMapping(GameUris.Games.END_TURN)
+    @PostMapping(GameUris.Games.END_GAME)
     fun endGame(
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {

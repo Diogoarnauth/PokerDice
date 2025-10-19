@@ -21,7 +21,7 @@ class GameDomain {
 
     fun rollDice(currentTurn: Turn): String {
         val diceCount = 5
-        val result = List(diceCount) { faces.random() }.joinToString("")
+        val result = List(diceCount) { faces.random() }.joinToString(",")
         println("rollDice - turn=$currentTurn -> $result")
         return result
     }
@@ -46,6 +46,13 @@ class GameDomain {
         return result
     }
 
+    fun evaluateRoundWinner(roundId: Int): Int {
+        // TODO: lógica real baseada nas combinações de dados
+        // Por agora, devolve aleatoriamente um player
+        println("A avaliar vencedor da ronda $roundId")
+        return (1..4).random()
+    }
+
     fun createGameFromLobby(
         lobby: Lobby,
         nrUsers: Int,
@@ -58,27 +65,4 @@ class GameDomain {
             nrUsers = nrUsers,
         )
 // TODO ("TMB PODE COMEÇAR O JOGO QUANDO PASSAR O TEMPO E JA TIVER O N MIN)
-
-/** Finaliza o turno do jogador e retorna se a ronda acabou */
-    fun endTurn(round: Round): Boolean {
-        TODO()
-    }
-
-/** Verifica se o jogo acabou */
-    fun isGameFinished(
-        game: Game,
-        minRounds: Int = 1,
-    ): Boolean {
-        TODO()
-    }
-
-/** Calcula vencedor da ronda (poderia ser usado internamente) */
-    fun calculateRoundWinner(round: Round): Int {
-        TODO()
-    }
-
-/** Avalia a “mão” de um turno (simplificado, implementar poker dice real) */
-    private fun evaluateHand(dice: List<Int>): Int {
-        TODO()
-    }
 }

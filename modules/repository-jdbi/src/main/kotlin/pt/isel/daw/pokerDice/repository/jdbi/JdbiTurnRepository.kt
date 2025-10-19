@@ -67,10 +67,10 @@ class JdbiTurnRepository(
             .mapTo<Turn>()
             .first()
 
-    /*
     override fun getNextPlayerInRound(
         roundId: Int,
         lobbyId: Int,
+        currTurnPlayerId: Int,
     ): Int? {
         val playersInLobby =
             handle
@@ -87,59 +87,20 @@ class JdbiTurnRepository(
 
         if (playersInLobby.isEmpty()) return null
 
-        // 2️⃣ Buscar todos os turns deste round
         val turnsInRound =
             handle
                 .createQuery(
                     """
-            SELECT player_id, is_done
+            SELECT player_id
             FROM dbo.turn
             WHERE round_id = :roundId
-            ORDER BY id
+              AND is_done = true
             """,
                 ).bind("roundId", roundId)
-                .map { rs, _ ->
-                    Pair(
-                        rs.getInt("player_id"),
-                        rs.getBoolean("is_done"),
-                    )
-                }.list()
-
-        val nextPlayer =
-            playersInLobby.firstOrNull { playerId ->
-                turnsInRound.any { (turnPlayer, isDone) ->
-                    turnPlayer == playerId && !isDone
-                }
-            }
-
-        return nextPlayer
-    }
-
-     */
-    override fun getNextPlayerInRound(
-        roundId: Int,
-        lobbyId: Int,
-        currentPlayerId: Int,
-    ): Int? {
-        val allPlayers =
-            handle
-                .createQuery(
-                    """
-        SELECT u.id
-        FROM dbo.users u
-        JOIN dbo.lobby_users lu ON lu.user_id = u.id
-        WHERE lu.lobby_id = :lobbyId
-        ORDER BY u.id
-        """,
-                ).bind("lobbyId", lobbyId)
                 .mapTo<Int>()
                 .list()
 
-        val currentIndex = allPlayers.indexOf(currentPlayerId)
-        return if (currentIndex != -1 && currentIndex + 1 < allPlayers.size) {
-            allPlayers[currentIndex + 1] // próximo jogador
-        } else {
-            null // fim da ronda
-        }
+        // Encontra o próximo jogador que ainda não jogou
+        return playersInLobby.firstOrNull { it !in turnsInRound }
     }
 }

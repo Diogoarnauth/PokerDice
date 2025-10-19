@@ -14,6 +14,7 @@ object GameUris {
         const val REROLL = "$ROOT/{lobbyId}/reroll"
         const val LEAVE = "$ROOT/{gameId}/leave"
         const val END_TURN = "$ROOT/{gameId}/end"
+        const val END_GAME = "$ROOT/{gameId}/end-game"
         const val STATUS = "$ROOT/{gameId}/status"
         const val RESULT = "$ROOT/{gameId}/final-result"
 

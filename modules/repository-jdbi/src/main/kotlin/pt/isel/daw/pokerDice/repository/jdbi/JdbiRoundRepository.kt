@@ -65,4 +65,18 @@ class JdbiRoundRepository(
                 )
             }.list()
     }
+
+    override fun markRoundAsOver(roundId: Int) {
+        val sql =
+            """
+            UPDATE dbo.round
+            SET roundOver = TRUE
+            WHERE id = :roundId
+            """.trimIndent()
+
+        handle
+            .createUpdate(sql)
+            .bind("roundId", roundId)
+            .execute()
+    }
 }

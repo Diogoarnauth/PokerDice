@@ -42,9 +42,9 @@ class GameController(
     @PostMapping(GameUris.Games.ROLL)
     fun rollDice(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
-        @PathVariable gameId: Int,
+        @PathVariable lobbyId: Int,
     ): ResponseEntity<*> {
-        val res = gameService.rollDice(gameId, authenticatedUser.user.id)
+        val res = gameService.rollDice(lobbyId, authenticatedUser.user.id)
         return when (res) {
             is Success -> ResponseEntity.ok(res.value)
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
@@ -54,16 +54,10 @@ class GameController(
     @PostMapping(GameUris.Games.REROLL)
     fun rerollDice(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
-        @PathVariable gameId: Int,
-        @RequestBody dicePositionsMask: String,
+        @PathVariable lobbyId: Int,
+        @RequestBody dicePositionsMask: List<Int>,
     ): ResponseEntity<*> {
-        // Exemplo: "01010" → [1, 3]
-        val diceIndexes =
-            dicePositionsMask
-                .trim()
-                .mapIndexedNotNull { index, c -> if (c == '1') index else null }
-
-        val res = gameService.rerollDice(gameId, authenticatedUser.user.id, diceIndexes)
+        val res = gameService.reRollDice(lobbyId, authenticatedUser.user.id, dicePositionsMask)
         return when (res) {
             is Success -> ResponseEntity.ok(res.value)
             is Failure -> Problem.response(404, Problem.lobbyNotFound)

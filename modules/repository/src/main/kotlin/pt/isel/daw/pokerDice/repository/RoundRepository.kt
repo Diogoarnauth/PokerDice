@@ -9,4 +9,6 @@ interface RoundRepository {
     ): Int
 
     fun getRoundsByGameId(gameId: Int): List<Round>
+
+    fun markRoundAsOver(roundId: Int)
 }

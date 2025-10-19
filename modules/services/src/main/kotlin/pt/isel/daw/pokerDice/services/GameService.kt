@@ -27,6 +27,30 @@ sealed class GameGetByIdError {
     data object GameNotFound : GameGetByIdError()
 }
 
+typealias GameErrorResult = Either<GameError, String>
+
+sealed class GameError {
+    data class GameNotFound(
+        val lobbyId: Int,
+    ) : GameError()
+
+    data class NoActiveRound(
+        val gameId: Int,
+    ) : GameError()
+
+    data class NoActiveTurn(
+        val roundId: Int,
+    ) : GameError()
+
+    data class InvalidDiceIndexes(
+        val indexes: List<Int>,
+    ) : GameError()
+
+    object TurnAlreadyFinished : GameError()
+
+    object InvalidRollCount : GameError()
+}
+
 typealias GameGetByIdResult = Either<GameGetByIdError, Game>
 
 @Named
@@ -107,56 +131,83 @@ class GameService(
         }
 
     fun rollDice(
-        gameId: Int,
+        lobbyId: Int,
         userId: Int,
-    ): Either<GameGetByIdError, List<Int>> = TODO()
-    /*
+    ): GameErrorResult =
+
         transactionManager.run {
-            val game = it.gamesRepository.getGameById(gameId)
-            require(game?.state == Game.GameStatus.RUNNING) {
-                "Game is not currently running"
+            val curGame =
+                it.gamesRepository.getGameByLobbyId(lobbyId)
+                    ?: return@run failure(GameError.GameNotFound(lobbyId))
+
+            val curRound =
+                it.roundRepository.getRoundsByGameId(curGame.id!!).first { it -> !it.roundOver }
+
+            val curTurn =
+                it.turnsRepository.getTurnsByRoundId(curRound.id!!, userId) // SÓ DEVE HAVER 1
+
+            val rolledDice = gameDomain.rollDice(curTurn)
+
+            val newRollCount = curTurn.rollCount + 1
+            val isTurnFinished = newRollCount >= 3
+
+            it.turnsRepository.updateTurn(
+                turnId = curTurn.id!!,
+                rollCount = newRollCount,
+                diceResults = rolledDice,
+                isDone = isTurnFinished,
+            )
+
+            println(" CHEGUEI ANTES DE PASSAR PARA O PRÓXIMO USER")
+
+            if (isTurnFinished) {
+                val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId)
+                if (nextPlayerId != null) {
+                    val nextTurn =
+                        Turn(
+                            id = null,
+                            roundId = curRound.id!!,
+                            playerId = nextPlayerId,
+                            rollCount = 0,
+                            isDone = false,
+                        )
+                    it.turnsRepository.createTurn(curRound.id!!, nextTurn)
+                } else {
+                    // todos os jogadores já jogaram → marcar round como terminado
+                    it.roundRepository.markRoundAsOver(curRound.id!!)
+                }
             }
 
-            val round = roundsRepository.getCurrentRoundByGameId(gameId)
-            require(round != null && round.roundOver == false) {
-                "No active round found for this game"
-            }
-
-            val diceRolls = gameDomain.rollDice(game, userId)
-            it.gamesRepository.updateGameDiceRolls(gameId, userId, diceRolls)
-
-            success(diceRolls)
+            success(rolledDice)
         }
 
-     */
-
-    fun rerollDice(
-        gameId: Int,
+    fun reRollDice(
+        lobbyId: Int,
         userId: Int,
-        diceIndexes: List<Int>,
-        // A K J Q 10     -> 1 , 2
-    ): Either<GameGetByIdError, List<Int>> =
-        TODO()
-
-        /*
+        keepIndexes: List<Int>,
+    ): GameErrorResult =
         transactionManager.run {
-            val game = it.gamesRepository.getGameById(gameId)
-            require(game?.state == Game.GameStatus.RUNNING) {
-                "Game is not currently running"
-            }
+            val game =
+                it.gamesRepository.getGameByLobbyId(lobbyId)
+                    ?: return@run failure(GameError.GameNotFound(lobbyId))
 
-            val round = roundsRepository.getCurrentRoundByGameId(gameId)
-            require(round != null && round.roundOver == false) {
-                "No active round found for this game"
-            }
+            val round = it.roundRepository.getRoundsByGameId(game.id!!).first()
 
-            val newDiceRolls = gameDomain.rerollDice(game, userId, diceIndexes)
-            it.gamesRepository.updateGameDiceRolls(gameId, userId, newDiceRolls)
+            val currentTurn = it.turnsRepository.getTurnsByRoundId(round.id!!, userId)
 
-            success(newDiceRolls)
+            val updatedDice = gameDomain.rerollDice(currentTurn, keepIndexes)
+
+            val newRollCount = currentTurn.rollCount + 1
+            val isDone = newRollCount >= 3
+            it.turnsRepository.updateTurn(
+                turnId = currentTurn.id!!,
+                rollCount = newRollCount,
+                diceResults = updatedDice,
+                isDone = isDone,
+            )
+
+            success(updatedDice)
         }
-
-         */
 
     fun getById(id: Int): GameGetByIdResult =
         transactionManager.run {
@@ -177,6 +228,44 @@ class GameService(
         gameId: Int,
         userId: Int,
     ) {
-        TODO()
+        transactionManager.run {
+            // 1. Obter o jogo
+            val game = it.gamesRepository.getGameById(gameId) ?: return@run
+
+            // 2. Obter a ronda ativa
+            val currentRound =
+                it.roundRepository.getRoundsByGameId(game.id!!).firstOrNull { r -> !r.roundOver }
+                    ?: return@run // nenhuma ronda ativa, não faz nada
+
+            // 3. Obter o turno atual do jogador
+            val curTurn =
+                it.turnsRepository.getTurnsByRoundId(currentRound.id!!, userId)
+                    ?: return@run // turno não encontrado, talvez já tenha acabado
+
+            // 4. Marcar o turno como concluído
+            it.turnsRepository.updateTurn(
+                turnId = curTurn.id!!,
+                rollCount = curTurn.rollCount,
+                diceResults = curTurn.diceFaces ?: "", // ou os resultados finais do turno
+                isDone = true,
+            )
+
+            // 5. Verificar se há próximo jogador
+            val nextPlayerId = it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId)
+            if (nextPlayerId != null) {
+                val nextTurn =
+                    Turn(
+                        id = null,
+                        roundId = currentRound.id!!,
+                        playerId = nextPlayerId,
+                        rollCount = 0,
+                        isDone = false,
+                    )
+                it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
+            } else {
+                // 6. Todos os jogadores já jogaram → marcar a ronda como terminada
+                it.roundRepository.markRoundAsOver(currentRound.id!!)
+            }
+        }
     }
 }

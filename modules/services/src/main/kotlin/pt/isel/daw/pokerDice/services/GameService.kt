@@ -3,7 +3,9 @@ package pt.isel.daw.pokerDice.services
 import jakarta.inject.Named
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.domain.games.GameDomain
+import pt.isel.daw.pokerDice.domain.games.Round
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
+import pt.isel.daw.pokerDice.repository.RoundRepository
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -73,13 +75,25 @@ class GameService(
 
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // TODO CHAMAR ROUNDREPOSITORY.CREATEROUND
-
             // update do isRunning no lobby
             it.lobbiesRepository.markGameAsStartedInLobby(lobbyId)
 
             val newGame = gameDomain.createGameFromLobby(lobby, allUsersInLobby.count())
+
             val gameId = it.gamesRepository.createGame(newGame)
+
+            if (gameId != null) {
+                println(" vou criar o Round para o gameId: $gameId")
+                val roundToCreate =
+                    Round(
+                        id = 1,
+                        roundNumber = 1,
+                        gameId = gameId,
+                        bet = lobby.minCreditToParticipate,
+                        roundOver = false,
+                    )
+                it.roundRepository.createRound(gameId, roundToCreate)
+            }
 
             success(gameId)
         }
@@ -147,7 +161,7 @@ class GameService(
     fun endGame(gameId: Int) =
         transactionManager.run {
             val game = it.gamesRepository.getGameById(gameId) ?: return@run
-            it.gamesRepository.updateGameState(gameId, Game.GameStatus.FINISHED)
+            it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
             lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
         }
 

@@ -52,13 +52,14 @@ data class Game(
     var roundCounter: Int,
 ) {
     enum class GameStatus {
-        FINISHED,
+        CLOSED,
+
+        // jogo terminado / fechado
         RUNNING,
-        WAITING_FOR_PLAYERS,
+        // jogo a decorrer
         ;
 
-        val isEnded: Boolean get() = this == GameStatus.FINISHED
+        val isEnded: Boolean get() = this == GameStatus.CLOSED
         val isRunning: Boolean get() = this == GameStatus.RUNNING
-        val isWaitingForPlayers: Boolean get() = this == GameStatus.WAITING_FOR_PLAYERS
     }
 }

@@ -37,7 +37,7 @@ ALTER TABLE dbo.users
 CREATE TABLE IF NOT EXISTS dbo.game (
                                         id SERIAL PRIMARY KEY NOT NULL,
                                         lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
-                                        state VARCHAR(20) NOT NULL DEFAULT 'WAITING_FOR_PLAYERS', -- corresponde ao enum State
+                                        state VARCHAR(20) NOT NULL DEFAULT 'CLOSED', -- corresponde ao enum State
                                         rounds_counter INT DEFAULT 0 CHECK (rounds_counter >= 0),
                                         winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
                                         nrUsers INT NOT NULL

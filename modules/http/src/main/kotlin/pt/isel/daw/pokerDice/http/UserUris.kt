@@ -25,6 +25,8 @@ object UserUris {
         fun login(): URI = URI(TOKEN)
 
         fun register(): URI = URI(CREATE)
+
+        // TODO ("TIRAR ID'S DO URI, IR BUSCAR AO AUTHENTICATED USER")
     }
 
   /*  object Status {

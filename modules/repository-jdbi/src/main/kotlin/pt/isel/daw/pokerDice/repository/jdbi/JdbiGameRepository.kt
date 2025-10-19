@@ -116,20 +116,6 @@ class JdbiGamesRepository(
             .execute()
     }
 
-    private fun org.jdbi.v3.core.statement.Update.bindJson(
-        name: String,
-        value: Any?,
-    ): org.jdbi.v3.core.statement.Update {
-        val json = value?.let { objectMapper.writeValueAsString(it) }
-        return bind(
-            name,
-            PGobject().apply {
-                type = "jsonb"
-                this.value = json
-            },
-        )
-    }
-
     companion object {
         private val objectMapper = ObjectMapper().registerModule(KotlinModule.Builder().build())
     }

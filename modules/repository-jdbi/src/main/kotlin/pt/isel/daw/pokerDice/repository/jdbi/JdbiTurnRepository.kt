@@ -67,6 +67,7 @@ class JdbiTurnRepository(
             .mapTo<Turn>()
             .first()
 
+    /*
     override fun getNextPlayerInRound(
         roundId: Int,
         lobbyId: Int,
@@ -112,5 +113,33 @@ class JdbiTurnRepository(
             }
 
         return nextPlayer
+    }
+
+     */
+    override fun getNextPlayerInRound(
+        roundId: Int,
+        lobbyId: Int,
+        currentPlayerId: Int,
+    ): Int? {
+        val allPlayers =
+            handle
+                .createQuery(
+                    """
+        SELECT u.id
+        FROM dbo.users u
+        JOIN dbo.lobby_users lu ON lu.user_id = u.id
+        WHERE lu.lobby_id = :lobbyId
+        ORDER BY u.id
+        """,
+                ).bind("lobbyId", lobbyId)
+                .mapTo<Int>()
+                .list()
+
+        val currentIndex = allPlayers.indexOf(currentPlayerId)
+        return if (currentIndex != -1 && currentIndex + 1 < allPlayers.size) {
+            allPlayers[currentIndex + 1] // próximo jogador
+        } else {
+            null // fim da ronda
+        }
     }
 }

@@ -161,7 +161,7 @@ class GameService(
             println(" CHEGUEI ANTES DE PASSAR PARA O PRÓXIMO USER")
 
             if (isTurnFinished) {
-                val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId)
+                val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId, curTurn.playerId!!)
                 if (nextPlayerId != null) {
                     val nextTurn =
                         Turn(
@@ -227,31 +227,32 @@ class GameService(
     fun endTurn(
         gameId: Int,
         userId: Int,
-    ) {
+    ): GameErrorResult =
         transactionManager.run {
-            // 1. Obter o jogo
-            val game = it.gamesRepository.getGameById(gameId) ?: return@run
+            val game =
+                it.gamesRepository.getGameById(gameId)
+                    ?: return@run failure(GameError.GameNotFound(gameId))
 
-            // 2. Obter a ronda ativa
             val currentRound =
                 it.roundRepository.getRoundsByGameId(game.id!!).firstOrNull { r -> !r.roundOver }
-                    ?: return@run // nenhuma ronda ativa, não faz nada
+                    ?: return@run failure(GameError.NoActiveRound(game.id!!))
 
-            // 3. Obter o turno atual do jogador
             val curTurn =
                 it.turnsRepository.getTurnsByRoundId(currentRound.id!!, userId)
-                    ?: return@run // turno não encontrado, talvez já tenha acabado
+                    ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
 
-            // 4. Marcar o turno como concluído
+            // Marca o turno atual como terminado
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
                 rollCount = curTurn.rollCount,
-                diceResults = curTurn.diceFaces ?: "", // ou os resultados finais do turno
+                diceResults = curTurn.diceFaces ?: "",
                 isDone = true,
             )
 
-            // 5. Verificar se há próximo jogador
-            val nextPlayerId = it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId)
+            // Procura o próximo jogador
+            val nextPlayerId =
+                it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
+
             if (nextPlayerId != null) {
                 val nextTurn =
                     Turn(
@@ -263,9 +264,10 @@ class GameService(
                     )
                 it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
             } else {
-                // 6. Todos os jogadores já jogaram → marcar a ronda como terminada
+                // Todos já jogaram — ronda termina
                 it.roundRepository.markRoundAsOver(currentRound.id!!)
             }
+
+            success("Turno terminado com sucesso.")
         }
-    }
 }

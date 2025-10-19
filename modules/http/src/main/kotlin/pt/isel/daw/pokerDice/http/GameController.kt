@@ -64,13 +64,11 @@ class GameController(
         }
     }
 
-    /*
     @PostMapping(GameUris.Games.END_TURN)
     fun endTurn(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
-
         val res = gameService.endTurn(gameId, authenticatedUser.user.id)
 
         return when (res) {
@@ -78,8 +76,6 @@ class GameController(
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }
-
-     */
 
     @GetMapping(GameUris.Games.BY_ID)
     fun getById(

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
-import org.postgresql.util.PGobject
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.repository.GamesRepository
 

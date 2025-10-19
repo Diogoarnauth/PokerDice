@@ -6,6 +6,7 @@ import pt.isel.daw.pokerDice.repository.InviteRepository
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
 import pt.isel.daw.pokerDice.repository.RoundRepository
 import pt.isel.daw.pokerDice.repository.Transaction
+import pt.isel.daw.pokerDice.repository.TurnsRepository
 import pt.isel.daw.pokerDice.repository.UsersRepository
 
 class JdbiTransaction(
@@ -16,6 +17,7 @@ class JdbiTransaction(
     override val gamesRepository: GamesRepository = JdbiGamesRepository(handle)
     override val inviteRepository: InviteRepository = JdbiInviteRepository(handle)
     override val roundRepository: RoundRepository = JdbiRoundRepository(handle)
+    override val turnsRepository: TurnsRepository = JdbiTurnRepository(handle)
 
     override fun rollback() {
         handle.rollback()

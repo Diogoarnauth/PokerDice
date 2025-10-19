@@ -4,8 +4,8 @@ import jakarta.inject.Named
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.domain.games.GameDomain
 import pt.isel.daw.pokerDice.domain.games.Round
+import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
-import pt.isel.daw.pokerDice.repository.RoundRepository
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -47,53 +47,61 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            // O USER É O HOST DA LOBBY, LOGADO NA SESSÃO
+            // Só o host pode começar o jogo
             require(lobby.hostId == userId) {
                 "Only the host user can start the game"
             }
 
-            // Verificar se já existe um jogo em andamento neste lobby
+            // Verifica se já existe jogo em andamento
+            if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // debug before credits verification
-            val usersWithCredit = allUsersInLobby.count { it.credit >= lobby.minCreditToParticipate }
-
-            // VER SE TODOS OS USERS TÊM CREDITOS PARA COMEÇAR O GAME
-            require(
-                allUsersInLobby.count {
-                    it.credit <= lobby.minCreditToParticipate
-                } != allUsersInLobby.count(),
-            ) {
-                "Not all users have the necessary credits to be in the lobby."
-                // TODO("ESPECIFICAR QUAL O USER QUE NÃO TEM OS CRÉDITOS
-                //   + return@run failure(GameCreationError.InsufficientCredits)'")
+            // Verificar créditos mínimos
+            val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
+            require(usersWithoutCredit.isEmpty()) {
+                "Not all users have the necessary credits to participate"
             }
 
-            // MIN USERS DO GAME
-            require(allUsersInLobby.count() >= lobby.minUsers) {
+            // Verificar número mínimo de jogadores
+            if (allUsersInLobby.count() < lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
             }
 
-            if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
-
-            // update do isRunning no lobby
+            // Marcar lobby como em jogo
             it.lobbiesRepository.markGameAsStartedInLobby(lobbyId)
 
+            // Criar o jogo
             val newGame = gameDomain.createGameFromLobby(lobby, allUsersInLobby.count())
+            val gameId =
+                it.gamesRepository.createGame(newGame)
+                    ?: return@run failure(GameCreationError.GameAlreadyRunning)
 
-            val gameId = it.gamesRepository.createGame(newGame)
+            println("Jogo criado com ID: $gameId")
 
-            if (gameId != null) {
-                println(" vou criar o Round para o gameId: $gameId")
-                val roundToCreate =
-                    Round(
-                        id = 1,
-                        roundNumber = 1,
-                        gameId = gameId,
-                        bet = lobby.minCreditToParticipate,
-                        roundOver = false,
-                    )
-                it.roundRepository.createRound(gameId, roundToCreate)
-            }
+            // Criar a primeira ronda
+            val roundToCreate =
+                Round(
+                    id = null,
+                    roundNumber = 1,
+                    gameId = gameId,
+                    bet = lobby.minCreditToParticipate,
+                    roundOver = false,
+                )
+
+            val roundId = it.roundRepository.createRound(gameId, roundToCreate)
+            println("Round inicial criado com ID: $roundId")
+
+            // Criar o primeiro turno — começa o primeiro jogador da lista
+            val turnToCreate =
+                Turn(
+                    id = null,
+                    roundId = roundId,
+                    playerId = allUsersInLobby.first().id,
+                    rollCount = 0,
+                    isDone = false,
+                )
+
+            it.turnsRepository.createTurn(roundId, turnToCreate)
+            println(" Primeiro turno criado para jogador: ${allUsersInLobby.first().id}")
 
             success(gameId)
         }

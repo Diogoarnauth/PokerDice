@@ -54,14 +54,6 @@ CREATE TABLE IF NOT EXISTS dbo.round (
                                          --timeToPlay INT NOT NULL CHECK (timeToPlay >= 1000) -- em ms
 );
 
-CREATE TABLE IF NOT EXISTS dbo.turn (
-                                        id SERIAL PRIMARY KEY,
-                                        round_id INT REFERENCES dbo.round(id) ON DELETE CASCADE,
-                                        player_id INT REFERENCES dbo.users(id) ON DELETE CASCADE,
-                                        roll_count INT DEFAULT 0,
-                                        dice_faces VARCHAR(20) NOT NULL, -- armazenar os valores dos dados como uma string separada por vírgulas
-                                        is_done BOOLEAN DEFAULT FALSE
-);
 
 CREATE TABLE IF NOT EXISTS dbo.app_invite(
                                              id SERIAL primary key,
@@ -78,3 +70,13 @@ CREATE TABLE IF NOT EXISTS dbo.token (
                                          userId integer,
                                          foreign key (userId) references dbo.users(id) on delete cascade
 );
+
+CREATE TABLE IF NOT EXISTS dbo.turn (
+                          id SERIAL PRIMARY KEY,
+                          round_id INTEGER NOT NULL REFERENCES dbo.round(id) ON DELETE CASCADE,
+                          player_id INTEGER NOT NULL REFERENCES dbo.users(id) ON DELETE CASCADE,
+                          roll_count INTEGER NOT NULL DEFAULT 0 CHECK (roll_count >= 0),
+                          dice_faces TEXT,
+                          is_done BOOLEAN NOT NULL DEFAULT FALSE
+);
+

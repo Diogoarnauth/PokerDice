@@ -22,6 +22,7 @@ class Problem(
 
         // User Related
         val userAlreadyInvited = Problem(URI("${BASE_URL}user-already-invited"))
+        val todo = Problem(URI("${BASE_URL})TODO")) // TODO(ACERTAR OS ERROS)
         val dontHavePermission = Problem(URI("${BASE_URL}permission-denied"))
         val userNotFound = Problem(URI("${BASE_URL}user-not-found"))
         val userAlreadyExists = Problem(URI("${BASE_URL}user-already-exists"))

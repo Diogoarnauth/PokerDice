@@ -42,6 +42,26 @@ sealed class UserGetByIdError {
     // data class InvalidToken(val tokenValue: String) : UserGetByIdError() //dúvida :não sei se é necessário
 }
 
+sealed class UserRegisterError {
+    data object InvitationDontExist : UserRegisterError()
+
+    data object InvitationExpired : UserRegisterError()
+
+    data object InvitationUsed : UserRegisterError()
+
+    data object UserAlreadyExists : UserRegisterError()
+
+    // Novos Erros de Validação
+    data object InvalidUsername : UserRegisterError()
+
+    data object InvalidName : UserRegisterError()
+
+    data object InvalidAge : UserRegisterError()
+
+    data object InsecurePassword : UserRegisterError()
+}
+typealias UserRegisterResult = Either<UserRegisterError, Int>
+
 sealed class DepositError {
     data object InvalidAmount : DepositError() // TODO(melhorar isto)
 
@@ -52,20 +72,8 @@ typealias UserGetByIdResult = Either<UserGetByIdError, User>
 
 typealias DepositResult = Either<DepositError, Int>
 
-typealias UserRegisterResult = Either<UserRegisterError, Int>
-
-sealed class UserRegisterError {
-    data object InvitationDontExist : UserRegisterError()
-
-    data object InvitationExpired : UserRegisterError()
-
-    data object InvitationUsed : UserRegisterError()
-
-    data object UserAlreadyExists : UserRegisterError()
-
-    // TODO("acrescentar mais erros de validação")
-
-    data object InsecurePassword : UserRegisterError()
+sealed class InvalidInputError {
+    data object InvalidInput : InvalidInputError()
 }
 
 sealed class CreatingAppInviteError {
@@ -89,8 +97,14 @@ class UsersService(
         name: String,
         age: Int,
         password: String,
-    ): Int =
-        transactionManager.run {
+    ): Int {
+        if (!userDomain.isAgeValid(age) || !userDomain.isSafePassword(password) ||
+            !userDomain.isUsernameValid(username)
+        ) {
+            failure(InvalidInputError.InvalidInput) // TODO("VERIFICAR SE QUEREMOS ESTE NOME OU PASSWORD
+            // / USERNAME / AGE")
+        }
+        return transactionManager.run {
             val usersRepository = it.usersRepository
             val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
             usersRepository.create(
@@ -101,6 +115,7 @@ class UsersService(
                 passwordValidationInfo = passwordValidationInfo,
             )
         }
+    }
 
     fun hasAnyUser(): Boolean =
         transactionManager.run {
@@ -111,13 +126,13 @@ class UsersService(
     fun deposit(
         amount: Int,
         user: User,
-    ): DepositResult =
-        transactionManager.run {
+    ): DepositResult {
+        if (amount <= 0) {
+            return failure(DepositError.InvalidAmount)
+        }
+
+        return transactionManager.run {
             val usersRepository = it.usersRepository
-            // TODO("if statement to check if amount is valid")
-            if (amount <= 0) {
-                return@run failure(DepositError.InvalidAmount)
-            }
 
             val existingUser =
                 usersRepository.getUserById(user.id)
@@ -128,6 +143,7 @@ class UsersService(
 
             success(newCredit)
         }
+    }
 
     fun createAppInvite(userId: Int): CreatingAppInviteResult =
         transactionManager.run {
@@ -154,6 +170,15 @@ class UsersService(
         if (!userDomain.isSafePassword(password)) {
             return failure(UserRegisterError.InsecurePassword)
         }
+        if (!userDomain.isUsernameValid(username)) {
+            return failure(UserRegisterError.InvalidUsername)
+        }
+        if (!userDomain.isNameValid(name)) {
+            return failure(UserRegisterError.InvalidName)
+        }
+        if (!userDomain.isAgeValid(age)) {
+            return failure(UserRegisterError.InvalidAge)
+        }
 
         val inviteCodeValidationInfo = inviteDomain.createInviteValidationInformation(inviteCode)
         val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
@@ -161,6 +186,11 @@ class UsersService(
         return transactionManager.run {
             val usersRepository = it.usersRepository
             val inviteRepository = it.inviteRepository
+
+            if (usersRepository.isUserStoredByUsername(username)) {
+                return@run failure(UserRegisterError.UserAlreadyExists)
+            }
+
             val invite = inviteRepository.getAppInviteByValidationInfo(inviteCodeValidationInfo)
 
             if (usersRepository.isUserStoredByUsername(username)) {
@@ -168,17 +198,19 @@ class UsersService(
             }
 
             if (invite == null) {
-                failure(UserRegisterError.InvitationDontExist)
+                return@run failure(UserRegisterError.InvitationDontExist)
             } else if (!inviteDomain.isInviteCodeValid(invite.state)) {
-                failure(UserRegisterError.InvitationUsed)
-            } else if (!inviteDomain.isInviteTimeNotExpired(invite.createdAt, clock)) {
-                inviteRepository.changeInviteState(invite.id, inviteDomain.expiredState)
-                failure(UserRegisterError.InvitationExpired)
-            } else {
-                val userId = usersRepository.create(username, name, age, inviteCode, passwordValidationInfo)
-                inviteRepository.changeInviteState(invite.id, inviteDomain.usedState)
-                success(userId)
+                return@run failure(UserRegisterError.InvitationUsed)
             }
+            /*else if (!inviteDomain.isInviteTimeNotExpired(invite.createdAt, clock)) {
+                inviteRepository.changeInviteState(invite.id, inviteDomain.expiredState)
+                return@run failure(UserRegisterError.InvitationExpired)
+            }*/
+
+            val userId = usersRepository.create(username, name, age, inviteCode, passwordValidationInfo)
+
+            inviteRepository.changeInviteState(invite.id, inviteDomain.usedState)
+            success(userId)
         }
     }
 
@@ -236,6 +268,7 @@ class UsersService(
         if (!userDomain.canBeToken(token)) {
             return null
         }
+
         return transactionManager.run {
             val usersRepository = it.usersRepository
             val tokenValidationInfo = userDomain.createTokenValidationInformation(token)

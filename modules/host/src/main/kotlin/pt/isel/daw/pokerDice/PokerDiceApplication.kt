@@ -52,6 +52,10 @@ class PokerDiceApplication {
             tokenTtl = 24.hours,
             tokenRollingTtl = 1.hours,
             maxTokensPerUser = 3,
+            minUsernameLength = 3,
+            minPasswordLength = 4,
+            minAge = 18,
+            maxAge = 80,
         )
 
     @Bean

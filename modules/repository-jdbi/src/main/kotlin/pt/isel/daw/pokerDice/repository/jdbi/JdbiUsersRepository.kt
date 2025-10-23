@@ -216,4 +216,20 @@ class JdbiUsersRepository(
                     ),
                 )
     }
+
+    override fun removeUserFromLobby(
+        userId: Int,
+        lobbyId: Int,
+    ) {
+        handle
+            .createUpdate(
+                """
+        UPDATE dbo.users
+        SET lobby_id = NULL
+        WHERE id = :userId AND lobby_id = :lobbyId
+        """,
+            ).bind("userId", userId)
+            .bind("lobbyId", lobbyId)
+            .execute()
+    }
 }

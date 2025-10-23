@@ -26,5 +26,5 @@ interface TurnsRepository {
         currTurnPlayerId: Int,
     ): Int?
 
-    // fun getCurrentTurnByRoundId(roundId: Int): Turn?
+    fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn>
 }

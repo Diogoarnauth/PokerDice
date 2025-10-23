@@ -14,8 +14,5 @@ interface GamesRepository {
         state: Game.GameStatus,
     )
 
-    fun updateCurrentRound(
-        gameId: Int,
-        roundId: Int,
-    )
+    fun updateRoundCounter(gameId: Int)
 }

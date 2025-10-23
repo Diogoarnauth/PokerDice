@@ -13,6 +13,27 @@ class UsersDomain(
     private val tokenEncoder: TokenEncoder,
     private val config: UsersDomainConfig,
 ) {
+    val maxNumberOfTokensPerUser = config.maxTokensPerUser
+
+    fun isUsernameValid(username: String): Boolean =
+        username.isNotBlank() &&
+            username.length >= config.minUsernameLength
+
+    fun isNameValid(name: String): Boolean = name.isNotBlank()
+
+    fun isAgeValid(age: Int): Boolean = age in config.minAge..config.maxAge
+
+    fun isSafePassword(password: String): Boolean {
+        if (password.length < config.minPasswordLength) {
+            return false
+        }
+
+        val hasDigit = password.any { it.isDigit() }
+        val hasUpperCase = password.any { it.isUpperCase() }
+
+        return hasDigit && hasUpperCase
+    }
+
     fun generateTokenValue(): String =
         ByteArray(config.tokenSizeInBytes).let { byteArray ->
             SecureRandom.getInstanceStrong().nextBytes(byteArray)
@@ -63,9 +84,4 @@ class UsersDomain(
     }
 
     fun createTokenValidationInformation(token: String): TokenValidationInfo = tokenEncoder.createValidationInformation(token)
-
-    // TODO it could be better
-    fun isSafePassword(password: String) = password.length > 4
-
-    val maxNumberOfTokensPerUser = config.maxTokensPerUser
 }

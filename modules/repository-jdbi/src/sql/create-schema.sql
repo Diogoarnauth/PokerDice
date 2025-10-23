@@ -9,7 +9,6 @@ CREATE TABLE dbo.users (
                            age INT CHECK (age BETWEEN 18 AND 100),
                            credit INT DEFAULT 0 CHECK (credit >= 0),
                            winCounter INT DEFAULT 0 CHECK (winCounter >= 0)
-    -- lobby_id INT REFERENCES Lobby(id) ON DELETE SET NULL
 );
 
 -- Tabela Lobby
@@ -17,7 +16,6 @@ CREATE TABLE dbo.lobby (
                            id SERIAL PRIMARY KEY,
                            name VARCHAR(100) NOT NULL,
                            description TEXT,
-    --host_id INT NOT NULL REFERENCES Player(id) ON DELETE CASCADE,
                            isRunning BOOLEAN NOT NULL DEFAULT FALSE,
                            minPlayers INT NOT NULL CHECK (minPlayers >= 2),
                            maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),

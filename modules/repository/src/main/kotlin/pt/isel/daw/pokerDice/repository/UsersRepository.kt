@@ -47,6 +47,11 @@ interface UsersRepository {
         now: Instant,
     )
 
+    fun removeUserFromLobby(
+        userId: Int,
+        lobbyId: Int,
+    )
+
     fun clearLobbyForAllUsers(lobbyId: Int)
 
     fun getAllUsersInLobby(lobbyId: Int): List<User>

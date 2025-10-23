@@ -92,6 +92,7 @@ class GameController(
     fun endGame(
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
+        println("DENTRO DO ENDGAME DO CONTROLLER")
         gameService.endGame(gameId)
         return ResponseEntity.ok(mapOf("message" to "Game ended"))
     }

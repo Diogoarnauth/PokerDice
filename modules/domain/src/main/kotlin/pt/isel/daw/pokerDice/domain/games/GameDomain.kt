@@ -34,14 +34,14 @@ class GameDomain {
             currentTurn.diceFaces?.split(",")?.map { it.trim() }
                 ?: throw IllegalStateException("No previous dice found for this turn")
 
-        // Rerolla apenas os índices indicados
+        // Reroll apenas dos índices indicados
         val newDice =
             previous.mapIndexed { index, oldFace ->
                 if (index in idxToReroll) faces.random() else oldFace
             }
 
         val result = newDice.joinToString(",")
-        println("🎲 Re-rolled dice for player ${currentTurn.playerId}: $result")
+        println("Re-rolled dice for player ${currentTurn.playerId}: $result")
 
         return result
     }

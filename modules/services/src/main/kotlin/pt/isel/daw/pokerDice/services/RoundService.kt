@@ -85,7 +85,7 @@ class RoundService(
 
             val newRoundId = roundsRepo.createRound(gameId, round)
 
-            gamesRepo.updateCurrentRound(gameId, newRoundId)
+            // gamesRepo.updateCurrentRound(gameId, newRoundId)
 
             success(newRoundId)
         }

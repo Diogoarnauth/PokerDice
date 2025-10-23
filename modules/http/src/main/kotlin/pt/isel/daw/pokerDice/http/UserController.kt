@@ -76,8 +76,10 @@ class UserController(
             is Failure ->
                 when (res.value) {
                     UserRegisterError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
-                    UserRegisterError.UserAlreadyExists -> Problem.response(400, Problem.userAlreadyExists)
-
+                    UserRegisterError.UserAlreadyExists -> Problem.response(409, Problem.userAlreadyExists)
+                    UserRegisterError.InvalidAge -> Problem.response(400, Problem.todo)
+                    UserRegisterError.InvalidName -> Problem.response(400, Problem.todo)
+                    UserRegisterError.InvalidUsername -> Problem.response(400, Problem.todo)
                     UserRegisterError.InvitationDontExist -> Problem.response(400, Problem.invitationDontExist)
                     UserRegisterError.InvitationUsed -> Problem.response(400, Problem.invitationUsed)
                     UserRegisterError.InvitationExpired -> Problem.response(400, Problem.invitationExpired)

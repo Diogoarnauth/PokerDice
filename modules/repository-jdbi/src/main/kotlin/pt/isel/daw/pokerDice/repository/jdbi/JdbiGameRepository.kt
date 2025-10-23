@@ -84,6 +84,8 @@ class JdbiGamesRepository(
         gameId: Int,
         state: Game.GameStatus,
     ) {
+        println("state : $state")
+        println("state_name : ${state.name}")
         handle
             .createUpdate(
                 """
@@ -96,22 +98,19 @@ class JdbiGamesRepository(
             .execute()
     }
 
-    override fun updateCurrentRound(
-        gameId: Int,
-        roundId: Int,
-    ) {
+    override fun updateRoundCounter(gameId: Int) {
+        println("QUERO AUMENTAR O COUNTER DE RONDAS")
         val sql =
             """
             UPDATE dbo.game
-            SET current_round_id = :roundId,
-                round_counter = round_counter + 1
+            SET 
+                rounds_counter = rounds_counter + 1
             WHERE id = :gameId
             """.trimIndent()
 
         handle
             .createUpdate(sql)
             .bind("gameId", gameId)
-            .bind("roundId", roundId)
             .execute()
     }
 

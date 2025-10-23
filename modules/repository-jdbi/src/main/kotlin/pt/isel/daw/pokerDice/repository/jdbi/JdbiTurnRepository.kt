@@ -103,4 +103,16 @@ class JdbiTurnRepository(
         // Encontra o próximo jogador que ainda não jogou
         return playersInLobby.firstOrNull { it !in turnsInRound }
     }
+
+    override fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn> =
+        handle
+            .createQuery(
+                """
+        SELECT id, round_id, player_id, roll_count, dice_faces, is_done
+        FROM dbo.turn
+        WHERE round_id = :roundId
+        """,
+            ).bind("roundId", roundId)
+            .mapTo<Turn>()
+            .list()
 }

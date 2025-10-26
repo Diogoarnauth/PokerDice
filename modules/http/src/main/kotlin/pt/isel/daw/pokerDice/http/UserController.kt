@@ -34,10 +34,12 @@ class UserController(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
         if (userService.hasAnyUser()) {
-            return Problem.response(403, Problem.userAlreadyExists)
+            return ResponseEntity
+                .status(403)
+                .body(mapOf("error" to Problem.userAlreadyExists))
         }
         val id = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
-        return ResponseEntity.ok(id)
+        return ResponseEntity.ok(mapOf("id" to id))
     }
 
     @PostMapping("/deposit")
@@ -49,12 +51,18 @@ class UserController(
 
         return when (res) {
             is Success ->
-                ResponseEntity.ok("Deposit successful. New balance: ${res.value}")
+                ResponseEntity.ok(mapOf("message" to "Deposit successful", "newBalance" to res.value))
 
             is Failure ->
                 when (res.value) {
-                    DepositError.InvalidAmount -> Problem.response(400, Problem.badDeposit)
-                    DepositError.UserNotFound -> Problem.response(404, Problem.userNotFound)
+                    DepositError.InvalidAmount ->
+                        ResponseEntity
+                            .badRequest()
+                            .body(mapOf("error" to Problem.badDeposit))
+                    DepositError.UserNotFound ->
+                        ResponseEntity
+                            .status(404)
+                            .body(mapOf("error" to Problem.userNotFound))
                 }
         }
     }
@@ -68,46 +76,54 @@ class UserController(
             is Success ->
                 ResponseEntity
                     .status(201)
-                    .header(
-                        "Location",
-                        UserUris.Users.byId(res.value).toASCIIString(),
-                    ).build<Unit>()
+                    .body(mapOf("id" to res.value, "location" to UserUris.Users.byId(res.value).toASCIIString()))
 
             is Failure ->
-                when (res.value) {
-                    UserRegisterError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
-                    UserRegisterError.UserAlreadyExists -> Problem.response(409, Problem.userAlreadyExists)
-                    UserRegisterError.InvalidAge -> Problem.response(400, Problem.todo)
-                    UserRegisterError.InvalidName -> Problem.response(400, Problem.todo)
-                    UserRegisterError.InvalidUsername -> Problem.response(400, Problem.todo)
-                    UserRegisterError.InvitationDontExist -> Problem.response(400, Problem.invitationDontExist)
-                    UserRegisterError.InvitationUsed -> Problem.response(400, Problem.invitationUsed)
-                    UserRegisterError.InvitationExpired -> Problem.response(400, Problem.invitationExpired)
-                }
+                ResponseEntity.status(400).body(
+                    mapOf(
+                        "error" to
+                            when (res.value) {
+                                UserRegisterError.InsecurePassword -> Problem.insecurePassword
+                                UserRegisterError.UserAlreadyExists -> Problem.userAlreadyExists
+                                UserRegisterError.InvalidAge -> Problem.todo
+                                UserRegisterError.InvalidName -> Problem.todo
+                                UserRegisterError.InvalidUsername -> Problem.todo
+                                UserRegisterError.InvitationDontExist -> Problem.invitationDontExist
+                                UserRegisterError.InvitationUsed -> Problem.invitationUsed
+                                UserRegisterError.InvitationExpired -> Problem.invitationExpired
+                            },
+                    ),
+                )
         }
     }
 
     @PostMapping(UserUris.Users.TOKEN)
     fun token(
-        // working
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val res = userService.createToken(input.username, input.password)
         return when (res) {
             is Success ->
-                ResponseEntity
-                    .status(200)
-                    .body(UserTokenCreateOutputModel(res.value.tokenValue))
+                ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
 
             is Failure ->
-                when (res.value) {
-                    TokenCreationError.UserOrPasswordAreInvalid ->
-                        Problem.response(400, Problem.userOrPasswordAreInvalid)
-                    TokenCreationError.TokenLimitReached ->
-                        Problem.response(400, Problem.userNotAuthorized)
-                    TokenCreationError.UserNotFound ->
-                        Problem.response(404, Problem.userNotFound)
-                }
+                ResponseEntity
+                    .status(
+                        when (res.value) {
+                            TokenCreationError.UserOrPasswordAreInvalid -> 400
+                            TokenCreationError.TokenLimitReached -> 403
+                            TokenCreationError.UserNotFound -> 404
+                        },
+                    ).body(
+                        mapOf(
+                            "error" to
+                                when (res.value) {
+                                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.userOrPasswordAreInvalid
+                                    TokenCreationError.TokenLimitReached -> Problem.userNotAuthorized
+                                    TokenCreationError.UserNotFound -> Problem.userNotFound
+                                },
+                        ),
+                    )
         }
     }
 
@@ -120,31 +136,36 @@ class UserController(
         return when (res) {
             is Success -> {
                 val user: User = res.value
-                ResponseEntity
-                    .status(200)
-                    .body(
-                        UserGetByIdOutputModel(
-                            username = user.username,
-                            name = user.name,
-                        ),
-                    )
+                ResponseEntity.ok(
+                    UserGetByIdOutputModel(
+                        username = user.username,
+                        name = user.name,
+                    ),
+                )
             }
 
             is Failure ->
-                when (res.value) {
-                    UserGetByIdError.UserNotFound ->
-                        Problem.response(404, Problem.userNotFound)
-
-                    UserGetByIdError.InvalidUserId ->
-                        Problem.response(400, Problem.invalidRequestContent)
-                }
+                ResponseEntity
+                    .status(
+                        when (res.value) {
+                            UserGetByIdError.UserNotFound -> 404
+                            UserGetByIdError.InvalidUserId -> 400
+                        },
+                    ).body(
+                        mapOf(
+                            "error" to
+                                when (res.value) {
+                                    UserGetByIdError.UserNotFound -> Problem.userNotFound
+                                    UserGetByIdError.InvalidUserId -> Problem.invalidRequestContent
+                                },
+                        ),
+                    )
         }
     }
 
     @PostMapping(UserUris.Users.INVITE)
     fun appInvite(
-        @AuthenticationPrincipal
-        authenticatedUser: AuthenticatedUser,
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<*> {
         val res = userService.createAppInvite(authenticatedUser.user.id)
         return when (res) {
@@ -154,7 +175,9 @@ class UserController(
                     .body(InviteAppOutputModel(res.value))
 
             is Failure ->
-                Problem.response(400, Problem.inviteCreationError)
+                ResponseEntity
+                    .badRequest()
+                    .body(mapOf("error" to Problem.inviteCreationError))
         }
     }
 }

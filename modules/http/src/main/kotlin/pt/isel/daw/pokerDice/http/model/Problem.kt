@@ -10,7 +10,7 @@ class Problem(
 
     companion object {
         const val MEDIA_TYPE = "application/problem+json"
-        private const val BASE_URL = "TODO()"
+        private const val BASE_URL = "http://localhost:8080/api/"
 
         fun response(
             status: Int,

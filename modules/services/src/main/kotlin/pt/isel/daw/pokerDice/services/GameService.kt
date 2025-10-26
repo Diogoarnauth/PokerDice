@@ -19,6 +19,8 @@ sealed class GameCreationError {
     data object GameAlreadyRunning : GameCreationError()
 
     data object NotEnoughPlayers : GameCreationError()
+
+    data object NotTheHost : GameCreationError()
 }
 
 typealias GameCreationResult = Either<GameCreationError, Int?> // UUID string
@@ -33,6 +35,10 @@ sealed class GameError {
     data class GameNotFound(
         val lobbyId: Int,
     ) : GameError()
+
+    data object NotFirstRoll : GameError()
+
+    data object LobbyDontFoundByGame : GameError()
 
     data class NoActiveRound(
         val gameId: Int,
@@ -58,7 +64,6 @@ class GameService(
     private val transactionManager: TransactionManager,
     private val gameDomain: GameDomain,
     private val lobbiesDomain: LobbiesDomain,
-    private val lobbiesService: LobbiesService,
 ) {
     fun createGame(
         userId: Int,
@@ -72,21 +77,21 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            // Só o host pode começar o jogo
+            // SÃ³ o host pode comeÃ§ar o jogo
             require(lobby.hostId == userId) {
                 "Only the host user can start the game"
             }
 
-            // Verifica se já existe jogo em andamento
+            // Verifica se jÃ¡ existe jogo em andamento
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // Verificar créditos mínimos
+            // Verificar crÃ©ditos mÃ­nimos
             val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
             require(usersWithoutCredit.isEmpty()) {
                 "Not all users have the necessary credits to participate"
             }
 
-            // Verificar número mínimo de jogadores
+            // Verificar nÃºmero mÃ­nimo de jogadores
             if (allUsersInLobby.count() < lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
             }
@@ -115,7 +120,7 @@ class GameService(
             val roundId = it.roundRepository.createRound(gameId, roundToCreate)
             println("Round inicial criado com ID: $roundId")
 
-            // Criar o primeiro turno — começa o primeiro jogador da lista
+            // Criar o primeiro turno â€” comeÃ§a o primeiro jogador da lista
             val turnToCreate =
                 Turn(
                     id = null,
@@ -145,7 +150,9 @@ class GameService(
                 it.roundRepository.getRoundsByGameId(curGame.id!!).first { it -> !it.roundOver }
 
             val curTurn =
-                it.turnsRepository.getTurnsByRoundId(curRound.id!!, userId) // SÓ DEVE HAVER 1
+                it.turnsRepository.getTurnsByRoundId(curRound.id!!, userId) // SÃ“ DEVE HAVER 1
+
+            if (curTurn.rollCount != 0) return@run failure(GameError.NotFirstRoll)
 
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)
@@ -154,18 +161,19 @@ class GameService(
             val rolledDice = gameDomain.rollDice(curTurn)
 
             val newRollCount = curTurn.rollCount + 1
-            val isTurnFinished = newRollCount >= 3
+            // val isTurnFinished = newRollCount >= 3 escusado
 
+            // isTurnFinished, sempre false
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
                 rollCount = newRollCount,
                 diceResults = rolledDice,
-                isDone = isTurnFinished,
+                isDone = false,
             )
 
-            println(" CHEGUEI ANTES DE PASSAR PARA O PRÓXIMO USER")
+            println(" CHEGUEI ANTES DE PASSAR PARA O PRÃ“XIMO USER")
 
-            if (isTurnFinished) {
+           /* if (isTurnFinished) {
                 val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId, curTurn.playerId!!)
                 if (nextPlayerId != null) {
                     val nextTurn =
@@ -178,10 +186,10 @@ class GameService(
                         )
                     it.turnsRepository.createTurn(curRound.id!!, nextTurn)
                 } else {
-                    // todos os jogadores já jogaram → marcar round como terminado
+                    // todos os jogadores jÃ¡ jogaram â†’ marcar round como terminado
                     it.roundRepository.markRoundAsOver(curRound.id!!)
                 }
-            }
+            }*/
 
             success(rolledDice)
         }
@@ -219,6 +227,23 @@ class GameService(
                 isDone = isDone,
             )
 
+            if (isDone) {
+                val nextPlayerId = it.turnsRepository.getNextPlayerInRound(round.id!!, lobbyId, curTurn.playerId!!)
+                if (nextPlayerId != null) {
+                    val nextTurn =
+                        Turn(
+                            id = null,
+                            roundId = round.id!!,
+                            playerId = nextPlayerId,
+                            rollCount = 0,
+                            isDone = false,
+                        )
+                    it.turnsRepository.createTurn(round.id!!, nextTurn)
+                } else {
+                    // todos os jogadores jÃ¡ jogaram â†’ marcar round como terminado
+                    it.roundRepository.markRoundAsOver(round.id!!)
+                }
+            }
             success(updatedDice)
         }
 
@@ -230,16 +255,24 @@ class GameService(
             success(game)
         }
 
+    fun endGame(gameId: Int) =
+        transactionManager.run {
+            val game = it.gamesRepository.getGameById(gameId) ?: return@run
+            it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+            lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
+        }
+
     fun endTurn(
         gameId: Int,
         userId: Int,
     ): GameErrorResult =
         transactionManager.run {
-            // TODO("Não podemos terminar um jogo sem rodar os dados")
-
             val game =
                 it.gamesRepository.getGameById(gameId)
                     ?: return@run failure(GameError.GameNotFound(gameId))
+            val lobby =
+                it.lobbiesRepository.getById(game.lobbyId)
+                    ?: return@run failure(GameError.LobbyDontFoundByGame) // impossivel se metermos delete cascade
 
             val currentRound =
                 it.roundRepository.getRoundsByGameId(game.id!!).firstOrNull { r -> !r.roundOver }
@@ -249,8 +282,6 @@ class GameService(
                 it.turnsRepository.getTurnsByRoundId(currentRound.id!!, userId)
                     ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
 
-            val rounds = it.roundRepository.getRoundsByGameId(game.id!!)
-
             // Marca o turno atual como terminado
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
@@ -259,7 +290,7 @@ class GameService(
                 isDone = true,
             )
 
-            // Procura o próximo jogador
+            // Procura o prÃ³ximo jogador
             val nextPlayerId =
                 it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
 
@@ -274,15 +305,20 @@ class GameService(
                     )
                 it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
             } else {
-                // todos jogaram → terminar ronda e começar nova
+                // todos jogaram â†’ terminar ronda e comeÃ§ar nova
                 it.roundRepository.markRoundAsOver(currentRound.id!!)
+                it.gamesRepository.updateRoundCounter(game.id!!)
 
                 val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // placeholder
-                println("Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
+                println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
 
-                val user = it.usersRepository.getUserById(userId)
+                if (game.roundCounter++ >= lobby.rounds) {
+                    // depois adicionar logica de atribuir winner
 
-                val lobby = it.lobbiesRepository.getById(user?.lobbyId!!)
+                    it.roundRepository.markRoundAsOver(currentRound.id!!)
+                    it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+                    success("Game Finished")
+                }
 
                 val nextRound =
                     Round(
@@ -292,23 +328,9 @@ class GameService(
                         bet = currentRound.bet,
                         roundOver = false,
                     )
-
-                if (rounds.size >= lobby!!.rounds) {
-                    println("ENTREI NA TENTATIVA DE ACABAR O JOGO")
-                    endGame(game.id!!)
-                    success("game terminado com sucesso")
-                }
-
                 val nextRoundId = it.roundRepository.createRound(game.id!!, nextRound)
-                println("CRIEI UMA NOVA RONDA COM O FIM DO TURNO E INCREMENTEI O ROUND COUNTER NOS GAMES")
-
-                // LISTA VAZIA
-                it.gamesRepository.updateRoundCounter(gameId)
-
-                // OLAAAAAAAAAAAAAAAAAAAAAA
 
                 val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
-                println(" FIRST PLAYER $firstPlayer")
                 val firstTurn =
                     Turn(
                         id = null,
@@ -322,44 +344,6 @@ class GameService(
 
             // gameDomain.compareFaces
 
-            checkAndEndGameIfFinished(game.id!!)
-
             success("Turno terminado com sucesso.")
-        }
-
-    fun checkAndEndGameIfFinished(gameId: Int) =
-        transactionManager.run {
-            println("CHECK END GAME IF FINISHED")
-            val game = it.gamesRepository.getGameById(gameId) ?: return@run
-
-            val rounds = it.roundRepository.getRoundsByGameId(game.id!!)
-            if (rounds.isEmpty()) return@run
-
-            val allRoundsFinished =
-                rounds.all { r ->
-                    val turns = it.turnsRepository.getTurnsByRoundIdForAllPlayers(r.id!!)
-                    turns.all { t -> t.isDone }
-                }
-
-            if (allRoundsFinished) {
-                println(" Todos os rounds e turnos do jogo $gameId terminaram. Chamando endGame.")
-                endGame(gameId)
-            }
-        }
-
-    fun endGame(gameId: Int) =
-        transactionManager.run {
-            println("DENTRO DO END GAME DO SERVICE")
-            val game = it.gamesRepository.getGameById(gameId) ?: return@run
-            it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
-            // lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
-
-            // Opcional: kickar todos os jogadores do lobby
-            val usersInLobby = it.usersRepository.getAllUsersInLobby(game.lobbyId)
-            usersInLobby.forEach { user ->
-                it.usersRepository.removeUserFromLobby(user.id, game.lobbyId)
-            }
-
-            println("Game $gameId finalizado. Lobby ${game.lobbyId} libertado e jogadores removidos.")
         }
 }

@@ -33,6 +33,7 @@ class UserController(
     fun bootstrapAdmin(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
+        println("entrou")
         if (userService.hasAnyUser()) {
             return ResponseEntity
                 .status(403)

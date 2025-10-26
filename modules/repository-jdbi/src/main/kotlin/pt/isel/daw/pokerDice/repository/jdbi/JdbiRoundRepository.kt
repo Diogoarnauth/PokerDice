@@ -8,6 +8,37 @@ import pt.isel.daw.pokerDice.repository.RoundRepository
 class JdbiRoundRepository(
     private val handle: Handle,
 ) : RoundRepository {
+/*
+    override fun updateRound(
+            roundId: Int,
+            winner: Int,
+            bet:Int,
+            roundOver: Boolean,
+        ) {
+            handle
+                .createUpdate(
+                    """
+        UPDATE dbo.round
+        SET winner = :winner,
+            bet = :bet,
+            roundOver = :roundOver
+        WHERE id = :roundId
+        """,
+                ).bind("rollCount", rollCount)
+                .bind("diceFaces", diceResults) // Pode ser uma lista; se for texto, converte para CSV ou JSON
+                .bind("isDone", isDone)
+                .bind("turnId", turnId)
+                .execute()
+        }
+    }
+
+game_id INT REFERENCES dbo.game(id) ON DELETE CASCADE,
+winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
+bet INT NOT NULL CHECK (bet >= 10),
+roundOver BOOLEAN DEFAULT FALSE,
+round_number INT NOT NULL
+*/
+
     override fun createRound(
         gameId: Int,
         round: Round,

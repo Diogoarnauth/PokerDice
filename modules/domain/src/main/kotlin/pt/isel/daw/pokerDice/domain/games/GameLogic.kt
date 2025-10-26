@@ -14,6 +14,8 @@ enum class CombinationType {
 }
 
 sealed class GameResult {
+    // para que é necessario
+
     data class WaitingForMorePlayers(
         val game: Game,
     ) : GameResult()
@@ -49,30 +51,90 @@ sealed class GameResult {
 }
 
 object PokerDiceScorer {
-    fun score(dice: List<Dice>): Int {
+    // testar depois esse score
+
+    fun score(dice: List<Dice>): Double {
         require(dice.size == 5) { "A roll must contain exactly 5 dice" }
 
-        val counts = dice.groupingBy { it.value }.eachCount()
-        // val distinct = counts.size
+        val values = dice.map { it.value }.sortedDescending()
+
+        val counts =
+            values
+                .groupingBy { it }
+                .eachCount()
+
+        val groups =
+            counts.entries
+                .sortedWith(
+                    compareByDescending<Map.Entry<Int, Int>> { it.value }
+                        .thenByDescending { it.key },
+                )
+
+        val isStraight = isStraight(values)
 
         return when {
-            counts.values.contains(5) -> 900
-            counts.values.contains(4) -> 800
-            counts.values.sorted() == listOf(2, 3) -> 700
-            isStraight(dice) -> 600
-            counts.values.contains(3) -> 500
-            counts.values.count { it == 2 } == 2 -> 400
-            counts.values.contains(2) -> 300
-            else -> 200 + dice.maxOf { it.value }
-            // high card bonus
+            groups.first().value == 5 -> {
+                // Five of a kind
+                900 + groups.first().key / 100.0
+            }
+
+            groups.first().value == 4 -> {
+                // Four of a kind + kicker
+                val quad = groups.first().key
+                val kicker = groups.find { it.value == 1 }?.key ?: 0
+                800 + (quad * 10 + kicker) / 100.0
+            }
+
+            groups.first().value == 3 && groups[1].value == 2 -> {
+                // Full house (trio + par)
+                val trio = groups.first().key
+                val pair = groups[1].key
+                700 + (trio * 10 + pair) / 100.0
+            }
+
+            isStraight -> {
+                val highCard = values.max()
+                600 + highCard / 100.0
+            }
+
+            groups.first().value == 3 -> {
+                // Three of a kind + kickers
+                val trio = groups.first().key
+                val kickers = groups.filter { it.value == 1 }.map { it.key }.sortedDescending()
+                val sumKickers = kickers.sum()
+                500 + (trio * 10 + sumKickers) / 100.0
+            }
+
+            groups.first().value == 2 && groups[1].value == 2 -> {
+                // Two pairs + kicker
+                val pairHigh = maxOf(groups[0].key, groups[1].key)
+                val pairLow = minOf(groups[0].key, groups[1].key)
+                val kicker = groups.find { it.value == 1 }?.key ?: 0
+                400 + (pairHigh * 10 + pairLow + kicker / 10.0) / 100.0
+            }
+
+            groups.first().value == 2 -> {
+                // One pair + kickers
+                val pair = groups.first().key
+                val kickers = groups.filter { it.value == 1 }.map { it.key }.sortedDescending()
+                val sumKickers = kickers.sum()
+                300 + (pair * 10 + sumKickers) / 100.0
+            }
+
+            else -> {
+                // High card
+                val high = values.first()
+                200 + high / 100.0
+            }
         }
     }
 
-    private fun isStraight(dice: List<Dice>): Boolean {
-        val sorted = dice.map { it.value }.sorted()
+    private fun isStraight(values: List<Int>): Boolean {
+        val sorted = values.sorted()
         return sorted.zipWithNext().all { (a, b) -> b - a == 1 }
     }
 }
+
 /*
 
 class GameLogic(

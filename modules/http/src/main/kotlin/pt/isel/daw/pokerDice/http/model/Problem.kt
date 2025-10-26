@@ -50,14 +50,22 @@ class Problem(
 
         // Game generic
         val gameNotFound = Problem(URI("${BASE_URL}gameNotFound"))
+        val notFirstRoll = Problem(URI("${BASE_URL}notFirstRoll"))
+        val TurnAlreadyFinished = Problem(URI("${BASE_URL}TurnAlreadyFinished"))
 
         // Generic
+        val anotherError = Problem(URI("${BASE_URL}anotherError"))
         val insecurePassword = Problem(URI("${BASE_URL}insecure-password"))
         val internalServerError = Problem(URI("${BASE_URL}InternalServerError"))
         val invalidRequestContent = Problem(URI("${BASE_URL}invalid-content"))
 
         val gameAlreadyRunning = Problem(URI("${BASE_URL}game-already-running"))
         val notEnoughPlayers = Problem(URI("${BASE_URL}not-enough-players"))
+        val NotTheHost = Problem(URI("${BASE_URL}NotTheHost"))
+
+        // Round Related
+        val noActiveRound = Problem(URI("${BASE_URL}noActiveRound"))
+        val noActiveTurn = Problem(URI("${BASE_URL}noActiveTurn"))
 
         // val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
         // val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))

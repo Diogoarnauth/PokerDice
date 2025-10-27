@@ -12,7 +12,7 @@ interface TurnsRepository {
         turnId: Int,
         rollCount: Int,
         diceResults: String,
-        value_of_combination:Int,
+        value_of_combination: Int,
         isDone: Boolean,
     )
 
@@ -27,9 +27,7 @@ interface TurnsRepository {
         currTurnPlayerId: Int,
     ): Int?
 
-    fun getBiggestValue(
-        round_id: Int,
-    ): Turn?
+    fun getBiggestValue(roundId: Int): Turn?
 
     fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn>
 }

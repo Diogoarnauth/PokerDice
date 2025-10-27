@@ -52,9 +52,7 @@ class JdbiTurnRepository(
             .execute()
     }
 
-    override fun getBiggestValue(
-        roundId: Int,
-    ): Turn? =
+    override fun getBiggestValue(roundId: Int): Turn? =
         handle
             .createQuery(
                 """
@@ -64,11 +62,9 @@ class JdbiTurnRepository(
             ORDER BY value_of_combination DESC
             LIMIT 1
             """,
-            )
-            .bind("roundId", roundId)
+            ).bind("roundId", roundId)
             .mapTo<Turn>()
             .firstOrNull()
-
 
     override fun getTurnsByRoundId(
         roundId: Int,

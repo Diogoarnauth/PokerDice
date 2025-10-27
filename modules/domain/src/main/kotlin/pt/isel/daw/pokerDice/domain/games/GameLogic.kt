@@ -1,14 +1,10 @@
 package pt.isel.daw.pokerDice.domain.games
 
-import kotlinx.datetime.Instant
 import kotlinx.datetime.Clock
+import kotlinx.datetime.Instant
 import pt.isel.daw.pokerDice.domain.games.Dice.Companion.faces
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
-import pt.isel.daw.pokerDice.domain.users.User
-import java.util.*
 import kotlin.time.Duration
-
-
 
 // organizar isto noutro sitio
 enum class CombinationType {
@@ -150,20 +146,21 @@ class GameLogic(
     private val clock: Clock,
     private val duration: Duration,
 ) {
-
-    fun createGame(lobbyId: Int, nrUsers: Int): Game {
+    fun createGame(
+        lobbyId: Int,
+        nrUsers: Int,
+    ): Game {
         require(nrUsers >= 2) { "Um jogo precisa de pelo menos dois jogadores." }
 
         return Game(
-            id = null,                  // ainda não persistido → id vem do repo
+            id = null,
             lobbyId = lobbyId,
-            state = Game.GameStatus.RUNNING,  // ou WAITING se quiseres começar “aberto”
+            state = Game.GameStatus.RUNNING,
             nrUsers = nrUsers,
-            roundCounter = 0,           // primeira ronda ainda não começou
+            roundCounter = 0,
             gameWinner = null,
         )
     }
-
 
     fun rollDice(currentTurn: Turn): String {
         val diceCount = 5
@@ -210,9 +207,7 @@ class GameLogic(
             gameWinner = null,
             nrUsers = nrUsers,
         )
-
 }
-
 
 /*
     fun addPlayer(
@@ -425,4 +420,3 @@ class GameLogic(
 }
 
 */
-//TODO("REBUILD COM AS NOVAS CLASSES E RESPETIVOS PARAMETROS")

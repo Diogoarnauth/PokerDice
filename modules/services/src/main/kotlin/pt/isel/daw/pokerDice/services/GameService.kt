@@ -1,7 +1,11 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
-import pt.isel.daw.pokerDice.domain.games.*
+import pt.isel.daw.pokerDice.domain.games.Dice
+import pt.isel.daw.pokerDice.domain.games.Game
+import pt.isel.daw.pokerDice.domain.games.GameDomain
+import pt.isel.daw.pokerDice.domain.games.Round
+import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
@@ -161,7 +165,7 @@ class GameService(
                 turnId = curTurn.id!!,
                 rollCount = newRollCount,
                 diceResults = rolledDice,
-                value_of_combination = curTurn.value_of_combination ,
+                value_of_combination = curTurn.value_of_combination,
                 isDone = false,
             )
 
@@ -220,7 +224,6 @@ class GameService(
                 diceResults = updatedDice,
                 value_of_combination = curTurn.value_of_combination,
                 isDone = isDone,
-
             )
 
             if (isDone) {
@@ -295,8 +298,6 @@ class GameService(
                     }
                     ?: emptyList()
 
-
-
             // Marca o turno atual como terminado
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
@@ -326,8 +327,7 @@ class GameService(
 
                 val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!)
 
-
-               // val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
+                // val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
                 println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
 
                 if (game.roundCounter++ >= lobby.rounds) {

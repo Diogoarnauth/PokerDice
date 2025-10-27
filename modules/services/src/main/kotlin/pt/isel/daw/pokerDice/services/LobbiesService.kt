@@ -208,7 +208,9 @@ class LobbiesService(
                 lobbiesRepo.getById(lobbyId)
                     ?: return@run failure(JoinLobbyError.LobbyNotFound)
 
-            if(lobby.isRunning){return@run failure(JoinLobbyError.LobbyAlreadyRunning)}
+            if (lobby.isRunning) {
+                return@run failure(JoinLobbyError.LobbyAlreadyRunning)
+            }
 
             // Verificar se o user existe
             val user =

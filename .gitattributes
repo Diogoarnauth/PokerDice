@@ -1,1 +1,24 @@
-*.sh text eol=lf
+# Define a política "padrão" para todos os ficheiros
+# 'text=auto' deteta se é texto
+# 'eol=lf' FORÇA que os ficheiros de texto sejam guardados no Git com LF
+* text=auto eol=lf
+
+# --- Exceções Específicas ---
+
+# Ficheiros que TÊM de ter line endings de Windows (CRLF)
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+
+# Ficheiros que TÊM de ter line endings de Linux (LF), mesmo no Windows
+# (Isto é crucial para os teus scripts gradlew)
+gradlew     text eol=lf
+*.sh        text eol=lf
+
+# Ficheiros que NUNCA devem ser alterados (binários)
+*.jar       binary
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.zip       binary
+*.keystore  binary

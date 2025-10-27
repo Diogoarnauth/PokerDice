@@ -42,6 +42,8 @@ sealed class JoinLobbyError {
     data object AlreadyInLobby : JoinLobbyError()
 
     data object InsufficientCredits : JoinLobbyError()
+
+    data object LobbyAlreadyRunning : JoinLobbyError()
 }
 
 sealed class LeaveLobbyError {
@@ -205,6 +207,8 @@ class LobbiesService(
             val lobby =
                 lobbiesRepo.getById(lobbyId)
                     ?: return@run failure(JoinLobbyError.LobbyNotFound)
+
+            if(lobby.isRunning){return@run failure(JoinLobbyError.LobbyAlreadyRunning)}
 
             // Verificar se o user existe
             val user =

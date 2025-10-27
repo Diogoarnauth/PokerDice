@@ -6,6 +6,7 @@ data class Turn(
     val playerId: Int,
     var rollCount: Int = 0,
     var diceFaces: String? = null,
+    var value_of_combination: Int = 0,
     var isDone: Boolean = false,
 ) {
     // TODO()

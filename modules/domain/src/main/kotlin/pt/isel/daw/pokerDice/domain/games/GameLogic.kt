@@ -1,6 +1,14 @@
 package pt.isel.daw.pokerDice.domain.games
 
 import kotlinx.datetime.Instant
+import kotlinx.datetime.Clock
+import pt.isel.daw.pokerDice.domain.games.Dice.Companion.faces
+import pt.isel.daw.pokerDice.domain.lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.users.User
+import java.util.*
+import kotlin.time.Duration
+
+
 
 // organizar isto noutro sitio
 enum class CombinationType {
@@ -49,6 +57,8 @@ sealed class GameResult {
 
     data object NotAPlayer : GameResult()
 }
+
+/*
 
 object PokerDiceScorer {
     // testar depois esse score
@@ -134,42 +144,83 @@ object PokerDiceScorer {
         return sorted.zipWithNext().all { (a, b) -> b - a == 1 }
     }
 }
-
-/*
+*/
 
 class GameLogic(
     private val clock: Clock,
     private val duration: Duration,
 ) {
-    /**
- * Cria um novo game ainda sem jogadores
- */
-    fun createNewGame(
-        nrPlayers: Int,
-        minCredits: Int,
-        lobbyId: UUID,
+
+    fun createGame(lobbyId: Int, nrUsers: Int): Game {
+        require(nrUsers >= 2) { "Um jogo precisa de pelo menos dois jogadores." }
+
+        return Game(
+            id = null,                  // ainda não persistido → id vem do repo
+            lobbyId = lobbyId,
+            state = Game.GameStatus.RUNNING,  // ou WAITING se quiseres começar “aberto”
+            nrUsers = nrUsers,
+            roundCounter = 0,           // primeira ronda ainda não começou
+            gameWinner = null,
+        )
+    }
+
+
+    fun rollDice(currentTurn: Turn): String {
+        val diceCount = 5
+        val result = List(diceCount) { faces.random() }.joinToString(",")
+        println("rollDice - turn=$currentTurn -> $result")
+        return result
+    }
+
+    fun rerollDice(
+        currentTurn: Turn,
+        idxToReroll: List<Int>,
+    ): String {
+        val previous =
+            currentTurn.diceFaces?.split(",")?.map { it.trim() }
+                ?: throw IllegalStateException("No previous dice found for this turn")
+
+        // Reroll apenas dos índices indicados
+        val newDice =
+            previous.mapIndexed { index, oldFace ->
+                if (index in idxToReroll) faces.random() else oldFace
+            }
+
+        val result = newDice.joinToString(",")
+        println("Re-rolled dice for player ${currentTurn.playerId}: $result")
+
+        return result
+    }
+
+    fun evaluateRoundWinner(roundId: Int): Int {
+        // TODO: lógica real baseada nas combinações de dados
+        // Por agora, devolve aleatoriamente um player
+        println("A avaliar vencedor da ronda $roundId")
+        return (1..4).random()
+    }
+
+    fun createGameFromLobby(
+        lobby: Lobby,
+        nrUsers: Int,
     ): Game =
         Game(
-            id = UUID.randomUUID(),
-            lobbyId = lobbyId,
-            state = Game.State.WAITING_FOR_PLAYERS,
-            nrPlayers = nrPlayers,
-            minCredits = minCredits,
-            players = emptyList(),
-            currentPlayerIndex = 0,
-            lastRoll = emptyList(),
-            lastCombination = null,
+            lobbyId = lobby.id,
+            state = Game.GameStatus.RUNNING,
+            roundCounter = 0,
+            gameWinner = null,
+            nrUsers = nrUsers,
         )
 
-    /**
- * Adiciona, se possível, um novo jogador ao jogo.
- */
+}
+
+
+/*
     fun addPlayer(
-        game: Game,
+        lobby: Lobby,
         playerCredits: Int,
         newPlayer: User,
     ): GameResult {
-        if (game.state != Game.State.WAITING_FOR_PLAYERS) {
+        if (lobby.isRunning) {
             return GameResult.InvalidState(" It is not possible to add players right now.")
         }
 
@@ -205,6 +256,11 @@ class GameLogic(
             GameResult.WaitingForMorePlayers(updatedGame)
         }
     }
+
+
+
+
+
 
     /**
  * Aplica uma jogada (round). Para já, apenas faz validações básicas.
@@ -368,5 +424,5 @@ class GameLogic(
     }
 }
 
-
-TODO("REBUILD COM AS NOVAS CLASSES E RESPETIVOS PARAMETROS")*/
+*/
+//TODO("REBUILD COM AS NOVAS CLASSES E RESPETIVOS PARAMETROS")

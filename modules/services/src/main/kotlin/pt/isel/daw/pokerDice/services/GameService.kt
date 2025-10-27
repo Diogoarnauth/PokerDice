@@ -1,10 +1,7 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
-import pt.isel.daw.pokerDice.domain.games.Game
-import pt.isel.daw.pokerDice.domain.games.GameDomain
-import pt.isel.daw.pokerDice.domain.games.Round
-import pt.isel.daw.pokerDice.domain.games.Turn
+import pt.isel.daw.pokerDice.domain.games.*
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
@@ -77,21 +74,17 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            // SÃ³ o host pode comeÃ§ar o jogo
             require(lobby.hostId == userId) {
                 "Only the host user can start the game"
             }
 
-            // Verifica se jÃ¡ existe jogo em andamento
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // Verificar crÃ©ditos mÃ­nimos
             val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
             require(usersWithoutCredit.isEmpty()) {
                 "Not all users have the necessary credits to participate"
             }
 
-            // Verificar nÃºmero mÃ­nimo de jogadores
             if (allUsersInLobby.count() < lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
             }
@@ -168,6 +161,7 @@ class GameService(
                 turnId = curTurn.id!!,
                 rollCount = newRollCount,
                 diceResults = rolledDice,
+                value_of_combination = curTurn.value_of_combination ,
                 isDone = false,
             )
 
@@ -224,7 +218,9 @@ class GameService(
                 turnId = curTurn.id!!,
                 rollCount = newRollCount,
                 diceResults = updatedDice,
+                value_of_combination = curTurn.value_of_combination,
                 isDone = isDone,
+
             )
 
             if (isDone) {
@@ -282,15 +278,34 @@ class GameService(
                 it.turnsRepository.getTurnsByRoundId(currentRound.id!!, userId)
                     ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
 
+            val diceList: List<Dice> =
+                curTurn.diceFaces
+                    ?.split(",")
+                    ?.map { it.trim() }
+                    ?.map { face ->
+                        when (face.uppercase()) {
+                            "A" -> Dice.Ace
+                            "K" -> Dice.King
+                            "Q" -> Dice.Queen
+                            "J" -> Dice.Jack
+                            "10" -> Dice.Ten
+                            "9" -> Dice.Nine
+                            else -> error("Invalid dice face: $face")
+                        }
+                    }
+                    ?: emptyList()
+
+
+
             // Marca o turno atual como terminado
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
                 rollCount = curTurn.rollCount,
                 diceResults = curTurn.diceFaces ?: "",
+                value_of_combination = gameDomain.score(diceList).toInt(),
                 isDone = true,
             )
 
-            // Procura o prÃ³ximo jogador
             val nextPlayerId =
                 it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
 
@@ -309,7 +324,10 @@ class GameService(
                 it.roundRepository.markRoundAsOver(currentRound.id!!)
                 it.gamesRepository.updateRoundCounter(game.id!!)
 
-                val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // placeholder
+                val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!)
+
+
+               // val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
                 println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
 
                 if (game.roundCounter++ >= lobby.rounds) {

@@ -119,6 +119,7 @@ class LobbiesController(
                     JoinLobbyError.LobbyFull -> Problem.response(409, Problem.lobbyFull)
                     JoinLobbyError.AlreadyInLobby -> Problem.response(409, Problem.alreadyInLobby)
                     JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit)
+                    JoinLobbyError.LobbyAlreadyRunning -> Problem.response(409, Problem.LobbyAlreadyRunning)
                 }
         }
     }

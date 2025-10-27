@@ -1,4 +1,4 @@
-#!/bin/sh
+﻿#!/bin/sh
 # wait-for-postgres.sh host cmd
 
 set -e

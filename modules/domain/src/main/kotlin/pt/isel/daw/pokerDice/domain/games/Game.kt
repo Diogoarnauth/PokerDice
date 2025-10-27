@@ -54,9 +54,7 @@ data class Game(
     enum class GameStatus {
         CLOSED,
 
-        // jogo terminado / fechado
         RUNNING,
-        // jogo a decorrer
         ;
 
         val isEnded: Boolean get() = this == GameStatus.CLOSED

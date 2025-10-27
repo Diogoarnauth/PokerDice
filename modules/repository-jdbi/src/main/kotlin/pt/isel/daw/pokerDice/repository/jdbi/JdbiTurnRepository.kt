@@ -31,6 +31,7 @@ class JdbiTurnRepository(
         turnId: Int,
         rollCount: Int,
         diceResults: String,
+        value_of_combination: Int,
         isDone: Boolean,
     ) {
         handle
@@ -39,15 +40,35 @@ class JdbiTurnRepository(
         UPDATE dbo.turn
         SET roll_count = :rollCount,
             dice_faces = :diceFaces,
+            value_of_combination = :value_of_combination,
             is_done = :isDone
         WHERE id = :turnId
         """,
             ).bind("rollCount", rollCount)
             .bind("diceFaces", diceResults) // Pode ser uma lista; se for texto, converte para CSV ou JSON
+            .bind("value_of_combination", value_of_combination)
             .bind("isDone", isDone)
             .bind("turnId", turnId)
             .execute()
     }
+
+    override fun getBiggestValue(
+        roundId: Int,
+    ): Turn? =
+        handle
+            .createQuery(
+                """
+            SELECT id, round_id, player_id, roll_count, dice_faces, value_of_combination, is_done
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            ORDER BY value_of_combination DESC
+            LIMIT 1
+            """,
+            )
+            .bind("roundId", roundId)
+            .mapTo<Turn>()
+            .firstOrNull()
+
 
     override fun getTurnsByRoundId(
         roundId: Int,

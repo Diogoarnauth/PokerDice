@@ -7,6 +7,7 @@ import pt.isel.daw.pokerDice.domain.games.GameDomain
 import pt.isel.daw.pokerDice.domain.games.Round
 import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
+import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -171,23 +172,23 @@ class GameService(
 
             println(" CHEGUEI ANTES DE PASSAR PARA O PRÃ“XIMO USER")
 
-           /* if (isTurnFinished) {
-                val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId, curTurn.playerId!!)
-                if (nextPlayerId != null) {
-                    val nextTurn =
-                        Turn(
-                            id = null,
-                            roundId = curRound.id!!,
-                            playerId = nextPlayerId,
-                            rollCount = 0,
-                            isDone = false,
-                        )
-                    it.turnsRepository.createTurn(curRound.id!!, nextTurn)
-                } else {
-                    // todos os jogadores jÃ¡ jogaram â†’ marcar round como terminado
-                    it.roundRepository.markRoundAsOver(curRound.id!!)
-                }
-            }*/
+            /* if (isTurnFinished) {
+                 val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId, curTurn.playerId!!)
+                 if (nextPlayerId != null) {
+                     val nextTurn =
+                         Turn(
+                             id = null,
+                             roundId = curRound.id!!,
+                             playerId = nextPlayerId,
+                             rollCount = 0,
+                             isDone = false,
+                         )
+                     it.turnsRepository.createTurn(curRound.id!!, nextTurn)
+                 } else {
+                     // todos os jogadores jÃ¡ jogaram â†’ marcar round como terminado
+                     it.roundRepository.markRoundAsOver(curRound.id!!)
+                 }
+             }*/
 
             success(rolledDice)
         }
@@ -321,47 +322,55 @@ class GameService(
                     )
                 it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
             } else {
-                // todos jogaram â†’ terminar ronda e comeÃ§ar nova
-                it.roundRepository.markRoundAsOver(currentRound.id!!)
-                it.gamesRepository.updateRoundCounter(game.id!!)
+                // terminar ronda e começar nova
+                endRound(game, lobby, currentRound)
+            }
+            success("Turno terminado com sucesso.")
+        }
 
-                val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!)
+    fun endRound(
+        game: Game,
+        lobby: Lobby,
+        currentRound: Round,
+    ): GameErrorResult =
+        transactionManager.run {
+            it.roundRepository.markRoundAsOver(currentRound.id!!)
+            it.gamesRepository.updateRoundCounter(game.id!!)
 
-                // val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
-                println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
+            val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!)
 
-                if (game.roundCounter++ >= lobby.rounds) {
-                    // depois adicionar logica de atribuir winner
+// val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
+            println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
 
-                    it.roundRepository.markRoundAsOver(currentRound.id!!)
-                    it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
-                    success("Game Finished")
-                }
+            if (game.roundCounter++ >= lobby.rounds) {
+                // depois adicionar logica de atribuir winner
 
-                val nextRound =
-                    Round(
-                        id = null,
-                        roundNumber = currentRound.roundNumber + 1,
-                        gameId = game.id!!,
-                        bet = currentRound.bet,
-                        roundOver = false,
-                    )
-                val nextRoundId = it.roundRepository.createRound(game.id!!, nextRound)
-
-                val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
-                val firstTurn =
-                    Turn(
-                        id = null,
-                        roundId = nextRoundId,
-                        playerId = firstPlayer.id,
-                        rollCount = 0,
-                        isDone = false,
-                    )
-                it.turnsRepository.createTurn(nextRoundId, firstTurn)
+                // it.roundRepository.markRoundAsOver(currentRound.id!!)
+                it.gamesRepository.updateGameState(game.id!!, Game.GameStatus.CLOSED)
+                success("Game Finished")
             }
 
-            // gameDomain.compareFaces
+            val nextRound =
+                Round(
+                    id = null,
+                    roundNumber = currentRound.roundNumber + 1,
+                    gameId = game.id!!,
+                    bet = currentRound.bet,
+                    roundOver = false,
+                )
+            val nextRoundId = it.roundRepository.createRound(game.id!!, nextRound)
 
-            success("Turno terminado com sucesso.")
+            val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
+            val firstTurn =
+                Turn(
+                    id = null,
+                    roundId = nextRoundId,
+                    playerId = firstPlayer.id,
+                    rollCount = 0,
+                    isDone = false,
+                )
+            it.turnsRepository.createTurn(nextRoundId, firstTurn)
+
+            success("round ended with success")
         }
 }

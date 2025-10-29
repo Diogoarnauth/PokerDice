@@ -17,6 +17,7 @@ import pt.isel.daw.pokerDice.http.model.userModel.UserCreateInputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserCreateTokenInputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserGetByIdOutputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserTokenCreateOutputModel
+import pt.isel.daw.pokerDice.services.CreatingAppInviteError
 import pt.isel.daw.pokerDice.services.DepositError
 import pt.isel.daw.pokerDice.services.TokenCreationError
 import pt.isel.daw.pokerDice.services.UserGetByIdError
@@ -34,11 +35,13 @@ class UserController(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
         println("entrou")
-        if (userService.hasAnyUser()) {
-            return ResponseEntity
-                .status(403)
-                .body(mapOf("error" to Problem.userAlreadyExists))
-        }
+        // lógica passou para o services
+        // if (userService.hasAnyUser()) {
+        //      return ResponseEntity
+        //          .status(403)
+        //          .body(mapOf("error" to Problem.userAlreadyExists))
+        //  }
+
         val id = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
         return ResponseEntity.ok(mapOf("id" to id))
     }
@@ -92,6 +95,8 @@ class UserController(
                                 UserRegisterError.InvitationDontExist -> Problem.invitationDontExist
                                 UserRegisterError.InvitationUsed -> Problem.invitationUsed
                                 UserRegisterError.InvitationExpired -> Problem.invitationExpired
+                                UserRegisterError.AdminAlreadyExists -> Problem.AdminAlreadyExists
+                                UserRegisterError.InvalidData -> Problem.InvalidData
                             },
                     ),
                 )
@@ -178,7 +183,15 @@ class UserController(
             is Failure ->
                 ResponseEntity
                     .badRequest()
-                    .body(mapOf("error" to Problem.inviteCreationError))
+                    .body(
+                        mapOf(
+                            "error" to
+                                when (res.value) {
+                                    CreatingAppInviteError.UserNotFound -> Problem.userNotFound
+                                    CreatingAppInviteError.CreatingInviteError -> Problem.inviteCreationError
+                                },
+                        ),
+                    )
         }
     }
 }

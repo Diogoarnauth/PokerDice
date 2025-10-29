@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.http.model
 
 import org.springframework.http.ResponseEntity
+import pt.isel.daw.pokerDice.services.UserRegisterError
 import java.net.URI
 
 class Problem(
@@ -29,6 +30,8 @@ class Problem(
         val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid"))
         val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized"))
         val badDeposit = Problem(URI("${BASE_URL}bad-deposit"))
+        val AdminAlreadyExists = Problem(URI("${BASE_URL}AdminAlreadyExists"))
+        val InvalidData = Problem(URI("${BASE_URL}InvalidData"))
 
         // Invitation Related
         val invitationDontExist = Problem(URI("${BASE_URL}invite-dont-exist"))

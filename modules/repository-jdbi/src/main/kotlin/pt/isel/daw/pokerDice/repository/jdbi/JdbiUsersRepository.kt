@@ -175,6 +175,21 @@ class JdbiUsersRepository(
             .execute()
     }
 
+    override fun getUserTokens(userId: Int): List<Token> =
+        handle
+            .createQuery(
+                "SELECT tokenvalidation, createdat, lastusedat, userid " +
+                    "FROM dbo.Token WHERE userid = :userId",
+            ).bind("userId", userId)
+            .map { rs, _ ->
+                val tokenValidationInfo = TokenValidationInfo(rs.getString("tokenvalidation"))
+                val createdAt = Instant.fromEpochSeconds(rs.getLong("createdat"))
+                val lastUsedAt = Instant.fromEpochSeconds(rs.getLong("lastusedat"))
+                val userId = rs.getInt("userid")
+
+                Token(tokenValidationInfo, userId, createdAt, lastUsedAt)
+            }.list()
+
     override fun clearLobbyForAllUsers(lobbyId: Int) {
         handle
             .createUpdate("UPDATE dbo.Users SET lobby_id = NULL WHERE lobby_id = :lobbyId")
@@ -182,9 +197,12 @@ class JdbiUsersRepository(
             .execute()
     }
 
-    override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int {
-        TODO("Not yet implemented")
-    }
+    override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int =
+        handle
+            .createUpdate(
+                "DELETE FROM dbo.token WHERE tokenValidation = :tokenValidationInfo",
+            ).bind("tokenValidationInfo", tokenValidationInfo.validationInfo) // Usando o valor do tokenValidationInfo
+            .execute()
 
     override fun countUsers(): Int =
         handle

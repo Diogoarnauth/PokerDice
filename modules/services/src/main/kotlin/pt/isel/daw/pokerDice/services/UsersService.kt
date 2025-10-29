@@ -43,6 +43,8 @@ sealed class UserGetByIdError {
 }
 
 sealed class UserRegisterError {
+    data object AdminAlreadyExists : UserRegisterError()
+
     data object InvitationDontExist : UserRegisterError()
 
     data object InvitationExpired : UserRegisterError()
@@ -50,6 +52,8 @@ sealed class UserRegisterError {
     data object InvitationUsed : UserRegisterError()
 
     data object UserAlreadyExists : UserRegisterError()
+
+    data object InvalidData : UserRegisterError()
 
     // Novos Erros de Validação
     data object InvalidUsername : UserRegisterError()
@@ -97,23 +101,29 @@ class UsersService(
         name: String,
         age: Int,
         password: String,
-    ): Int {
+    ): UserRegisterResult {
         if (!userDomain.isAgeValid(age) || !userDomain.isSafePassword(password) ||
             !userDomain.isUsernameValid(username)
         ) {
-            failure(InvalidInputError.InvalidInput) // TODO("VERIFICAR SE QUEREMOS ESTE NOME OU PASSWORD
+            return failure(UserRegisterError.InvalidData) // TODO("VERIFICAR SE QUEREMOS ESTE NOME OU PASSWORD
             // / USERNAME / AGE")
         }
+        if (hasAnyUser()) {
+            return failure(UserRegisterError.AdminAlreadyExists)
+        }
+
         return transactionManager.run {
             val usersRepository = it.usersRepository
             val passwordValidationInfo = userDomain.createPasswordValidationInformation(password)
-            usersRepository.create(
-                username = username,
-                name = name,
-                age = age,
-                inviteCode = "BOOTSTRAP",
-                passwordValidationInfo = passwordValidationInfo,
-            )
+            val userId =
+                usersRepository.create(
+                    username = username,
+                    name = name,
+                    age = age,
+                    inviteCode = "BOOTSTRAP",
+                    passwordValidationInfo = passwordValidationInfo,
+                )
+            success(userId)
         }
     }
 
@@ -147,6 +157,9 @@ class UsersService(
 
     fun createAppInvite(userId: Int): CreatingAppInviteResult =
         transactionManager.run {
+            it.usersRepository.getUserById(userId)
+                ?: return@run failure(CreatingAppInviteError.UserNotFound)
+
             val inviteRepository = it.inviteRepository
             val newInvite = inviteDomain.generateInviteValue()
             val inviteValidationInfo = inviteDomain.createInviteValidationInformation(newInvite)
@@ -233,6 +246,16 @@ class UsersService(
                 return@run failure(TokenCreationError.UserOrPasswordAreInvalid)
             }
 
+            val existingTokens = usersRepository.getUserTokens(user.id)
+            val maxTokens = userDomain.maxNumberOfTokensPerUser
+
+            if (existingTokens.size >= maxTokens) {
+                // Marque o token mais antigo como expirado
+                val oldestToken = existingTokens.minByOrNull { it.createdAt }
+                if (oldestToken != null) {
+                    usersRepository.removeTokenByValidationInfo(oldestToken.tokenValidationInfo)
+                }
+            }
             val tokenValue = userDomain.generateTokenValue()
             val now = clock.now()
             val newToken =
@@ -259,7 +282,7 @@ class UsersService(
             val user =
                 usersRepository.getUserById(id)
                     ?: return@run failure(UserGetByIdError.UserNotFound)
-
+            println("user $user")
             success(user)
         }
     }

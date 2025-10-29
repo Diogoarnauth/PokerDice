@@ -47,6 +47,8 @@ interface UsersRepository {
         now: Instant,
     )
 
+    fun getUserTokens(userId: Int): List<Token>
+
     fun removeUserFromLobby(
         userId: Int,
         lobbyId: Int,

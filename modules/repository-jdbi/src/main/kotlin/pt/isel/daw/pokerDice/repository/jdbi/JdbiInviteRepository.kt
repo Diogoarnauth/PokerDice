@@ -37,13 +37,13 @@ class JdbiInviteRepository(
 
         handle
             .createUpdate(
-                "insert into dbo.app_invite(inviterid, invitevalidationinfo, state, createdat) " +
+                "insert into dbo.app_invite(inviterId, inviteValidationInfo, state, createdAt) " +
                     "values (:inviterId, :inviteValidationInfo, :state, :createdAt)",
             ).bind("inviterId", inviterId)
             .bind("inviteValidationInfo", inviteValidationInfo.validationInfo)
             .bind("state", state)
             .bind("createdAt", createdAt.epochSeconds)
-            .executeAndReturnGeneratedKeys()
+            .executeAndReturnGeneratedKeys("id")
             .mapTo<String>()
             .one()
 

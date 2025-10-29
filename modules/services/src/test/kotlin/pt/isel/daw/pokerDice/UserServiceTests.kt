@@ -1,7 +1,11 @@
 package pt.isel.daw.pokerDice
 
 import kotlinx.datetime.Clock
+import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Nested
 import org.postgresql.ds.PGSimpleDataSource
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
 import pt.isel.daw.pokerDice.domain.users.User
@@ -24,73 +28,104 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-import kotlin.test.fail
 
 /**
  * Testes do UsersService — versão adaptada do stor.
  * Usa a BD local de desenvolvimento e domínio real.
  */
 class UserServiceTests {
-    //  --- BOOTSTRAP TESTS ---
+    private lateinit var service: UsersService
+    private lateinit var username: String
+    private lateinit var handle: Handle
+
+    // Setup inicial com BeforeEach
+
+    @BeforeEach
+    fun setup() {
+        service = createUserService()
+        username = newUsername()
+
+        // Criação da instância de Jdbi
+        val jdbi =
+            Jdbi
+                .create(
+                    PGSimpleDataSource().apply {
+                        setURL("jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
+                    },
+                ).configureWithAppRequirements()
+
+        // Abertura do handle
+        handle = jdbi.open()
+
+        // Inicia a transação para cada teste
+        handle.begin()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        // Rollback da transação após cada teste para garantir que a BD seja restaurada
+        handle.rollback() // Desfaz qualquer alteração feita durante o teste
+
+        handle.close() // Fecha o handle após cada teste
+    }
+
+    // --- BOOTSTRAP TESTS ---
+    @Nested
+    inner class BootstrapTests
 
     @Test
     fun `can bootstrap first user`() {
         // given
-        val service = createUserService()
         val username = newUsername()
 
         // when
         val id = service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
+        val result = assertIs<Either.Right<Int>>(id).value
 
         // then
-        assertTrue(id > 0)
+        assertTrue(result > 0)
         assertTrue(service.hasAnyUser())
     }
 
     @Test
     fun `bootstrap should fail if a user already exists`() {
         // given
-        val service = createUserService()
         val username1 = newUsername()
         val username2 = newUsername()
 
         // when: cria o primeiro utilizador (deve funcionar)
-        val id1 = service.bootstrapFirstUser(username1, "Admin1", 30, "StrongPass123")
+        val result1 = service.bootstrapFirstUser(username1, "Admin1", 30, "StrongPass123")
+        val id1 = assertIs<Either.Right<Int>>(result1).value
         assertTrue(id1 > 0)
         assertTrue(service.hasAnyUser())
 
-        // then: tentar criar outro deve devolver erro (já existe user)
-        try {
-            service.bootstrapFirstUser(username2, "Admin2", 28, "AnotherStrongPass")
-            fail("Expected failure when bootstrapping second user")
-        } catch (ex: Exception) {
-            // Como bootstrapFirstUser usa failure() em vez de Either, o throw é o comportamento esperado
-            assertTrue(ex.message?.contains("user") ?: true)
-        }
+        // then: tenta criar outro e deve falhar
+        val result2 = service.bootstrapFirstUser(username2, "Admin2", 28, "AnotherStrongPass")
+
+        // Verifica se o resultado é Left e se é o erro esperado
+        val error = assertIs<Either.Left<UserRegisterError>>(result2).value
+        assertTrue(error is UserRegisterError.InvalidData) // ou qualquer outro erro esperado
     }
 
     @Test
     fun `bootstrap should fail with invalid password`() {
-        val service = createUserService()
         val username = newUsername()
 
-        try {
-            service.bootstrapFirstUser(username, "Admin", 25, "123")
-            fail("Expected InvalidInputError.InvalidInput")
-        } catch (ex: Exception) {
-            assertTrue(ex.message?.contains("InvalidInput") ?: true)
-        }
+        val result = service.bootstrapFirstUser(username, "Admin", 25, "123")
+        val error = assertIs<Either.Left<UserRegisterError>>(result).value
+
+        assertTrue(error is UserRegisterError.InvalidData)
     }
 
     // --- DEPOSIT TESTS ---
 
     @Test
     fun `deposit success updates credit and returns new balance`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
 
+        val result = assertIs<Either.Right<Int>>(userId).value
         // estado inicial
-        val u0: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val u0: User = (assertIs<Either.Right<User>>(service.getById(result))).value
         assertEquals(0, u0.credit)
 
         // deposita 50
@@ -99,15 +134,15 @@ class UserServiceTests {
         assertEquals(50, r.value)
 
         // confirma persistência
-        val u1: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val u1: User = (assertIs<Either.Right<User>>(service.getById(result))).value
         assertEquals(50, u1.credit)
     }
 
     @Test
     fun `deposit with zero should fail with InvalidAmount`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
-        val user: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val result = assertIs<Either.Right<Int>>(userId).value
+        val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
         val res = service.deposit(0, user)
         val left: Either.Left<DepositError> = assertIs(res)
@@ -116,9 +151,10 @@ class UserServiceTests {
 
     @Test
     fun `deposit with negative amount should fail with InvalidAmount`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
-        val user: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val result = assertIs<Either.Right<Int>>(userId).value
+
+        val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
         val res = service.deposit(-10, user)
         val left: Either.Left<DepositError> = assertIs(res)
@@ -127,30 +163,30 @@ class UserServiceTests {
 
     @Test
     fun `multiple deposits accumulate credit`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
-        val user: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val result = assertIs<Either.Right<Int>>(userId).value
+
+        val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
         // 30 + 20 + 100 = 150
         val r1: Either.Right<Int> = assertIs(service.deposit(30, user))
         assertEquals(30, r1.value)
 
         // re-obter o user após cada depósito (opcional mas claro)
-        val u1: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val u1: User = (assertIs<Either.Right<User>>(service.getById(result))).value
         val r2: Either.Right<Int> = assertIs(service.deposit(20, u1))
         assertEquals(50, r2.value)
 
-        val u2: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val u2: User = (assertIs<Either.Right<User>>(service.getById(result))).value
         val r3: Either.Right<Int> = assertIs(service.deposit(100, u2))
         assertEquals(150, r3.value)
 
-        val uFinal: User = (assertIs<Either.Right<User>>(service.getById(userId))).value
+        val uFinal: User = (assertIs<Either.Right<User>>(service.getById(result))).value
         assertEquals(150, uFinal.credit)
     }
 
     @Test
     fun `deposit should fail when user does not exist`() {
-        val service = createUserService()
         val ghost = dummyUser(id = 999_999)
 
         val res = service.deposit(10, ghost)
@@ -162,10 +198,10 @@ class UserServiceTests {
 
     @Test
     fun `createAppInvite should succeed for existing user and return non-blank code`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+        val result = assertIs<Either.Right<Int>>(userId).value
 
-        val res = service.createAppInvite(userId)
+        val res = service.createAppInvite(result)
 
         val right: Either.Right<String> = assertIs(res)
         val code = right.value
@@ -175,34 +211,34 @@ class UserServiceTests {
 
     @Test
     fun `createAppInvite twice should generate different codes`() {
-        val service = createUserService()
         val userId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+        val result = assertIs<Either.Right<Int>>(userId).value
 
-        val code1: String = (assertIs<Either.Right<String>>(service.createAppInvite(userId))).value
-        val code2: String = (assertIs<Either.Right<String>>(service.createAppInvite(userId))).value
+        val code1: String = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
+        val code2: String = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         assertNotEquals(code1, code2, "dois convites consecutivos não devem repetir o mesmo código")
     }
 
     @Test
     fun `createAppInvite should fail when user does not exist`() {
-        val service = createUserService()
-        val ghostUserId = 999_999
+        val ghostUserId = 999
 
         val res = service.createAppInvite(ghostUserId)
 
         val left: Either.Left<CreatingAppInviteError> = assertIs(res)
         // pelo teu service, qualquer falha do repo mapeia para CreatingInviteError
-        assertEquals(CreatingAppInviteError.CreatingInviteError, left.value)
+        assertEquals(CreatingAppInviteError.UserNotFound, left.value)
     }
 
-    //  --- CREATE APP INVITE TESTS ---
+    //  --- CREATE USER TESTS ---
 
     @Test
     fun `createUser fails with insecure password`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val result = assertIs<Either.Right<Int>>(adminId).value
+
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         val res =
             service.createUser(
@@ -219,9 +255,9 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails with invalid username`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val result = assertIs<Either.Right<Int>>(adminId).value
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         val res =
             service.createUser(
@@ -238,9 +274,9 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails with invalid name`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val result = assertIs<Either.Right<Int>>(adminId).value
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         val res =
             service.createUser(
@@ -257,9 +293,9 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails with invalid age`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val result = assertIs<Either.Right<Int>>(adminId).value
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         val res =
             service.createUser(
@@ -276,8 +312,6 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails when invitation does not exist`() {
-        val service = createUserService()
-
         val res =
             service.createUser(
                 username = newUsername(),
@@ -293,9 +327,10 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails when invitation already used`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val result = assertIs<Either.Right<Int>>(adminId).value
+
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         // usa o convite uma vez (sucesso)
         val uname = newUsername()
@@ -325,11 +360,11 @@ class UserServiceTests {
 
     @Test
     fun `createUser fails when username already exists`() {
-        val service = createUserService()
         val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+        val result = assertIs<Either.Right<Int>>(adminId).value
 
         // convite 1 para o primeiro user
-        val invite1 = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val invite1 = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
         val username = newUsername()
 
         val first =
@@ -344,7 +379,7 @@ class UserServiceTests {
         assertTrue(firstRight.value > 0)
 
         // convite 2 válido para a tentativa duplicada
-        val invite2 = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val invite2 = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         // tenta criar outro com o MESMO username → UserAlreadyExists
         val dup =
@@ -361,9 +396,16 @@ class UserServiceTests {
 
     @Test
     fun `createUser success stores user and marks invite as used`() {
-        val service = createUserService()
-        val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
-        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(adminId))).value
+        val adminId =
+            service.bootstrapFirstUser(
+                newUsername(),
+                "Admin",
+                25,
+                "StrongPass123",
+            )
+        val result = assertIs<Either.Right<Int>>(adminId).value
+
+        val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
         val username = newUsername()
         val res =
@@ -400,8 +442,6 @@ class UserServiceTests {
 
     @Test
     fun `createToken fails when username is blank`() {
-        val service = createUserService()
-
         val res = service.createToken("", "pw")
         val left: Either.Left<TokenCreationError> = assertIs(res)
         assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
@@ -409,8 +449,6 @@ class UserServiceTests {
 
     @Test
     fun `createToken fails when password is blank`() {
-        val service = createUserService()
-
         val res = service.createToken("someone", "")
         val left: Either.Left<TokenCreationError> = assertIs(res)
         assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
@@ -418,19 +456,14 @@ class UserServiceTests {
 
     @Test
     fun `createToken fails when user does not exist`() {
-        val service = createUserService()
-
         val res = service.createToken("ghost_user_xyz", "any")
         val left: Either.Left<TokenCreationError> = assertIs(res)
-        // o teu service mapeia user inexistente para UserOrPasswordAreInvalid
         assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
     }
 
     @Test
     fun `createToken fails when password is wrong`() {
-        val service = createUserService()
         val username = newUsername()
-        // cria o user (bootstrap) com password conhecida
         service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
 
         val res = service.createToken(username, "wrong-pass")
@@ -440,7 +473,6 @@ class UserServiceTests {
 
     @Test
     fun `createToken success returns TokenExternalInfo and token is usable`() {
-        val service = createUserService()
         val username = newUsername()
         val pwd = "StrongPass123"
         service.bootstrapFirstUser(username, "Admin", 25, pwd)
@@ -460,15 +492,12 @@ class UserServiceTests {
 
     @Test
     fun `createToken respects maxTokensPerUser - oldest becomes invalid`() {
-        val service = createUserService()
         val username = newUsername()
         val pwd = "StrongPass123"
         service.bootstrapFirstUser(username, "Admin", 25, pwd)
 
-        // lê o max do domínio que passas no createUserService()
-        val max = 3 // <-- se no teu createUserService config for outro, ajusta aqui para o mesmo valor
+        val max = 3
 
-        // cria 'max' tokens
         val tokens = mutableListOf<String>()
         repeat(max) {
             val t: Either.Right<TokenExternalInfo> = assertIs(service.createToken(username, pwd))
@@ -501,22 +530,20 @@ class UserServiceTests {
 
     @Test
     fun `getById returns user when it exists`() {
-        val service = createUserService()
         val username = newUsername()
         val userId = service.bootstrapFirstUser(username, "User", 25, "StrongPass123")
+        val result = assertIs<Either.Right<Int>>(userId).value
 
-        val res = service.getById(userId)
+        val res = service.getById(result)
 
         val right: Either.Right<User> = assertIs(res)
         val user = right.value
-        assertEquals(userId, user.id)
+        assertEquals(result, user.id)
         assertEquals(username, user.username)
     }
 
     @Test
     fun `getById fails with UserNotFound for unknown id`() {
-        val service = createUserService()
-
         val res = service.getById(999_999)
 
         val left: Either.Left<UserGetByIdError> = assertIs(res)
@@ -525,8 +552,6 @@ class UserServiceTests {
 
     @Test
     fun `getById with negative id also returns UserNotFound (current behavior)`() {
-        val service = createUserService()
-
         val res = service.getById(-42)
 
         val left: Either.Left<UserGetByIdError> = assertIs(res)
@@ -577,9 +602,9 @@ class UserServiceTests {
                     config =
                         pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig(
                             expireInviteTime = kotlin.time.Duration.parse("60m"),
-                            validState = "VALID",
-                            expiredState = "EXPIRED",
-                            usedState = "USED",
+                            validState = "pending",
+                            expiredState = "expired",
+                            usedState = "used",
                             declinedState = "DECLINED",
                         ),
                 )
@@ -594,7 +619,6 @@ class UserServiceTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
 
-        // Simples stub de utilizador para testes de depósito
         private fun dummyUser(id: Int = 1) =
             User(
                 id = id,

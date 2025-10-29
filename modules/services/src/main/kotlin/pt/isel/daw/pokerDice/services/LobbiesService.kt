@@ -97,7 +97,6 @@ class LobbiesService(
                 return@run failure(LeaveLobbyError.NotInLobby)
             }
             // TODO("SE FOR O HOST AO FAZER LEAVE DA KICK A TODOS NO LOBBY")
-
             // Remove o jogador do lobby (define lobby_id = NULL)
             lobbiesRepo.updateLobbyIdForUser(userId, null)
 
@@ -139,25 +138,30 @@ class LobbiesService(
             if (lobbyRepo.existsByHost(hostId)) {
                 return@run failure(CreateLobbyError.HostAlreadyHasAnOpenLobby)
             }
+            println("vamos la ver onde andam")
 
             //  Verificar se o host já está noutro lobby
             if (host.lobbyId != null) {
                 return@run failure(CreateLobbyError.HostAlreadyOnAnotherLobby)
             }
 
-            if (minUsers <= 2) { // TODO("FUNÇÃO QUE VERIFICA AS CONDIÇÕES DE CRIAÇÃO DO LOBBY")
+            if (minUsers < 2) {
+                println("0")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (maxUsers < minUsers) {
+                println("1")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (minCreditToParticipate <= 0) {
+                println("2")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (maxUsers > 10) {
+                println("3")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
@@ -253,7 +257,7 @@ class LobbiesService(
                 lobbiesRepo.getById(lobbyId)
                     ?: return@run failure(CloseLobbyError.LobbyNotFound)
 
-            // Verificar se o jogador é o host
+            // Verificar se o jogador é o host, está repetido mas pronto
             if (lobby.hostId != userId) {
                 return@run failure(CloseLobbyError.NotHost)
             }

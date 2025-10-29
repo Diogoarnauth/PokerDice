@@ -1,0 +1,6 @@
+{
+  "timestamp": "2025-10-23T10:30:58.614+00:00",
+  "status": 500,
+  "error": "Internal Server Error",
+  "path": "/api/games/1/start"
+}

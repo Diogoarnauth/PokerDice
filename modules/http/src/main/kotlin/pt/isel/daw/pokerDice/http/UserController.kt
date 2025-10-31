@@ -42,8 +42,25 @@ class UserController(
         //          .body(mapOf("error" to Problem.userAlreadyExists))
         //  }
 
-        val id = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
-        return ResponseEntity.ok(mapOf("id" to id))
+        val res = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
+
+        return when (res) {
+            is Success -> ResponseEntity.ok(mapOf("id" to res.value))
+            is Failure ->
+                when (res.value) {
+                    UserRegisterError.InvalidData ->
+                        ResponseEntity
+                            .badRequest()
+                            .body(mapOf("error" to Problem.InvalidData))
+
+                    UserRegisterError.AdminAlreadyExists ->
+                        ResponseEntity
+                            .badRequest()
+                            .body(mapOf("error" to Problem.AdminAlreadyExists))
+
+                    else -> TODO()
+                }
+        }
     }
 
     @PostMapping("/deposit")
@@ -87,16 +104,17 @@ class UserController(
                     mapOf(
                         "error" to
                             when (res.value) {
-                                UserRegisterError.InsecurePassword -> Problem.insecurePassword
-                                UserRegisterError.UserAlreadyExists -> Problem.userAlreadyExists
-                                UserRegisterError.InvalidAge -> Problem.todo
-                                UserRegisterError.InvalidName -> Problem.todo
-                                UserRegisterError.InvalidUsername -> Problem.todo
-                                UserRegisterError.InvitationDontExist -> Problem.invitationDontExist
-                                UserRegisterError.InvitationUsed -> Problem.invitationUsed
-                                UserRegisterError.InvitationExpired -> Problem.invitationExpired
-                                UserRegisterError.AdminAlreadyExists -> Problem.AdminAlreadyExists
-                                UserRegisterError.InvalidData -> Problem.InvalidData
+                                UserRegisterError.InsecurePassword -> Problem.insecurePassword //
+                                UserRegisterError.InvalidUsername -> Problem.InvalidData // /
+                                UserRegisterError.InvalidAge -> Problem.InvalidData //
+                                UserRegisterError.InvalidName -> Problem.InvalidData //
+                                UserRegisterError.UserAlreadyExists -> Problem.userAlreadyExists //
+                                UserRegisterError.InvitationDontExist -> Problem.invitationDontExist //
+                                UserRegisterError.InvitationUsed -> Problem.invitationUsed //
+                                UserRegisterError.InvitationExpired -> Problem.invitationExpired // ainda n podemos testar
+                                else -> {
+                                    TODO()
+                                }
                             },
                     ),
                 )
@@ -124,7 +142,7 @@ class UserController(
                         mapOf(
                             "error" to
                                 when (res.value) {
-                                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.userOrPasswordAreInvalid
+                                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.userOrPasswordAreInvalid //
                                     TokenCreationError.TokenLimitReached -> Problem.userNotAuthorized
                                     TokenCreationError.UserNotFound -> Problem.userNotFound
                                 },
@@ -162,7 +180,9 @@ class UserController(
                             "error" to
                                 when (res.value) {
                                     UserGetByIdError.UserNotFound -> Problem.userNotFound
-                                    UserGetByIdError.InvalidUserId -> Problem.invalidRequestContent
+                                    else -> {
+                                        TODO()
+                                    }
                                 },
                         ),
                     )

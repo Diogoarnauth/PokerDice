@@ -1,7 +1,6 @@
 package pt.isel.daw.pokerDice.http.model
 
 import org.springframework.http.ResponseEntity
-import pt.isel.daw.pokerDice.services.UserRegisterError
 import java.net.URI
 
 class Problem(

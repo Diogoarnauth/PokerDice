@@ -259,6 +259,9 @@ class GameService(
         transactionManager.run {
             val game = it.gamesRepository.getGameById(gameId) ?: return@run
             it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+
+            it.roundRepository.getGameWinner(game.id!!) // retorna uma lista com o winner ou os winners
+
             lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
         }
 
@@ -337,16 +340,14 @@ class GameService(
             it.roundRepository.markRoundAsOver(currentRound.id!!)
             it.gamesRepository.updateRoundCounter(game.id!!)
 
-            val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!)
+            val winnerId = it.turnsRepository.getBiggestValue(currentRound.id!!) // e no caso de dois players terem a mm combinação
 
-// val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // meter isso a mostrar o nome e nao ids
-            println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
+            println("Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
+
+            it.roundRepository.attributeWinnerStatus(currentRound.id!!, winnerId!!.playerId) // testar
 
             if (game.roundCounter++ >= lobby.rounds) {
-                // depois adicionar logica de atribuir winner
-
-                // it.roundRepository.markRoundAsOver(currentRound.id!!)
-                it.gamesRepository.updateGameState(game.id!!, Game.GameStatus.CLOSED)
+                endGame(game.id!!)
                 success("Game Finished")
             }
 

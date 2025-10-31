@@ -11,4 +11,11 @@ interface RoundRepository {
     fun getRoundsByGameId(gameId: Int): List<Round>
 
     fun markRoundAsOver(roundId: Int)
+
+    fun attributeWinnerStatus(
+        roundId: Int,
+        winnerId: Int,
+    )
+
+    fun getGameWinner(gameId: Int): List<Int>
 }

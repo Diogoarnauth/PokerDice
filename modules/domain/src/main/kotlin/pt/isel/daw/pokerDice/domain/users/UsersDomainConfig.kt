@@ -18,9 +18,9 @@ data class UsersDomainConfig(
         require(tokenRollingTtl.isPositive())
         require(maxTokensPerUser > 0)
 
-        require(minUsernameLength > 2)
-        require(minPasswordLength >= 4)
-        require(minAge >= 18)
-        require(maxAge > minAge)
+        // require(minUsernameLength > 2)
+        // require(minPasswordLength >= 4)
+        // require(minAge >= 18)
+        // require(maxAge > minAge)
     }
 }

@@ -110,4 +110,57 @@ round_number INT NOT NULL
             .bind("roundId", roundId)
             .execute()
     }
+
+    override fun attributeWinnerStatus(
+        roundId: Int,
+        winnerId: Int,
+    ) {
+        val sql =
+            """
+            UPDATE dbo.round
+            SET winner = :winnerId
+            WHERE id = :roundId
+            """.trimIndent()
+
+        handle
+            .createUpdate(sql)
+            .bind("winnerId", winnerId)
+            .bind("roundId", roundId)
+            .execute()
+    }
+
+    override fun getGameWinner(gameId: Int): List<Int> {
+        val sql =
+            """
+            SELECT winner, COUNT(*) AS win_count
+            FROM dbo.round
+            WHERE game_id = :gameId AND winner IS NOT NULL
+            GROUP BY winner
+            ORDER BY win_count DESC
+            """.trimIndent()
+
+        // Executa a consulta SQL e armazena os resultados
+        val results =
+            handle
+                .createQuery(sql)
+                .bind("gameId", gameId)
+                .mapToMap()
+                .list()
+
+        // Se não houver vencedores, retorna uma lista vazia
+        if (results.isEmpty()) {
+            return emptyList()
+        }
+
+        // Encontra a maior contagem de vitórias
+        val maxWins = results.maxOf { it["win_count"] as Int }
+
+        // Filtra os vencedores com a maior contagem de vitórias
+        val winners =
+            results
+                .filter { it["win_count"] == maxWins }
+                .map { it["winner"] as Int }
+
+        return winners
+    }
 }

@@ -26,7 +26,7 @@ class LobbiesController(
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
     @GetMapping(LobbyUris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
-        val lista = lobbiesServices.getVisibleLobbies() // TODO ("NEVER USED")
+        val lista = lobbiesServices.getVisibleLobbies()
         return ResponseEntity.ok(lista)
     }
 
@@ -56,11 +56,11 @@ class LobbiesController(
 
             is Failure ->
                 when (res.value) {
-                    CreateLobbyError.InvalidSettings -> Problem.response(400, Problem.invalidLobbySettings)
+                    CreateLobbyError.InvalidSettings -> Problem.response(400, Problem.invalidLobbySettings) //
                     CreateLobbyError.CouldNotCreateLobby -> Problem.response(400, Problem.lobbyAlreadyExists)
-                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(403, Problem.HostAlreadyHasAnOpenLobby)
+                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(403, Problem.HostAlreadyHasAnOpenLobby) //
                     CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(409, Problem.HostAlreadyOnAnotherLobby)
-                    CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit)
+                    CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit) //
                     CreateLobbyError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                 }
         }
@@ -115,11 +115,11 @@ class LobbiesController(
 
             is Failure ->
                 when (res.value) {
-                    JoinLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
+                    JoinLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound) //
                     JoinLobbyError.LobbyFull -> Problem.response(409, Problem.lobbyFull)
                     JoinLobbyError.AlreadyInLobby -> Problem.response(409, Problem.alreadyInLobby)
-                    JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit)
-                    JoinLobbyError.LobbyAlreadyRunning -> Problem.response(409, Problem.LobbyAlreadyRunning)
+                    JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit) //
+                    JoinLobbyError.LobbyAlreadyRunning -> Problem.response(409, Problem.LobbyAlreadyRunning) //
                 }
         }
     }
@@ -135,8 +135,6 @@ class LobbiesController(
                 ?: return Problem.response(400, Problem.invalidRequestContent)
 
         val res = lobbiesServices.leaveLobby(lobbyId, authenticatedUser.user.id)
-
-        // TODO("404 NOT FOUND CASO EU SEJA O HOST DESSE LOBBY, MAS POSSO DAR CLOSE")
 
         return when (res) {
             is Success -> ResponseEntity.ok(mapOf("message" to "Left lobby $lobbyId"))

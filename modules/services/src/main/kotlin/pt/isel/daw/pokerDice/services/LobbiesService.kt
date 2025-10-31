@@ -212,6 +212,8 @@ class LobbiesService(
                 lobbiesRepo.getById(lobbyId)
                     ?: return@run failure(JoinLobbyError.LobbyNotFound)
 
+            println("Lobby $lobby")
+
             if (lobby.isRunning) {
                 return@run failure(JoinLobbyError.LobbyAlreadyRunning)
             }
@@ -228,7 +230,8 @@ class LobbiesService(
 
             //  Verificar se o lobby está cheio
             val currentUsers = usersRepo.countUsersInLobby(lobbyId)
-            if (currentUsers >= lobby.maxUsers) {
+            println("currentUsers $currentUsers")
+            if (currentUsers > lobby.maxUsers) {
                 // o maior nunca vai acontecer mas por precausão
                 return@run failure(JoinLobbyError.LobbyFull)
             }

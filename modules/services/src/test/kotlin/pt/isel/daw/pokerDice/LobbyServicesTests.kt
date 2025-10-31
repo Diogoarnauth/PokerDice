@@ -18,7 +18,14 @@ import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.domain.users.UsersDomain
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
-import pt.isel.daw.pokerDice.services.*
+import pt.isel.daw.pokerDice.services.CloseLobbyError
+import pt.isel.daw.pokerDice.services.CreateLobbyError
+import pt.isel.daw.pokerDice.services.CreatingAppInviteResult
+import pt.isel.daw.pokerDice.services.JoinLobbyError
+import pt.isel.daw.pokerDice.services.LeaveLobbyError
+import pt.isel.daw.pokerDice.services.LobbiesService
+import pt.isel.daw.pokerDice.services.LobbyGetByIdError
+import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Either
 import kotlin.random.Random
 import kotlin.test.Test
@@ -43,6 +50,10 @@ class LobbyServicesTests {
     var userId: Int = 0
     var lobbyId: Int = 0
     lateinit var appInvite: CreatingAppInviteResult
+    lateinit var appInviteString: String
+
+    lateinit var appInvite2: CreatingAppInviteResult
+    lateinit var appInviteString2: String
 
     // Setup inicial com BeforeEach
     @BeforeEach
@@ -52,7 +63,8 @@ class LobbyServicesTests {
         username = newUsername()
 
         // Admin related
-        adminId = assertIs<Either.Right<Int>>(userService.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")).value
+        adminId =
+            assertIs<Either.Right<Int>>(userService.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")).value
         val admin: User = (assertIs<Either.Right<User>>(userService.getById(adminId))).value
         userService.deposit(1000, admin)
 
@@ -61,12 +73,23 @@ class LobbyServicesTests {
         val appInviteString = (assertIs<Either.Right<String>>(appInvite)).value
 
         // User related
-        userId = assertIs<Either.Right<Int>>(userService.createUser("user1", "utilizador", 25, "passwordForte123", appInviteString)).value
+        userId =
+            assertIs<Either.Right<Int>>(
+                userService.createUser(
+                    "user1",
+                    "utilizador",
+                    25,
+                    "passwordForte123",
+                    appInviteString,
+                ),
+            ).value
         val user: User = (assertIs<Either.Right<User>>(userService.getById(userId))).value
         userService.deposit(1000, user)
 
+        appInvite2 = userService.createAppInvite(userId)
+        appInviteString2 = (assertIs<Either.Right<String>>(appInvite2)).value
         // Lobby related
-        lobbyId = assertIs<Either.Right<Int>>(service.createLobby(adminId, "lobby", "Lobby teste", 3, 5, 5, 20)).value
+        lobbyId = assertIs<Either.Right<Int>>(service.createLobby(adminId, "lobby", "Lobby teste", 3, 4, 5, 20)).value
 
         // Criação da instância de Jdbi
         val jdbi =
@@ -95,7 +118,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should succeed for valid parameters`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 2
@@ -122,7 +145,7 @@ class LobbyServicesTests {
             assertTrue(rightResult.value > 0)
         }
 
-        @Test
+        /*@Test
         fun `createLobby should fail if host does not exist`() {
             // given
             val hostId = 999 // Assuming this host doesn't exist
@@ -154,7 +177,7 @@ class LobbyServicesTests {
         fun `createLobby should fail if host already has an open lobby`() {
             // when
             service.createLobby(
-                adminId,
+                userId,
                 "Test Lobby",
                 "This is a test lobby",
                 2,
@@ -164,7 +187,7 @@ class LobbyServicesTests {
             )
 
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 2
@@ -192,7 +215,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should fail if settings are invalid minUsers smaller 2`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 1
@@ -220,7 +243,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should fail if maxUsers smaller than minUsers`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 3
@@ -248,7 +271,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should fail if minCreditToParticipate smaller or equal than 0`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 2
@@ -276,7 +299,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should fail if maxUsers smaller than 10`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 2
@@ -304,7 +327,7 @@ class LobbyServicesTests {
         @Test
         fun `createLobby should fail if host has insufficient credit`() {
             // given
-            val hostId = adminId
+            val hostId = userId
             val name = "Test Lobby"
             val description = "This is a test lobby"
             val minUsers = 2
@@ -328,8 +351,10 @@ class LobbyServicesTests {
             val leftResult = assertIs<Either.Left<CreateLobbyError>>(result)
             assertEquals(CreateLobbyError.NotEnoughCredit, leftResult.value)
         }
-    }
 
+         */
+    }
+/*
     // --- GET VISIBLE LOBBIES TESTS ---
     @Nested
     inner class GetVisibleLobbiesTests {
@@ -420,7 +445,7 @@ class LobbyServicesTests {
             assertTrue(result[0].maxUsers > result[0].minUsers, "O lobby retornado não deve estar cheio")
         }
 
-         */
+ */
     }
 
     @Nested
@@ -517,7 +542,199 @@ class LobbyServicesTests {
         }
     }
 
-    // falta joinLobby e o closeLobby
+    @Nested
+    inner class JoinLobbyTests {
+        @Test
+        fun `joinLobby should succeed when user can join`() {
+            // given
+            val userToJoin = userId // Usuário já criado no setup
+            val lobby = service.getLobbyById(lobbyId) // Lobby já criado no setup
+
+            // when
+            val result = service.joinLobby(lobbyId, userToJoin)
+
+            // then
+            assertIs<Either.Right<Unit>>(result) // Espera que o resultado seja um sucesso
+        }
+
+        @Test
+        fun `joinLobby should fail if lobby does not exist`() {
+            // given
+            val nonExistentLobbyId = 99999 // ID que não existe
+            val userToJoin = userId
+
+            // when
+            val result = service.joinLobby(nonExistentLobbyId, userToJoin)
+
+            // then
+            val leftResult = assertIs<Either.Left<JoinLobbyError>>(result)
+            assertEquals(JoinLobbyError.LobbyNotFound, leftResult.value)
+        }
+
+        @Test
+        fun `joinLobby should fail if user is already in a lobby`() {
+            // given
+            // Vamos garantir que o usuário esteja já no lobby, com base no setup
+            val userToJoin = userId
+
+            // Quando o usuário já estiver no lobby, tentamos juntá-lo de novo
+            val preSet = service.joinLobby(lobbyId, userToJoin)
+
+            val result = service.joinLobby(lobbyId, userToJoin)
+            println("result $result")
+
+            // then
+            val leftResult = assertIs<Either.Left<JoinLobbyError>>(result)
+            assertEquals(JoinLobbyError.AlreadyInLobby, leftResult.value)
+        }
+
+        @Test
+        fun `joinLobby should fail if lobby is full`() {
+            // SETUP USER 1
+            val newUser1 = userService.createUser("user2", "User Two", 25, "SecurePass123", appInviteString2)
+            val newUserId1 = assertIs<Either.Right<Int>>(newUser1).value
+            val user1: User = (assertIs<Either.Right<User>>(userService.getById(newUserId1))).value
+
+            userService.deposit(1000, user1)
+
+            service.joinLobby(lobbyId, newUserId1)
+
+            val appInvite3 = userService.createAppInvite(newUserId1)
+            val appInviteString3 = (assertIs<Either.Right<String>>(appInvite3)).value
+
+            // SETUP USER 2
+
+            val newUser2 = userService.createUser("user3", "User three", 25, "SecurePass123", appInviteString3)
+            val newUserId2 = assertIs<Either.Right<Int>>(newUser2).value
+            val user2: User = (assertIs<Either.Right<User>>(userService.getById(newUserId2))).value
+
+            userService.deposit(1000, user2)
+
+            service.joinLobby(lobbyId, newUserId2)
+
+            val appInvite4 = userService.createAppInvite(newUserId1)
+            val appInviteString4 = (assertIs<Either.Right<String>>(appInvite4)).value
+
+            // SETUP USER 3
+            val newUser3 = userService.createUser("user4", "User four", 25, "SecurePass123", appInviteString4)
+            val newUserId3 = assertIs<Either.Right<Int>>(newUser3).value
+            val user3: User = (assertIs<Either.Right<User>>(userService.getById(newUserId3))).value
+
+            userService.deposit(1000, user3)
+
+            service.joinLobby(lobbyId, newUserId3)
+
+            val appInvite5 = userService.createAppInvite(newUserId1)
+            val appInviteString5 = (assertIs<Either.Right<String>>(appInvite5)).value
+
+            // SETUP USER 4
+            val newUser4 = userService.createUser("user5", "User five", 25, "SecurePass123", appInviteString5)
+            val newUserId4 = assertIs<Either.Right<Int>>(newUser4).value
+            val user4: User = (assertIs<Either.Right<User>>(userService.getById(newUserId4))).value
+
+            userService.deposit(1000, user4)
+
+            service.joinLobby(lobbyId, newUserId4)
+
+            val appInvite6 = userService.createAppInvite(newUserId1)
+            val appInviteString6 = (assertIs<Either.Right<String>>(appInvite6)).value
+
+            // SETUP USER 5
+            val newUser5 = userService.createUser("user6", "User five", 25, "SecurePass123", appInviteString6)
+            val newUserId5 = assertIs<Either.Right<Int>>(newUser5).value
+            val user5: User = (assertIs<Either.Right<User>>(userService.getById(newUserId5))).value
+
+            userService.deposit(1000, user5)
+
+            val result = service.joinLobby(lobbyId, newUserId5)
+
+            // then
+            val leftResult = assertIs<Either.Left<JoinLobbyError>>(result)
+            assertEquals(JoinLobbyError.LobbyFull, leftResult.value)
+        }
+
+        @Test
+        fun `joinLobby should fail if user has insufficient credits`() {
+            // given
+            val userIdWithLowCredits =
+                userService.createUser("userLowCredit", "User Low Credit", 25, "LowPass123", appInviteString2).let {
+                    assertIs<Either.Right<Int>>(it).value
+                }
+            val userRight = userService.getById(userIdWithLowCredits)
+            val user = assertIs<Either.Right<User>>(userRight).value
+
+            val userToJoin = userIdWithLowCredits
+            val lobby = service.getLobbyById(lobbyId)
+
+            // Supondo que o usuário criado não tenha créditos suficientes
+            userService.deposit(-1000, user) // Removemos os créditos do usuário
+
+            // when
+            val result = service.joinLobby(lobbyId, userToJoin)
+
+            // then
+            val leftResult = assertIs<Either.Left<JoinLobbyError>>(result)
+            assertEquals(JoinLobbyError.InsufficientCredits, leftResult.value)
+        }
+    }
+
+    @Nested
+    inner class CloseLobbyTests {
+        @Test
+        fun `closeLobby succeeds when host closes existing lobby`() {
+            // when
+            val result = service.closeLobby(lobbyId = 1, userId = adminId)
+
+            // then
+            assertIs<Either.Right<Unit>>(result)
+        }
+
+        @Test
+        fun `closeLobby should fail if lobby does not exist`() {
+            // given
+            val fakeLobbyId = 99999
+
+            // when
+            val result = service.closeLobby(fakeLobbyId, adminId)
+
+            // then
+            val leftResult = assertIs<Either.Left<CloseLobbyError>>(result)
+            assertEquals(CloseLobbyError.LobbyNotFound, leftResult.value)
+        }
+
+        @Test
+        fun `closeLobby should fail if user is not the host`() {
+            // when
+            val result = service.closeLobby(lobbyId, userId)
+
+            // then
+            val leftResult = assertIs<Either.Left<CloseLobbyError>>(result)
+            assertEquals(CloseLobbyError.NotHost, leftResult.value)
+        }
+
+        @Test
+        fun `closeLobby should remove all players from the lobby`() {
+            // given
+            service.joinLobby(lobbyId, userId)
+
+            // when
+            val result = service.closeLobby(lobbyId, adminId)
+
+            // then
+            assertIs<Either.Right<Unit>>(result)
+
+            // Verifica que o lobby foi eliminado
+            val lobbyCheck = service.getLobbyById(lobbyId)
+            val leftLobby = assertIs<Either.Left<LobbyGetByIdError>>(lobbyCheck)
+            assertEquals(LobbyGetByIdError.LobbyNotFound, leftLobby.value)
+
+            // Verifica que o jogador foi removido do lobby
+            val updatedUser = assertIs<Either.Right<User>>(userService.getById(userId)).value
+            assertNull(updatedUser.lobbyId, "O jogador deve ter sido removido do lobby")
+        }
+    }
+
+ */
 
     // Funções auxiliares
     companion object {

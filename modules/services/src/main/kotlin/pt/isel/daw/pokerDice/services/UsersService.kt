@@ -105,7 +105,7 @@ class UsersService(
         if (!userDomain.isAgeValid(age) || !userDomain.isSafePassword(password) ||
             !userDomain.isUsernameValid(username)
         ) {
-            return failure(UserRegisterError.InvalidData) // TODO("VERIFICAR SE QUEREMOS ESTE NOME OU PASSWORD
+            return failure(UserRegisterError.InvalidData)
             // / USERNAME / AGE")
         }
         if (hasAnyUser()) {

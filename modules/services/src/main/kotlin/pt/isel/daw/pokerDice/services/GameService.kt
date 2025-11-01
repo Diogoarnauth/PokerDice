@@ -10,6 +10,7 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import kotlin.math.round
 
 sealed class GameCreationError {
     data class LobbyNotFound(
@@ -77,21 +78,21 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            // SÃ³ o host pode comeÃ§ar o jogo
+            // só o host pode começar o jogo
             require(lobby.hostId == userId) {
                 "Only the host user can start the game"
             }
 
-            // Verifica se jÃ¡ existe jogo em andamento
+            // Verifica se já existe jogo em andamento
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // Verificar crÃ©ditos mÃ­nimos
+            // Verificar créditos mínimos
             val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
             require(usersWithoutCredit.isEmpty()) {
                 "Not all users have the necessary credits to participate"
             }
 
-            // Verificar nÃºmero mÃ­nimo de jogadores
+            // Verificar numero maximo de jogadores
             if (allUsersInLobby.count() < lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
             }
@@ -120,7 +121,7 @@ class GameService(
             val roundId = it.roundRepository.createRound(gameId, roundToCreate)
             println("Round inicial criado com ID: $roundId")
 
-            // Criar o primeiro turno â€” comeÃ§a o primeiro jogador da lista
+            // Criar o primeiro turno ao começar o primeiro jogador da lista
             val turnToCreate =
                 Turn(
                     id = null,
@@ -204,11 +205,15 @@ class GameService(
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId))
 
-            val round = it.roundRepository.getRoundsByGameId(game.id!!).first()
+            val round = it.roundRepository.getRoundsByGameId(game.id!!).last()
 
             val curTurn = it.turnsRepository.getTurnsByRoundId(round.id!!, userId)
 
+            println("current round: $round")
+            println("CURRENT TURN: $curTurn")
+
             if (curTurn.isDone) {
+                println("DENTRO DO IF TURN IS DONE")
                 return@run failure(GameError.TurnAlreadyFinished)
             }
 
@@ -258,6 +263,7 @@ class GameService(
     fun endGame(gameId: Int) =
         transactionManager.run {
             val game = it.gamesRepository.getGameById(gameId) ?: return@run
+
             it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
             lobbiesDomain.markLobbyAsAvailable(game.lobbyId)
         }
@@ -290,7 +296,9 @@ class GameService(
                 isDone = true,
             )
 
-            // Procura o prÃ³ximo jogador
+            println("DICE FACES: ${curTurn.diceFaces}")
+
+            // Procura o proximo jogador
             val nextPlayerId =
                 it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
 
@@ -309,8 +317,12 @@ class GameService(
                 it.roundRepository.markRoundAsOver(currentRound.id!!)
                 it.gamesRepository.updateRoundCounter(game.id!!)
 
-                val winnerId = gameDomain.evaluateRoundWinner(currentRound.id!!) // placeholder
-                println("ðŸ† Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
+                val plays = it.turnsRepository.getPlayersWithTurns(currentRound.id!!)
+
+                val winnerId = gameDomain.evaluateRoundWinner(plays)
+
+                it.roundRepository.updateRoundWinner(currentRound.id!!, winnerId)
+                println(" Round ${currentRound.roundNumber} terminado. Winner: $winnerId")
 
                 if (game.roundCounter++ >= lobby.rounds) {
                     // depois adicionar logica de atribuir winner

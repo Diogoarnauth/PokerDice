@@ -27,4 +27,6 @@ interface TurnsRepository {
     ): Int?
 
     fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn>
+
+    fun getPlayersWithTurns(roundId: Int): List<Pair<Int, String>>
 }

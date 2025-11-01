@@ -110,4 +110,22 @@ round_number INT NOT NULL
             .bind("roundId", roundId)
             .execute()
     }
+
+    override fun updateRoundWinner(
+        roundId: Int,
+        winner: Int,
+    ) {
+        val sql =
+            """
+            UPDATE dbo.round
+            SET winner = :winnerId
+            WHERE id = :roundId
+            """.trimIndent()
+
+        handle
+            .createUpdate(sql)
+            .bind("roundId", roundId)
+            .bind("winnerId", winner)
+            .execute()
+    }
 }

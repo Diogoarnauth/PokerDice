@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice
 
+/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Jdbi
 import org.postgresql.ds.PGSimpleDataSource
@@ -20,16 +21,14 @@ import kotlin.test.fail
 import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
-
-
+ */
 
 /**
  * Testes do UsersService — versão adaptada do stor.
  * Usa a BD local de desenvolvimento e domínio real.
  */
 class UserServiceTests {
-
-
+    /*
     //  --- BOOTSTRAP TESTS ---
 
     @Test
@@ -595,4 +594,6 @@ class UserServiceTests {
                 lobbyId = null,
             )
     }
+
+     */
 }

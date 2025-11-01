@@ -115,4 +115,25 @@ class JdbiTurnRepository(
             ).bind("roundId", roundId)
             .mapTo<Turn>()
             .list()
+
+    override fun getPlayersWithTurns(roundId: Int): List<Pair<Int, String>> {
+        val sql =
+            """
+            SELECT player_id, dice_faces
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            AND is_done = true
+            ORDER BY player_id ASC
+            """.trimIndent()
+
+        return handle
+            .createQuery(sql)
+            .bind("roundId", roundId)
+            .map { rs, _ ->
+                Pair(
+                    rs.getInt("player_id"),
+                    rs.getString("dice_faces") ?: "",
+                )
+            }.list()
+    }
 }

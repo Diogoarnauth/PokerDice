@@ -1,0 +1,808 @@
+openapi: 3.0.3
+info:
+  title: PokerDice API
+  version: 1.0.0
+  description: API para o jogo PokerDice, incluindo gestão de utilizadores, lobbies e jogos.
+servers:
+  - url: 'http://localhost:8080/api'
+    description: Servidor de Desenvolvimento Local
+tags:
+  - name: User
+    description: Operações de Utilizador, Autenticação e Convites
+  - name: Lobby
+    description: Operações para criar, listar e juntar-se a lobbies
+  - name: Game
+    description: Operações de jogo, como rodar dados e gerir turnos
+  - name: Admin
+    description: Operações de administração, como o bootstrap
+
+paths:
+  /bootstrap: # TODO(ALTERAR PATH, PORQUE N TEM O /API)
+    post:
+      tags:
+        - Admin
+      summary: (Admin) Regista o primeiro utilizador.
+      description: Apenas funciona se não existir nenhum utilizador na base de dados.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BootstrapRegisterInputModel'
+      responses:
+        '200':
+          description: Utilizador administrador criado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BootstrapOutputModel'
+        '403':
+          description: Proibido. Já existem utilizadores no sistema.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /deposit:
+    post:
+      tags:
+        - User
+      summary: Deposita créditos na conta do utilizador.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepositInputModel'
+      responses:
+        '200':
+          description: Depósito efetuado com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DepositOutputModel'
+        '400':
+          description: Valor de depósito inválido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Utilizador não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /users:
+    post:
+      tags:
+        - User
+      summary: Regista um novo utilizador.
+      description: Regista um novo utilizador usando um código de convite.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateInputModel'
+      responses:
+        '201':
+          description: Utilizador criado.
+          headers:
+            Location:
+              description: URL do novo utilizador.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreateOutputModel'
+        '400':
+          description: Pedido inválido (password insegura, convite inválido, etc).
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /users/token:
+    post:
+      tags:
+        - User
+      summary: Login de um utilizador.
+      description: Autentica um utilizador e retorna um token de acesso.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreateTokenInputModel'
+      responses:
+        '200':
+          description: Login bem-sucedido.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserTokenCreateOutputModel'
+        '400':
+          description: Utilizador ou password inválidos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Limite de tokens atingido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Utilizador não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /users/{id}:
+    get:
+      tags:
+        - User
+      summary: Obter detalhes de um utilizador.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do utilizador.
+      responses:
+        '200':
+          description: Detalhes do utilizador.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGetByIdOutputModel'
+        '400':
+          description: ID de utilizador inválido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Utilizador não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /invite:
+    post:
+      tags:
+        - User
+      summary: Cria um convite para poder registar um User.
+      security:
+        - bearerAuth: []
+      responses:
+        '201':
+          description: Convite criado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InviteAppOutputModel'
+        '400':
+          description: Erro ao criar convite.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /lobbies:
+    get:
+      tags:
+        - Lobby
+      summary: Lista todos os lobbies visíveis (abertos).
+      responses:
+        '200':
+          description: Uma lista de lobbies abertos.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LobbyGetByIdOutputModel'
+    post:
+      tags:
+        - Lobby
+      summary: Cria um novo lobby.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LobbyCreateInputModel'
+      responses:
+        '201':
+          description: Lobby criado com sucesso.
+          headers:
+            Location:
+              description: URL do novo lobby.
+              schema:
+                type: string
+        '400':
+          description: Configurações do lobby inválidas.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: O anfitrião já tem um lobby aberto ou não tem créditos.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: O anfitrião já está noutro lobby.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /lobbies/{id}:
+    get:
+      tags:
+        - Lobby
+      summary: Obter detalhes de um lobby.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby.
+      responses:
+        '200':
+          description: Detalhes do lobby.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LobbyGetByIdOutputModel'
+        '400':
+          description: ID de lobby inválido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Lobby não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /lobbies/{id}/users:
+    post:
+      tags:
+        - Lobby
+      summary: Entrar num lobby.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby.
+      responses:
+        '200':
+          description: Entrou no lobby com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericMessageOutputModel'
+        '400':
+          description: ID de lobby inválido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Créditos insuficientes.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Lobby não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Lobby cheio ou utilizador já está no lobby.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /lobbies/{id}/leave:
+    delete:
+      tags:
+        - Lobby
+      summary: Sair de um lobby.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby.
+      responses:
+        '200':
+          description: Saiu do lobby com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericMessageOutputModel'
+        '400':
+          description: ID de lobby inválido.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Lobby não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Utilizador não está no lobby.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{lobbyId}/start:
+    post:
+      tags:
+        - Game
+      summary: Inicia um jogo num lobby.
+      description: Apenas o anfitrião do lobby pode iniciar o jogo.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lobbyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby onde o jogo vai começar.
+      responses:
+        '201':
+          description: Jogo iniciado com sucesso.
+          headers:
+            Location:
+              description: URL do novo jogo.
+              schema:
+                type: string
+        '400':
+          description: Jogadores insuficientes.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Apenas o anfitrião pode iniciar o jogo.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Lobby não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: O jogo já está a decorrer.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{lobbyId}/roll:
+    post:
+      tags:
+        - Game
+      summary: Rola os dados (primeira jogada).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lobbyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby (usado para identificar o jogo).
+      responses:
+        '200':
+          description: Dados rolados com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiceRollOutputModel'
+        '400':
+          description: Erro genérico de jogo.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '403':
+          description: Não é a primeira rolagem.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Jogo não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: O turno já terminou.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{lobbyId}/reroll:
+    post:
+      tags:
+        - Game
+      summary: Rola novamente alguns dados.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: lobbyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do lobby (usado para identificar o jogo).
+      requestBody:
+        description: Uma lista de índices (0-4) dos dados a rolar novamente.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RerollInputModel'
+      responses:
+        '200':
+          description: Dados rolados novamente com sucesso.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiceRollOutputModel'
+        '400':
+          description: Erro genérico de jogo.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Jogo não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: O turno já terminou.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{gameId}/end:
+    post:
+      tags:
+        - Game
+      summary: Termina o turno atual do jogador.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do jogo.
+      responses:
+        '200':
+          description: Turno terminado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericMessageOutputModel'
+        '400':
+          description: Erro genérico de jogo.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '404':
+          description: Jogo não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '409':
+          description: Não existe uma ronda ou turno ativo.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{gameId}:
+    get:
+      tags:
+        - Game
+      summary: Obtém o estado atual de um jogo.
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do jogo.
+      responses:
+        '200':
+          description: O estado atual do jogo.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GameStateOutputModel'
+        '404':
+          description: Jogo não encontrado.
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+  /games/{gameId}/end-game:
+    post:
+      tags:
+        - Game
+      summary: Termina um jogo (Debug/Admin).
+      description: Endpoint para forçar o fim de um jogo.
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: O ID do jogo.
+      responses:
+        '200':
+          description: Jogo terminado.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenericMessageOutputModel'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Schemas de Input (Request)
+    BootstrapRegisterInputModel:
+      type: object
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+        password:
+          type: string
+      required: [username, name, age, password]
+    DepositInputModel:
+      type: object
+      properties:
+        value:
+          type: integer
+          default: 0
+    UserCreateInputModel:
+      type: object
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        age:
+          type: integer
+        password:
+          type: string
+        inviteCode:
+          type: string
+      required: [username, name, age, password, inviteCode]
+    UserCreateTokenInputModel:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required: [username, password]
+    LobbyCreateInputModel:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        minUsers:
+          type: integer
+        maxUsers:
+          type: integer
+        rounds:
+          type: integer
+        minCreditToParticipate:
+          type: integer
+      required: [name, description, minUsers, maxUsers, rounds, minCreditToParticipate]
+    RerollInputModel:
+      type: array
+      items:
+        type: integer
+      description: Lista de índices de dados (0-4) para rolar novamente.
+      example: [0, 2, 4]
+
+    # Schemas de Output (Response)
+    BootstrapOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+    DepositOutputModel:
+      type: object
+      properties:
+        message:
+          type: string
+        newBalance:
+          type: integer
+    UserCreateOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        location:
+          type: string
+          format: uri
+    UserTokenCreateOutputModel:
+      type: object
+      properties:
+        token:
+          type: string
+    UserGetByIdOutputModel:
+      type: object
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+    InviteAppOutputModel:
+      type: object
+      properties:
+        inviteCode:
+          type: string
+    LobbyGetByIdOutputModel:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        hostId:
+          type: integer
+        minUsers:
+          type: integer
+        maxUsers:
+          type: integer
+        rounds:
+          type: integer
+        minCreditToParticipate:
+          type: integer
+    GenericMessageOutputModel:
+      type: object
+      properties:
+        message:
+          type: string
+    DiceRollOutputModel:
+      type: object
+      properties:
+        diceRoll:
+          type: string
+          description: O resultado dos dados.
+          example: "A,K,Q,J,10"
+    GameStateOutputModel:
+      type: object
+      properties:
+        gameId:
+          type: string
+        lobbyId:
+          type: integer
+        status:
+          type: string
+          description: 'e.g. “IN_PROGRESS”, “FINISHED”'
+        currentRound:
+          $ref: '#/components/schemas/RoundInfo'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerState'
+    RoundInfo:
+      type: object
+      properties:
+        roundNumber:
+          type: integer
+        turnPlayerId:
+          type: integer
+        rollCount:
+          type: integer
+        dice:
+          type: array
+          items:
+            type: integer
+          description: Valores atuais dos dados do jogador em turno.
+    PlayerState:
+      type: object
+      properties:
+        playerId:
+          type: integer
+        credit:
+          type: integer
+        lastHand:
+          type: string
+          nullable: true
+
+    # Schema de Erro (Problem Details)
+    Problem:
+      type: object
+      properties:
+        type:
+          type: string
+          format: uri
+          description: A URI reference [RFC3986] that identifies the problem type.
+          enum:
+            - 'http://localhost:8080/api/user-already-invited'
+            - 'http://localhost:8080/api/permission-denied'
+            - 'http://localhost:8080/api/user-not-found'
+            - 'http://localhost:8080/api/user-already-exists'
+            - 'http://localhost:8080/api/user-or-password-are-invalid'
+            - 'http://localhost:8080/api/user-not-authorized'
+            - 'http://localhost:8080/api/bad-deposit'
+            - 'http://localhost:8080/api/invite-dont-exist'
+            - 'http://localhost:8080/api/invite-creation-error'
+            - 'http://localhost:8080/api/invite-expired'
+            - 'http://localhost:8080/api/invite-used'
+            - 'http://localhost:8080/api/invalid-Lobby-Settings'
+            - 'http://localhost:8080/api/lobbyAlreadyExists'
+            - 'http://localhost:8080/api/HostAlreadyHasAnOpenLobby'
+            - 'http://localhost:8080/api/HostAlreadyOnAnotherLobby'
+            - 'http://localhost:8080/api/NotEnoughCredit'
+            - 'http://localhost:8080/api/lobbyNotFound'
+            - 'http://localhost:8080/api/AlreadyInLobby'
+            - 'http://localhost:8080/api/LobbyFull'
+            - 'http://localhost:8080/api/notInLobby'
+            - 'http://localhost:8080/api/onlyHostCanCloseLobby'
+            - 'http://localhost:8080/api/gameNotFound'
+            - 'http://localhost:8080/api/notFirstRoll'
+            - 'http://localhost:8080/api/TurnAlreadyFinished'
+            - 'http://localhost:8080/api/anotherError'
+            - 'http://localhost:8080/api/insecure-password'
+            - 'http://localhost:8080/api/InternalServerError'
+            - 'http://localhost:8080/api/invalid-content'
+            - 'http://localhost:8080/api/game-already-running'
+            - 'http://localhost:8080/api/not-enough-players'
+            - 'http://localhost:8080/api/NotTheHost'
+            - 'http://localhost:8080/api/noActiveRound'
+            - 'http://localhost:8080/api/noActiveTurn'

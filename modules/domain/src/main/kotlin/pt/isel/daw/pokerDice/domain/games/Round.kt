@@ -4,7 +4,6 @@ package pt.isel.daw.pokerDice.domain.games
 data class Round(
     val id: Int?,
     val gameId: Int,
-    val roundWinners: Int? = null,
     var roundNumber: Int,
     var bet: Int?,
     // null caso ele desista de jogar o round

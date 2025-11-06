@@ -77,7 +77,6 @@ class RoundService(
                     id = null,
                     // A base de dados gera o SERIAL
                     gameId = gameId,
-                    roundWinners = null,
                     bet = lobby.minCreditToParticipate,
                     roundOver = false,
                     roundNumber = game.roundCounter + 1,

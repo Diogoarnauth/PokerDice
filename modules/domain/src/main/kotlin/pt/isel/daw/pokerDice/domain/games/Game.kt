@@ -1,5 +1,23 @@
 package pt.isel.daw.pokerDice.domain.games
 
+data class Game(
+    val id: Int? = null,
+    val lobbyId: Int,
+    var state: GameStatus,
+    var nrUsers: Int,
+    var roundCounter: Int,
+) {
+    enum class GameStatus {
+        CLOSED,
+
+        RUNNING,
+        ;
+
+        val isEnded: Boolean get() = this == GameStatus.CLOSED
+        val isRunning: Boolean get() = this == GameStatus.RUNNING
+    }
+}
+
 /*
 data class Game(
     val id: UUID,
@@ -22,7 +40,7 @@ data class Game(
         RUNNING,
         NEXT_PLAYER,
         ROUND_OVER,
-        ;
+
 
         val isEnded: Boolean get() = this == ENDED
         val isRunning: Boolean get() = this == RUNNING
@@ -42,22 +60,3 @@ data class Game(
     val currentPlayer: User? get() = players.getOrNull(currentPlayerIndex)
 }
 */
-
-data class Game(
-    val id: Int? = null,
-    val lobbyId: Int,
-    var state: GameStatus,
-    var nrUsers: Int,
-    var gameWinner: Int? = null,
-    var roundCounter: Int,
-) {
-    enum class GameStatus {
-        CLOSED,
-
-        RUNNING,
-        ;
-
-        val isEnded: Boolean get() = this == GameStatus.CLOSED
-        val isRunning: Boolean get() = this == GameStatus.RUNNING
-    }
-}

@@ -8,7 +8,7 @@ import pt.isel.daw.pokerDice.repository.RoundRepository
 class JdbiRoundRepository(
     private val handle: Handle,
 ) : RoundRepository {
-/*
+    /*
     override fun updateRound(
             roundId: Int,
             winner: Int,
@@ -64,7 +64,6 @@ round_number INT NOT NULL
         return handle
             .createUpdate(sql)
             .bind("gameId", gameId)
-            .bind("winner", round.roundWinners) //
             .bind("bet", round.bet)
             .bind("roundOver", round.roundOver)
             .bind("roundNumber", round.roundNumber)
@@ -89,7 +88,6 @@ round_number INT NOT NULL
                 Round(
                     id = rs.getInt("id"),
                     gameId = rs.getInt("game_id"),
-                    roundWinners = rs.getInt("winner").takeIf { !rs.wasNull() },
                     bet = rs.getInt("bet"),
                     roundOver = rs.getBoolean("roundOver"),
                     roundNumber = rs.getInt("round_number"),
@@ -113,33 +111,36 @@ round_number INT NOT NULL
 
     override fun attributeWinnerStatus(
         roundId: Int,
-        winnerId: Int,
+        winnerIds: List<Int>,
     ) {
         val sql =
             """
-            UPDATE dbo.round
-            SET winner = :winnerId
-            WHERE id = :roundId
+            INSERT INTO dbo.round_winner (round_id, user_id)
+            VALUES (:roundId, :userId)
+            ON CONFLICT DO NOTHING
             """.trimIndent()
 
-        handle
-            .createUpdate(sql)
-            .bind("winnerId", winnerId)
-            .bind("roundId", roundId)
-            .execute()
+        val update = handle.createUpdate(sql)
+
+        winnerIds.forEach { winnerId ->
+            update
+                .bind("roundId", roundId)
+                .bind("userId", winnerId)
+                .execute()
+        }
     }
 
     override fun getGameWinner(gameId: Int): List<Int> {
         val sql =
             """
-            SELECT winner, COUNT(*) AS win_count
-            FROM dbo.round
-            WHERE game_id = :gameId AND winner IS NOT NULL
-            GROUP BY winner
+            SELECT rw.user_id, COUNT(*) AS win_count
+            FROM dbo.round_winner rw
+            JOIN dbo.round r ON rw.round_id = r.id
+            WHERE r.game_id = :gameId
+            GROUP BY rw.user_id
             ORDER BY win_count DESC
             """.trimIndent()
 
-        // Executa a consulta SQL e armazena os resultados
         val results =
             handle
                 .createQuery(sql)
@@ -147,19 +148,16 @@ round_number INT NOT NULL
                 .mapToMap()
                 .list()
 
-        // Se não houver vencedores, retorna uma lista vazia
         if (results.isEmpty()) {
             return emptyList()
         }
 
-        // Encontra a maior contagem de vitórias
-        val maxWins = results.maxOf { it["win_count"] as Int }
+        val maxWins = results.maxOf { (it["win_count"] as Number).toInt() }
 
-        // Filtra os vencedores com a maior contagem de vitórias
         val winners =
             results
-                .filter { it["win_count"] == maxWins }
-                .map { it["winner"] as Int }
+                .filter { (it["win_count"] as Number).toInt() == maxWins }
+                .map { it["user_id"] as Int }
 
         return winners
     }

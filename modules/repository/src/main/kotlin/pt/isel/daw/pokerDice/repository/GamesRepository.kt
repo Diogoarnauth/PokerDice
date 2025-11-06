@@ -14,5 +14,10 @@ interface GamesRepository {
         state: Game.GameStatus,
     )
 
+    fun addGameWinners(
+        gameId: Int,
+        winnerIds: List<Int>,
+    )
+
     fun updateRoundCounter(gameId: Int)
 }

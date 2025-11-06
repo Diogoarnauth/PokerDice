@@ -142,7 +142,6 @@ class GameDomain {
             lobbyId = lobby.id,
             state = Game.GameStatus.RUNNING,
             roundCounter = 0,
-            gameWinner = null,
             nrUsers = nrUsers,
         )
 // TODO ("TMB PODE COMEÇAR O JOGO QUANDO PASSAR O TEMPO E JA TIVER O N MIN)

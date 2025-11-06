@@ -52,19 +52,23 @@ class JdbiTurnRepository(
             .execute()
     }
 
-    override fun getBiggestValue(roundId: Int): Turn? =
+    override fun getBiggestValue(roundId: Int): List<Turn> =
         handle
             .createQuery(
                 """
-            SELECT id, round_id, player_id, roll_count, dice_faces, value_of_combination, is_done
-            FROM dbo.turn
-            WHERE round_id = :roundId
-            ORDER BY value_of_combination DESC
-            LIMIT 1
-            """,
+                SELECT id, round_id, player_id, roll_count, dice_faces, value_of_combination, is_done
+                FROM dbo.turn
+                WHERE round_id = :roundId
+                  AND value_of_combination = (
+                      SELECT MAX(value_of_combination)
+                      FROM dbo.turn
+                      WHERE round_id = :roundId
+                  )
+                ORDER BY id
+                """.trimIndent(),
             ).bind("roundId", roundId)
             .mapTo<Turn>()
-            .firstOrNull()
+            .list()
 
     override fun getTurnsByRoundId(
         roundId: Int,

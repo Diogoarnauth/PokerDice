@@ -26,5 +26,7 @@ interface LobbiesRepository {
         minCreditToParticipate: Int,
     ): Int?
 
+    fun markLobbyAsAvailable(lobbyId: Int)
+
     fun deleteLobbyById(lobbyId: Int)
 }

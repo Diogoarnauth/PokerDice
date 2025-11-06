@@ -158,7 +158,6 @@ class GameLogic(
             state = Game.GameStatus.RUNNING,
             nrUsers = nrUsers,
             roundCounter = 0,
-            gameWinner = null,
         )
     }
 
@@ -204,7 +203,6 @@ class GameLogic(
             lobbyId = lobby.id,
             state = Game.GameStatus.RUNNING,
             roundCounter = 0,
-            gameWinner = null,
             nrUsers = nrUsers,
         )
 }

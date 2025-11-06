@@ -125,6 +125,21 @@ class JdbiLobbyRepository(
                 )
             }.list()
 
+    override fun markLobbyAsAvailable(lobbyId: Int) {
+        val rows =
+            handle
+                .createUpdate(
+                    """
+                    UPDATE dbo.lobby
+                    SET state = 'AVAILABLE'
+                    WHERE id = :id
+                    """.trimIndent(),
+                ).bind("id", lobbyId)
+                .execute()
+
+        require(rows == 1) { "Lobby not found or not updated (id=$lobbyId)" }
+    }
+
     override fun getById(id: Int): Lobby? {
         val sql = """
         SELECT *

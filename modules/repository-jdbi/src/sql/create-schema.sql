@@ -37,7 +37,6 @@ CREATE TABLE IF NOT EXISTS dbo.game (
                                         lobby_id INT REFERENCES dbo.Lobby(id) ON DELETE CASCADE, -- tambem faz sentido eliminar
                                         state VARCHAR(20) NOT NULL DEFAULT 'CLOSED', -- corresponde ao enum State
                                         rounds_counter INT DEFAULT 0 CHECK (rounds_counter >= 0),
-                                        winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
                                         nrUsers INT NOT NULL
 );
 
@@ -45,7 +44,6 @@ CREATE TABLE IF NOT EXISTS dbo.game (
 CREATE TABLE IF NOT EXISTS dbo.round (
                                          id SERIAL PRIMARY KEY,
                                          game_id INT REFERENCES dbo.game(id) ON DELETE CASCADE,
-                                         winner INT REFERENCES dbo.users(id) ON DELETE SET NULL,
                                          bet INT NOT NULL CHECK (bet >= 10),
                                          roundOver BOOLEAN DEFAULT FALSE,
                                          round_number INT NOT NULL
@@ -78,4 +76,17 @@ CREATE TABLE IF NOT EXISTS dbo.turn (
                           value_of_combination INTEGER DEFAULT 0,
                           is_done BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+CREATE TABLE IF NOT EXISTS dbo.round_winner (
+    round_id INT NOT NULL REFERENCES dbo.round(id) ON DELETE CASCADE,
+    user_id  INT NOT NULL REFERENCES dbo.users(id) ON DELETE CASCADE,
+    PRIMARY KEY (round_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS dbo.game_winner (
+    game_id INT NOT NULL REFERENCES dbo.game(id) ON DELETE CASCADE,
+    user_id INT NOT NULL REFERENCES dbo.users(id) ON DELETE CASCADE,
+    PRIMARY KEY (game_id, user_id)
+);
+
 

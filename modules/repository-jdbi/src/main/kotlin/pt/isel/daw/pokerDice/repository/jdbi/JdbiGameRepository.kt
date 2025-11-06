@@ -34,7 +34,6 @@ class JdbiGamesRepository(
             .bind("lobbyId", game.lobbyId)
             .bind("state", game.state.name)
             .bind("roundsCounter", game.roundCounter)
-            .bind("winner", game.gameWinner)
             .bind("nrUsers", game.nrUsers)
             .executeAndReturnGeneratedKeys("id")
             .mapTo<Int>()
@@ -42,6 +41,27 @@ class JdbiGamesRepository(
     }
 
     // ------------------ READ ------------------
+
+    override fun addGameWinners(
+        gameId: Int,
+        winnerIds: List<Int>,
+    ) {
+        val sql =
+            """
+            INSERT INTO dbo.game_winner (game_id, user_id)
+            VALUES (:gameId, :userId)
+            ON CONFLICT DO NOTHING
+            """.trimIndent()
+
+        val update = handle.createUpdate(sql)
+
+        winnerIds.forEach { winnerId ->
+            update
+                .bind("gameId", gameId)
+                .bind("userId", winnerId)
+                .execute()
+        }
+    }
 
     override fun getGameById(id: Int): Game? =
         handle
@@ -136,7 +156,6 @@ data class GameDbModel(
             lobbyId = lobbyId,
             state = Game.GameStatus.valueOf(state),
             roundCounter = roundsCounter,
-            gameWinner = winner,
             nrUsers = nrUsers,
             // currentRoundId = currentRoundId,
         )

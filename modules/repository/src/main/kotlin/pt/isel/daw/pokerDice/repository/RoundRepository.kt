@@ -14,7 +14,7 @@ interface RoundRepository {
 
     fun attributeWinnerStatus(
         roundId: Int,
-        winnerId: Int,
+        winnerIds: List<Int>,
     )
 
     fun getGameWinner(gameId: Int): List<Int>

@@ -343,6 +343,8 @@ class GameService(
         currentRound: Round,
     ): GameErrorResult =
         transactionManager.run {
+            println("ENTREI NO ENDROUND")
+
             it.roundRepository.markRoundAsOver(currentRound.id!!)
             it.gamesRepository.updateRoundCounter(game.id!!)
 
@@ -356,6 +358,7 @@ class GameService(
             )
 
             if (game.roundCounter++ >= lobby.rounds) {
+                println("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
                 endGame(game.id!!)
                 success("Game Finished")
             }

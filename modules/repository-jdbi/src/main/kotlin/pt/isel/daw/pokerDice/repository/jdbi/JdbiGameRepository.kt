@@ -17,13 +17,11 @@ class JdbiGamesRepository(
                 lobby_id,
                 state,
                 rounds_counter,
-                winner,
                 nrUsers
             ) VALUES (
                 :lobbyId,
                 :state,
                 :roundsCounter,
-                :winner,
                 :nrUsers
             )
             RETURNING id
@@ -67,7 +65,7 @@ class JdbiGamesRepository(
         handle
             .createQuery(
                 """
-                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers
+                SELECT id, lobby_id, state, rounds_counter, nrUsers
                 FROM dbo.game
                 WHERE id = :id
                 """.trimIndent(),
@@ -78,8 +76,6 @@ class JdbiGamesRepository(
                     lobbyId = rs.getInt("lobby_id"),
                     state = rs.getString("state"),
                     roundsCounter = rs.getInt("rounds_counter"),
-                    winner = rs.getObject("winner")?.let { rs.getInt("winner") },
-                    // nullable seguro
                     nrUsers = rs.getInt("nrUsers"),
                 ).toDomain()
             }.singleOrNull()
@@ -88,7 +84,7 @@ class JdbiGamesRepository(
         handle
             .createQuery(
                 """
-                SELECT id, lobby_id, state, rounds_counter, winner, nrUsers
+                SELECT id, lobby_id, state, rounds_counter, nrUsers
                 FROM dbo.game
                 WHERE lobby_id = :lobbyId
                   AND state = 'RUNNING'
@@ -146,7 +142,6 @@ data class GameDbModel(
     val lobbyId: Int,
     val state: String,
     val roundsCounter: Int,
-    val winner: Int?,
     val nrUsers: Int,
     val currentRoundId: Int? = null,
 ) {

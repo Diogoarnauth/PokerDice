@@ -47,13 +47,11 @@ round_number INT NOT NULL
             """
             INSERT INTO dbo.round (
                 game_id,
-                winner,
                 bet,
                 roundOver,
                 round_number
             ) VALUES (
                 :gameId,
-                :winner,
                 :bet,
                 :roundOver,
                 :roundNumber
@@ -75,7 +73,7 @@ round_number INT NOT NULL
     override fun getRoundsByGameId(gameId: Int): List<Round> {
         val sql =
             """
-            SELECT id, game_id, winner, bet, roundOver, round_number
+            SELECT id, game_id, bet, roundOver, round_number
             FROM dbo.round
             WHERE game_id = :gameId
             ORDER BY round_number ASC

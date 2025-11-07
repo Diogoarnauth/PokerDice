@@ -127,4 +127,15 @@ class GameController(
         gameService.endGame(gameId)
         return ResponseEntity.ok(mapOf("message" to "Game ended"))
     }
+
+    @GetMapping(GameUris.Games.PLAYER_TURN)
+    fun whichPlayerTurn(
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val res = gameService.whichPlayerTurn(gameId)
+        return when (res) {
+            is Success -> ResponseEntity.ok(res.value)
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
 }

@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.repository
 
 import pt.isel.daw.pokerDice.domain.games.Turn
+import pt.isel.daw.pokerDice.domain.users.User
 
 interface TurnsRepository {
     fun createTurn(
@@ -29,4 +30,6 @@ interface TurnsRepository {
     fun getBiggestValue(roundId: Int): List<Turn>
 
     fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn>
+
+    fun getWhichPlayerTurnByRoundId(roundId: Int): User
 }

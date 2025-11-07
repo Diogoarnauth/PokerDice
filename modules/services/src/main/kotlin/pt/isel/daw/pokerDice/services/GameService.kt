@@ -422,4 +422,27 @@ class GameService(
                 success("round ended with success")
             }
         }
+
+    fun whichPlayerTurn(gameId: Int): GameErrorResult =
+        transactionManager.run {
+            // get the current round that is not over
+            val currentRound =
+                it.roundRepository
+                    .getRoundsByGameId(gameId)
+                    .firstOrNull { round -> !round.roundOver }
+                    ?: return@run failure(GameError.NoActiveRound(gameId))
+
+            println("CURRENT ROUND: $currentRound")
+
+            // Get the User who should be rolling (whose turn is not done)
+            val currentPlayer =
+                it.turnsRepository.getWhichPlayerTurnByRoundId(currentRound.id!!)
+                    ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
+
+            println("CURRENT PLAYER: $currentPlayer")
+
+            // return the player's ID (you might want to return player info, but ID suffices)
+
+            success(currentPlayer.id.toString())
+        }
 }

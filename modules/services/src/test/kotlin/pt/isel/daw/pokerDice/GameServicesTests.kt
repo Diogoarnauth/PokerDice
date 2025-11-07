@@ -191,6 +191,21 @@ class GameServicesTests {
             val left = assertIs<Either.Left<GameCreationError>>(result)
             assertTrue(left.value is GameCreationError.NotEnoughPlayers)
         }
+
+        @Test
+        fun `whichPlayerTurn returns correct player on new game`() {
+            val createResult = gameService.createGame(adminId, lobbyId)
+            val gameId = assertIs<Either.Right<Int?>>(createResult).value!!
+
+            println("GAMEID --> $gameId")
+            val turnResult = gameService.whichPlayerTurn(gameId)
+            println("TURN --> $turnResult")
+
+            assertIs<Either.Right<String>>(turnResult)
+
+            val playerId = (turnResult as Either.Right).value
+            assertTrue(playerId == adminId.toString() || playerId == userId.toString())
+        }
     }
 
     @Nested

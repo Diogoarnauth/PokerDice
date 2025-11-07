@@ -3,6 +3,7 @@ package pt.isel.daw.pokerDice.repository.jdbi
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.games.Turn
+import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.TurnsRepository
 
 class JdbiTurnRepository(
@@ -148,4 +149,27 @@ class JdbiTurnRepository(
             .mapTo<Int>()
             .one()
     }
+
+    override fun getWhichPlayerTurnByRoundId(roundId: Int): User =
+        handle
+            .createQuery(
+                """
+                SELECT u.id,
+                       u.username,
+                       u.passwordValidation,
+                       u.name,
+                       u.age,
+                       u.credit,
+                       u.winCounter,
+                       u.lobby_id
+                FROM dbo.turn t
+                JOIN dbo.users u ON t.player_id = u.id
+                WHERE t.round_id = :roundId 
+                    AND t.is_done = false
+                ORDER BY t.id
+                LIMIT 1
+                """.trimIndent(),
+            ).bind("roundId", roundId)
+            .mapTo<User>()
+            .first() // or .findOne().orElse(null) if you want nullability
 }

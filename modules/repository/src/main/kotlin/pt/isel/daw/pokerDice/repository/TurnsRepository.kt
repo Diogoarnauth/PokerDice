@@ -21,6 +21,8 @@ interface TurnsRepository {
         userId: Int,
     ): Turn
 
+    fun getAllTurnsByRoundId(roundId: Int): Int
+
     fun getNextPlayerInRound(
         roundId: Int,
         lobbyId: Int,

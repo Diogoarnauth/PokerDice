@@ -136,4 +136,19 @@ class JdbiTurnRepository(
             ).bind("roundId", roundId)
             .mapTo<Turn>()
             .list()
+
+    override fun getAllTurnsByRoundId(roundId: Int): Int {
+        val sql =
+            """
+            SELECT COUNT(*) 
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            """.trimIndent()
+
+        return handle
+            .createQuery(sql)
+            .bind("roundId", roundId)
+            .mapTo<Int>()
+            .one()
+    }
 }

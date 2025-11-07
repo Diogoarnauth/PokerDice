@@ -54,6 +54,8 @@ sealed class GameError {
         val indexes: List<Int>,
     ) : GameError()
 
+    object IsNotYouTurn : GameError()
+
     object TurnAlreadyFinished : GameError()
 
     object InvalidRollCount : GameError()
@@ -103,7 +105,7 @@ class GameService(
                 it.gamesRepository.createGame(newGame)
                     ?: return@run failure(GameCreationError.GameAlreadyRunning)
 
-            println("Jogo criado com ID: $gameId")
+            // println("Jogo criado com ID: $gameId")
 
             // Criar a primeira ronda
             val roundToCreate =
@@ -116,7 +118,7 @@ class GameService(
                 )
 
             val roundId = it.roundRepository.createRound(gameId, roundToCreate)
-            println("Round inicial criado com ID: $roundId")
+            //  println("Round inicial criado com ID: $roundId")
 
             // Criar o primeiro turno â€” comeÃ§a o primeiro jogador da lista
             val turnToCreate =
@@ -155,6 +157,9 @@ class GameService(
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)
             }
+            if (curTurn.playerId != userId) {
+                return@run failure(GameError.IsNotYouTurn)
+            }
 
             val rolledDice = gameDomain.rollDice(curTurn)
 
@@ -170,7 +175,7 @@ class GameService(
                 isDone = false,
             )
 
-            println(" CHEGUEI ANTES DE PASSAR PARA O PRÃ“XIMO USER")
+            // println(" CHEGUEI ANTES DE PASSAR PARA O PRÃ“XIMO USER")
 
             /* if (isTurnFinished) {
                  val nextPlayerId = it.turnsRepository.getNextPlayerInRound(curRound.id!!, lobbyId, curTurn.playerId!!)
@@ -213,6 +218,10 @@ class GameService(
 
             if (curTurn.rollCount >= 3) {
                 endTurn(game.id!!, userId)
+            }
+
+            if (curTurn.playerId != userId) {
+                return@run failure(GameError.IsNotYouTurn)
             }
 
             val updatedDice = gameDomain.rerollDice(curTurn, keepIndexes)
@@ -317,24 +326,32 @@ class GameService(
                 isDone = true,
             )
 
-            val nextPlayerId =
-                it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
+            val totalTurns = it.turnsRepository.getAllTurnsByRoundId(currentRound.id!!)
+            val totalPlayers = it.usersRepository.getAllUsersInLobby(lobby.id).size
 
-            if (nextPlayerId != null) {
-                val nextTurn =
-                    Turn(
-                        id = null,
-                        roundId = currentRound.id!!,
-                        playerId = nextPlayerId,
-                        rollCount = 0,
-                        isDone = false,
-                    )
-                it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
-            } else {
-                // terminar ronda e começar nova
+            if (totalTurns >= totalPlayers) {
                 endRound(game, lobby, currentRound)
+            } else {
+                // TODO() otimizar isto
+                val nextPlayerId =
+                    it.turnsRepository.getNextPlayerInRound(currentRound.id!!, game.lobbyId, curTurn.playerId!!)
+
+                if (nextPlayerId != null) {
+                    val nextTurn =
+                        Turn(
+                            id = null,
+                            roundId = currentRound.id!!,
+                            playerId = nextPlayerId,
+                            rollCount = 0,
+                            isDone = false,
+                        )
+                    it.turnsRepository.createTurn(currentRound.id!!, nextTurn)
+                } else {
+                    // terminar ronda e começar nova
+                    endRound(game, lobby, currentRound)
+                }
+                success("Turno terminado com sucesso.")
             }
-            success("Turno terminado com sucesso.")
         }
 
     fun endRound(
@@ -357,33 +374,36 @@ class GameService(
                 winners.map { it.playerId },
             )
 
+            println("game.roundCounter++ ${game.roundCounter++}")
+            println("lobby.rounds ${lobby.rounds}")
+
             if (game.roundCounter++ >= lobby.rounds) {
                 println("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
                 endGame(game.id!!)
                 success("Game Finished")
+            } else {
+                val nextRound =
+                    Round(
+                        id = null,
+                        roundNumber = currentRound.roundNumber + 1,
+                        gameId = game.id!!,
+                        bet = currentRound.bet,
+                        roundOver = false,
+                    )
+                val nextRoundId = it.roundRepository.createRound(game.id!!, nextRound)
+
+                val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
+                val firstTurn =
+                    Turn(
+                        id = null,
+                        roundId = nextRoundId,
+                        playerId = firstPlayer.id,
+                        rollCount = 0,
+                        isDone = false,
+                    )
+                it.turnsRepository.createTurn(nextRoundId, firstTurn)
+
+                success("round ended with success")
             }
-
-            val nextRound =
-                Round(
-                    id = null,
-                    roundNumber = currentRound.roundNumber + 1,
-                    gameId = game.id!!,
-                    bet = currentRound.bet,
-                    roundOver = false,
-                )
-            val nextRoundId = it.roundRepository.createRound(game.id!!, nextRound)
-
-            val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
-            val firstTurn =
-                Turn(
-                    id = null,
-                    roundId = nextRoundId,
-                    playerId = firstPlayer.id,
-                    rollCount = 0,
-                    isDone = false,
-                )
-            it.turnsRepository.createTurn(nextRoundId, firstTurn)
-
-            success("round ended with success")
         }
 }

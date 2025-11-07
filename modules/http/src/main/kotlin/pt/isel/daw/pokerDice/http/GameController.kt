@@ -54,6 +54,7 @@ class GameController(
                     is GameError.NotFirstRoll -> Problem.response(403, Problem.notFirstRoll)
                     is GameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
                     is GameError.TurnAlreadyFinished -> Problem.response(409, Problem.TurnAlreadyFinished)
+                    is GameError.IsNotYouTurn -> Problem.response(409, Problem.IsNotYouTurn)
                     else -> {
                         Problem.response(400, Problem.anotherError)
                     }
@@ -75,6 +76,7 @@ class GameController(
                 when (res.value) {
                     is GameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
                     is GameError.TurnAlreadyFinished -> Problem.response(409, Problem.TurnAlreadyFinished)
+                    is GameError.IsNotYouTurn -> Problem.response(409, Problem.IsNotYouTurn)
                     else -> {
                         Problem.response(400, Problem.anotherError)
                     }

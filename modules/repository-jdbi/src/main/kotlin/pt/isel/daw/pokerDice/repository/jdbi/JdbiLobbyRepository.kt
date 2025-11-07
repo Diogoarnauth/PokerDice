@@ -131,7 +131,7 @@ class JdbiLobbyRepository(
                 .createUpdate(
                     """
                     UPDATE dbo.lobby
-                    SET state = 'AVAILABLE'
+                    SET isRunning = FALSE
                     WHERE id = :id
                     """.trimIndent(),
                 ).bind("id", lobbyId)

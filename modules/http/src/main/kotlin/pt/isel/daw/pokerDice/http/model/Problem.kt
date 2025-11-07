@@ -55,6 +55,7 @@ class Problem(
         val gameNotFound = Problem(URI("${BASE_URL}gameNotFound"))
         val notFirstRoll = Problem(URI("${BASE_URL}notFirstRoll"))
         val TurnAlreadyFinished = Problem(URI("${BASE_URL}TurnAlreadyFinished"))
+        val IsNotYouTurn = Problem(URI("${BASE_URL}IsNotYouTurn"))
 
         // Generic
         val anotherError = Problem(URI("${BASE_URL}anotherError"))

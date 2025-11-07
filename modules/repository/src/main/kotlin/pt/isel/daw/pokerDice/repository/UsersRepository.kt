@@ -61,4 +61,14 @@ interface UsersRepository {
     fun countUsersInLobby(lobbyId: Int): Int
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
+
+    fun decrementCreditsFromPlayer(
+        amount: Int,
+        userId: Int,
+    ): Boolean
+
+    fun userExitsLobby(
+        lobbyId: Int,
+        userId: Int,
+    ): Boolean
 }

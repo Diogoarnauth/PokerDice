@@ -8,11 +8,11 @@ import pt.isel.daw.pokerDice.domain.games.Round
 import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
-import kotlin.math.round
 
 sealed class GameCreationError {
     data class LobbyNotFound(
@@ -74,7 +74,9 @@ class GameService(
         userId: Int,
         lobbyId: Int,
     ): GameCreationResult =
-        transactionManager.run {
+        transactionManager.run { it ->
+
+            println("DENTRO")
             val existingGame = it.gamesRepository.getGameByLobbyId(lobbyId)
             val allUsersInLobby = it.usersRepository.getAllUsersInLobby(lobbyId)
 
@@ -106,10 +108,11 @@ class GameService(
                 it.gamesRepository.createGame(newGame)
                     ?: return@run failure(GameCreationError.GameAlreadyRunning)
 
-            // println("Jogo criado com ID: $gameId")
+            println("Jogo criado com ID: $gameId")
 
+            println("ANTES DE INICIAR A PRIMEIRA RONDA")
             // Criar a primeira ronda
-            startNewRound(null, newGame, lobby)
+            startNewRound(null, gameId, lobby)
 
             println(" Primeiro turno criado para jogador: ${allUsersInLobby.first().id}")
 
@@ -260,7 +263,7 @@ class GameService(
         gameId: Int,
         userId: Int,
     ): GameErrorResult =
-        transactionManager.run {
+        transactionManager.run { it ->
             val game =
                 it.gamesRepository.getGameById(gameId)
                     ?: return@run failure(GameError.GameNotFound(gameId))
@@ -339,11 +342,12 @@ class GameService(
         lobby: Lobby,
         currentRound: Round,
     ): GameErrorResult =
-        transactionManager.run {
+        transactionManager.run { it ->
             println("ENTREI NO ENDROUND")
 
             it.roundRepository.markRoundAsOver(currentRound.id!!)
             it.gamesRepository.updateRoundCounter(game.id!!)
+            val players = it.usersRepository.getAllUsersInLobby(game.lobbyId)
 
             val winners = it.turnsRepository.getBiggestValue(currentRound.id!!) // agora List<Turn>
 
@@ -354,6 +358,8 @@ class GameService(
                 winners.map { it.playerId },
             )
 
+            attributeWinnersCredits(winners, players, lobby)
+
             println("game.roundCounter++ ${game.roundCounter++}")
             println("lobby.rounds ${lobby.rounds}")
 
@@ -361,7 +367,7 @@ class GameService(
                 endGame(game.id!!)
                 success("Game Finished")
             } else {
-                startNewRound(currentRound, game, null)
+                startNewRound(currentRound, game.id!!, null)
 
                 success("old round ended with success")
             }
@@ -369,34 +375,61 @@ class GameService(
 
     fun startNewRound(
         currentRound: Round?,
-        game: Game,
+        gameId: Int,
         lobby: Lobby?,
     ) = transactionManager.run {
+        println("DENTRO II")
+        println("currentRound $currentRound")
         var round: Round
-
+        println("game $gameId")
+        println("lobby ${lobby?.id}")
         if (currentRound == null) {
+            println("ENTREI NO IF")
             round =
                 Round(
                     id = null,
+                    gameId = gameId,
                     roundNumber = 1,
-                    gameId = game.id!!,
                     bet = lobby!!.minCreditToParticipate,
                     roundOver = false,
                 )
+            println("round $round")
         } else {
+            println("ENTREI NO ELSE")
             round =
                 Round(
                     id = null,
+                    gameId = gameId,
                     roundNumber = currentRound.roundNumber + 1,
-                    gameId = game.id!!,
                     bet = currentRound.bet,
                     roundOver = false,
                 )
         }
+        println("ROUND CRIADA: $round")
 
-        val nextRoundId = it.roundRepository.createRound(game.id!!, round)
+        val players = it.usersRepository.getAllUsersInLobby(lobby!!.id)
 
-        val firstPlayer = it.usersRepository.getAllUsersInLobby(game.lobbyId).first()
+        println("ENTREI NO START NEW ROUND")
+
+        for (player in players) {
+            println("ENTREI NO FOR")
+            println("PLAYER $player")
+            val creditsDecremented =
+                it.usersRepository.decrementCreditsFromPlayer(lobby!!.minCreditToParticipate, player.id)
+
+            println("CREDITS DECREMENTED $creditsDecremented")
+            if (!creditsDecremented) {
+                // saldo insuficiente → reage conforme precisares (ex.: falhar a jogada/entrada/etc.)
+                // TODO("check integrity of the lobby")
+                it.usersRepository.userExitsLobby(lobbyId = lobby!!.id, userId = player.id)
+            }
+        }
+
+        val nextRoundId = it.roundRepository.createRound(gameId, round)
+
+        println("ROUND CRIADA ")
+
+        val firstPlayer = it.usersRepository.getAllUsersInLobby(lobby.id).first()
         val firstTurn =
             Turn(
                 id = null,
@@ -431,4 +464,23 @@ class GameService(
 
             success(currentPlayer.id.toString())
         }
+
+    fun attributeWinnersCredits(
+        winners: List<Turn>,
+        players: List<User>,
+        lobby: Lobby,
+    ) = transactionManager.run {
+        // Assume you have access to your handle or transaction
+        val winnerIds = winners.map { it.playerId }.toSet()
+        val numbPlayers = players.size
+
+        val credit = lobby.minCreditToParticipate
+
+        val valueToAttribute = numbPlayers * credit / winners.size
+
+        for (winner in winnerIds) {
+            // atribute credit to the player's that won the round
+            it.usersRepository.updateUserCredit(winner, valueToAttribute)
+        }
+    }
 }

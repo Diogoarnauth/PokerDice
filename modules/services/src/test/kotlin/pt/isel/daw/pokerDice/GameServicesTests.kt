@@ -307,6 +307,31 @@ class GameServicesTests {
                 val leftResult = assertIs<Either.Left<GameError>>(invalidEnd)
                 assertEquals(GameError.IsNotYouTurn::class, leftResult.value::class)
             }
+
+            @Test
+            fun `credits should be decremented for all players at the start of a round`() {
+                // setup game
+
+                println("SETUP GAME")
+                val createResult = gameService.createGame(adminId, lobbyId)
+                assertIs<Either.Right<Int?>>(createResult).value!!
+
+                // Get lobby info to retrieve minCreditToParticipate
+                val lobby = assertIs<Either.Right<Lobby>>(lobbyService.getLobbyById(lobbyId)).value
+
+                println("LOBBY : $lobby")
+
+                val bet = lobby.minCreditToParticipate
+
+                println("BET : $bet")
+
+                // Fetch credits after round start
+                val adminAfter = assertIs<Either.Right<User>>(userService.getById(adminId)).value
+                val userAfter = assertIs<Either.Right<User>>(userService.getById(userId)).value
+
+                assertEquals(1000 - bet, adminAfter.credit, "Admin's credit should be decremented by the bet")
+                assertEquals(1000 - bet, userAfter.credit, "User's credit should be decremented by the bet")
+            }
         }
     }
 

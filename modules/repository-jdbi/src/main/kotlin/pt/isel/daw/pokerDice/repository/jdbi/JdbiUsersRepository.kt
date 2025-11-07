@@ -250,4 +250,47 @@ class JdbiUsersRepository(
             .bind("lobbyId", lobbyId)
             .execute()
     }
+
+    override fun decrementCreditsFromPlayer(
+        amount: Int,
+        userId: Int,
+    ): Boolean {
+        require(amount >= 0) { "amount must be >= 0" }
+
+        // Só decrementa se o utilizador tiver saldo suficiente (credit >= amount).
+        // Se não tiver, 0 linhas são afetadas → devolve false e nada muda na BD.
+        val rows =
+            handle
+                .createUpdate(
+                    """
+                    UPDATE dbo.users
+                    SET credit = credit - :amount
+                    WHERE id = :userId
+                      AND credit >= :amount
+                    """.trimIndent(),
+                ).bind("amount", amount)
+                .bind("userId", userId)
+                .execute()
+
+        return rows == 1
+    }
+
+    override fun userExitsLobby(
+        lobbyId: Int,
+        userId: Int,
+    ): Boolean {
+        val rows =
+            handle
+                .createUpdate(
+                    """
+            UPDATE dbo.users
+            SET lobby_id = NULL
+            WHERE lobby_id = :lobbyId AND id = :userId
+            """,
+                ).bind("lobbyId", lobbyId)
+                .bind("userId", userId)
+                .execute()
+        // Returns true if at least one row was updated
+        return rows > 0
+    }
 }

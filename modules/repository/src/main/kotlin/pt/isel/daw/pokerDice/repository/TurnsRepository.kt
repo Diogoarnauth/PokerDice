@@ -29,4 +29,6 @@ interface TurnsRepository {
     fun getBiggestValue(roundId: Int): List<Turn>
 
     fun getTurnsByRoundIdForAllPlayers(roundId: Int): List<Turn>
+
+    fun getPlayersWithTurns(roundId: Int): List<Pair<Int, String>>
 }

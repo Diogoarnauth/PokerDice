@@ -12,6 +12,7 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import kotlin.math.round
 
 sealed class GameCreationError {
     data class LobbyNotFound(
@@ -120,7 +121,7 @@ class GameService(
             val roundId = it.roundRepository.createRound(gameId, roundToCreate)
             //  println("Round inicial criado com ID: $roundId")
 
-            // Criar o primeiro turno â€” comeÃ§a o primeiro jogador da lista
+            // Criar o primeiro turno ao começar o primeiro jogador da lista
             val turnToCreate =
                 Turn(
                     id = null,
@@ -215,7 +216,7 @@ class GameService(
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId))
 
-            val round = it.roundRepository.getRoundsByGameId(game.id!!).first()
+            val round = it.roundRepository.getRoundsByGameId(game.id!!).last()
 
             val curTurn = it.turnsRepository.getTurnsByRoundId(round.id!!)
 
@@ -223,7 +224,11 @@ class GameService(
                 return@run failure(GameError.IsNotYouTurn)
             }
 
+            println("current round: $round")
+            println("CURRENT TURN: $curTurn")
+
             if (curTurn.isDone) {
+                println("DENTRO DO IF TURN IS DONE")
                 return@run failure(GameError.TurnAlreadyFinished)
             }
 

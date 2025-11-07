@@ -76,7 +76,6 @@ class GameService(
     ): GameCreationResult =
         transactionManager.run { it ->
 
-            println("DENTRO")
             val existingGame = it.gamesRepository.getGameByLobbyId(lobbyId)
             val allUsersInLobby = it.usersRepository.getAllUsersInLobby(lobbyId)
 
@@ -108,13 +107,8 @@ class GameService(
                 it.gamesRepository.createGame(newGame)
                     ?: return@run failure(GameCreationError.GameAlreadyRunning)
 
-            println("Jogo criado com ID: $gameId")
-
-            println("ANTES DE INICIAR A PRIMEIRA RONDA")
             // Criar a primeira ronda
             startNewRound(null, gameId, lobby)
-
-            println(" Primeiro turno criado para jogador: ${allUsersInLobby.first().id}")
 
             success(gameId)
         }
@@ -125,32 +119,23 @@ class GameService(
     ): GameErrorResult =
 
         transactionManager.run {
-            println("1")
             val curGame =
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId))
-            println("2")
             val curRound =
                 it.roundRepository.getRoundsByGameId(curGame.id!!).first { it -> !it.roundOver }
-            println("3")
             val curTurn =
                 it.turnsRepository.getTurnsByRoundId(curRound.id!!) // SÃ“ DEVE HAVER 1
 
             if (curTurn.playerId != userId) {
-                println("entrou aqui")
                 return@run failure(GameError.IsNotYouTurn)
             }
-            println("4")
             if (curTurn.rollCount != 0) return@run failure(GameError.NotFirstRoll)
-            println("5")
+
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)
             }
-            println("6")
-            println("userId $userId")
-            println("curTurn.playerId ${curTurn.playerId}")
 
-            println("7")
             val rolledDice = gameDomain.rollDice(curTurn)
 
             val newRollCount = curTurn.rollCount + 1
@@ -188,7 +173,6 @@ class GameService(
 
             // verify if the turn already ended
             if (curTurn.isDone) {
-                println("DENTRO DO IF TURN IS DONE")
                 return@run failure(GameError.TurnAlreadyFinished)
             }
 
@@ -343,14 +327,12 @@ class GameService(
         currentRound: Round,
     ): GameErrorResult =
         transactionManager.run { it ->
-            println("ENTREI NO ENDROUND")
 
             it.roundRepository.markRoundAsOver(currentRound.id!!)
             it.gamesRepository.updateRoundCounter(game.id!!)
             val players = it.usersRepository.getAllUsersInLobby(game.lobbyId)
 
             val winners = it.turnsRepository.getBiggestValue(currentRound.id!!) // agora List<Turn>
-
             println("Round ${currentRound.roundNumber} terminado. Winners: ${winners.map { it.playerId }}")
 
             it.roundRepository.attributeWinnerStatus(
@@ -360,14 +342,11 @@ class GameService(
 
             attributeWinnersCredits(winners, players, lobby)
 
-            println("game.roundCounter++ ${game.roundCounter++}")
-            println("lobby.rounds ${lobby.rounds}")
-
             if (game.roundCounter++ >= lobby.rounds) {
                 endGame(game.id!!)
                 success("Game Finished")
             } else {
-                startNewRound(currentRound, game.id!!, null)
+                startNewRound(currentRound, game.id!!, lobby)
 
                 success("old round ended with success")
             }
@@ -376,26 +355,20 @@ class GameService(
     fun startNewRound(
         currentRound: Round?,
         gameId: Int,
-        lobby: Lobby?,
+        lobby: Lobby,
     ) = transactionManager.run {
-        println("DENTRO II")
-        println("currentRound $currentRound")
         var round: Round
-        println("game $gameId")
-        println("lobby ${lobby?.id}")
+
         if (currentRound == null) {
-            println("ENTREI NO IF")
             round =
                 Round(
                     id = null,
                     gameId = gameId,
                     roundNumber = 1,
-                    bet = lobby!!.minCreditToParticipate,
+                    bet = lobby.minCreditToParticipate,
                     roundOver = false,
                 )
-            println("round $round")
         } else {
-            println("ENTREI NO ELSE")
             round =
                 Round(
                     id = null,
@@ -405,29 +378,19 @@ class GameService(
                     roundOver = false,
                 )
         }
-        println("ROUND CRIADA: $round")
-
-        val players = it.usersRepository.getAllUsersInLobby(lobby!!.id)
-
-        println("ENTREI NO START NEW ROUND")
-
+        val players = it.usersRepository.getAllUsersInLobby(lobby.id)
         for (player in players) {
-            println("ENTREI NO FOR")
-            println("PLAYER $player")
             val creditsDecremented =
                 it.usersRepository.decrementCreditsFromPlayer(lobby!!.minCreditToParticipate, player.id)
 
-            println("CREDITS DECREMENTED $creditsDecremented")
             if (!creditsDecremented) {
                 // saldo insuficiente → reage conforme precisares (ex.: falhar a jogada/entrada/etc.)
                 // TODO("check integrity of the lobby")
-                it.usersRepository.userExitsLobby(lobbyId = lobby!!.id, userId = player.id)
+                it.usersRepository.userExitsLobby(lobbyId = lobby.id, userId = player.id)
             }
         }
 
         val nextRoundId = it.roundRepository.createRound(gameId, round)
-
-        println("ROUND CRIADA ")
 
         val firstPlayer = it.usersRepository.getAllUsersInLobby(lobby.id).first()
         val firstTurn =
@@ -451,14 +414,10 @@ class GameService(
                     .firstOrNull { round -> !round.roundOver }
                     ?: return@run failure(GameError.NoActiveRound(gameId))
 
-            println("CURRENT ROUND: $currentRound")
-
             // Get the User who should be rolling (whose turn is not done)
             val currentPlayer =
                 it.turnsRepository.getWhichPlayerTurnByRoundId(currentRound.id!!)
                     ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
-
-            println("CURRENT PLAYER: $currentPlayer")
 
             // return the player's ID (you might want to return player info, but ID suffices)
 
@@ -479,8 +438,9 @@ class GameService(
         val valueToAttribute = numbPlayers * credit / winners.size
 
         for (winner in winnerIds) {
+            val userWinner = it.usersRepository.getUserById(winner)
             // atribute credit to the player's that won the round
-            it.usersRepository.updateUserCredit(winner, valueToAttribute)
+            it.usersRepository.updateUserCredit(winner, userWinner!!.credit + valueToAttribute)
         }
     }
 }

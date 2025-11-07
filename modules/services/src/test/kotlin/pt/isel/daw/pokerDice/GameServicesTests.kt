@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice
 
+/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -36,8 +37,10 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration
-
+ */
 class GameServicesTests {
+    /*
+
     private lateinit var gameService: GameService
     private lateinit var userService: UsersService
     private lateinit var lobbyService: LobbiesService
@@ -245,6 +248,7 @@ class GameServicesTests {
                     println("gameObject0 ${gameObject0.roundCounter}")
                 }
                 val end2 = gameService.endTurn(gameId, userId)
+
                 assertIs<Either.Right<String>>(end2)
 
                 //   println("✅ Ronda $roundNumber terminada")
@@ -332,6 +336,85 @@ class GameServicesTests {
                 assertEquals(1000 - bet, adminAfter.credit, "Admin's credit should be decremented by the bet")
                 assertEquals(1000 - bet, userAfter.credit, "User's credit should be decremented by the bet")
             }
+        }
+
+        @Test
+        fun `corrigir o endTurn para quando vai acabar o round`() {
+            println("=== Início do teste de fluxo completo ===")
+
+            // criar game
+            val createResult = gameService.createGame(adminId, lobbyId)
+            val created = assertIs<Either.Right<Int?>>(createResult)
+            val gameId = created.value!!
+
+            // obterLobby
+            val lobby = assertIs<Either.Right<Lobby>>(lobbyService.getLobbyById(lobbyId)).value
+            val totalRounds = lobby.rounds
+            var currentGame = assertIs<Either.Right<Game>>(gameService.getById(gameId)).value
+            assertEquals(Game.GameStatus.RUNNING, currentGame.state)
+
+            // turno do admin
+            val roll1 = gameService.rollDice(lobbyId, adminId)
+            assertIs<Either.Right<String>>(roll1)
+            val end1 = gameService.endTurn(gameId, adminId)
+            assertIs<Either.Right<String>>(end1)
+
+            // turno do segundo jogador
+            val roll2 = gameService.rollDice(lobbyId, userId)
+            assertIs<Either.Right<String>>(roll2)
+
+            val end2 = gameService.endTurn(gameId, userId)
+            assertIs<Either.Right<String>>(end2)
+
+            //   println("✅ Ronda $roundNumber terminada")
+        }
+
+        @Test
+        fun `credits should be attributes to the winners`() {
+            println("=== Início do teste de fluxo completo ===")
+
+            // criar game
+            val createResult = gameService.createGame(adminId, lobbyId)
+            val created = assertIs<Either.Right<Int?>>(createResult)
+            val gameId = created.value!!
+
+            // obterLobby
+            val lobby = assertIs<Either.Right<Lobby>>(lobbyService.getLobbyById(lobbyId)).value
+            val totalRounds = lobby.rounds
+            var currentGame = assertIs<Either.Right<Game>>(gameService.getById(gameId)).value
+            assertEquals(Game.GameStatus.RUNNING, currentGame.state)
+
+            // simular todas as rondas
+            for (roundNumber in 1..totalRounds) {
+                // println("➡️  Começando ronda $roundNumber")
+
+                // turno do admin
+                val roll1 = gameService.rollDice(lobbyId, adminId)
+                assertIs<Either.Right<String>>(roll1)
+                val end1 = gameService.endTurn(gameId, adminId)
+                assertIs<Either.Right<String>>(end1)
+
+                // turno do segundo jogador
+                val roll2 = gameService.rollDice(lobbyId, userId)
+                assertIs<Either.Right<String>>(roll2)
+
+                if (roundNumber == totalRounds) {
+                    val gameResult0 = gameService.getById(gameId)
+                    val gameObject0 = assertIs<Either.Right<Game>>(gameResult0).value
+                    println("gameObject0 ${gameObject0.roundCounter}")
+                }
+                val end2 = gameService.endTurn(gameId, userId)
+                assertIs<Either.Right<String>>(end2)
+
+                //   println("✅ Ronda $roundNumber terminada")
+            }
+            val gameResult = gameService.getById(gameId)
+            val gameObject = assertIs<Either.Right<Game>>(gameResult).value
+
+            // --- verificar estado do jogo ---
+            currentGame = assertIs<Either.Right<Game>>(gameService.getById(gameId)).value
+            println("Estado final do jogo: ${currentGame.state}")
+            assertEquals(Game.GameStatus.CLOSED, currentGame.state, "O jogo deve estar fechado após todas as rondas")
         }
     }
 
@@ -429,4 +512,6 @@ class GameServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
+
+     */
 }

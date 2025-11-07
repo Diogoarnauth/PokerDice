@@ -387,6 +387,15 @@ class GameService(
                 // saldo insuficiente → reage conforme precisares (ex.: falhar a jogada/entrada/etc.)
                 // TODO("check integrity of the lobby")
                 it.usersRepository.userExitsLobby(lobbyId = lobby.id, userId = player.id)
+
+                val updatedPlayers = it.usersRepository.getAllUsersInLobby(lobby.id)
+                if (updatedPlayers.size < lobby.minUsers) {
+                    // Not enough players, end game immediatly
+
+                    it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+                    it.lobbiesRepository.markLobbyAsAvailable(lobby.id)
+                    return@run success("Game ended: Not enough players remaining with credits")
+                }
             }
         }
 

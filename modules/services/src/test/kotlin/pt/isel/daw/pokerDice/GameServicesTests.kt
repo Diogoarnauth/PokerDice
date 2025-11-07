@@ -1,6 +1,5 @@
 package pt.isel.daw.pokerDice
 
-/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -24,6 +23,7 @@ import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
 import pt.isel.daw.pokerDice.services.GameCreationError
+import pt.isel.daw.pokerDice.services.GameError
 import pt.isel.daw.pokerDice.services.GameService
 import pt.isel.daw.pokerDice.services.LobbiesService
 import pt.isel.daw.pokerDice.services.UsersService
@@ -36,10 +36,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import kotlin.time.Duration
-*/
 
 class GameServicesTests {
-    /*
     private lateinit var gameService: GameService
     private lateinit var userService: UsersService
     private lateinit var lobbyService: LobbiesService
@@ -256,6 +254,45 @@ class GameServicesTests {
 
             println("✅ Teste completo de ciclo de jogo finalizado com sucesso!")
         }
+
+        @Nested
+        inner class InvalidTurnOrderTests {
+            @Test
+            fun `should fail if user tries to rollDice when it's not their turn`() {
+                // --- criar jogo ---
+                val createResult = gameService.createGame(adminId, lobbyId)
+                val created = assertIs<Either.Right<Int?>>(createResult)
+                val gameId = created.value!!
+
+                // --- admin é o primeiro a jogar ---
+                val firstRoll = gameService.rollDice(lobbyId, adminId)
+                assertIs<Either.Right<String>>(firstRoll)
+
+                // --- user tenta jogar fora da vez (não é o turno dele ainda) ---
+                val invalidRoll = gameService.rollDice(lobbyId, userId)
+
+                val leftResult = assertIs<Either.Left<GameError>>(invalidRoll)
+                assertEquals(GameError.IsNotYouTurn::class, leftResult.value::class)
+            }
+
+            @Test
+            fun `should fail if user tries to endTurn when it's not their turn`() {
+                // --- criar jogo ---
+                val createResult = gameService.createGame(adminId, lobbyId)
+                val created = assertIs<Either.Right<Int?>>(createResult)
+                val gameId = created.value!!
+
+                // --- admin faz roll corretamente ---
+                val firstRoll = gameService.rollDice(lobbyId, adminId)
+                assertIs<Either.Right<String>>(firstRoll)
+
+                // --- user tenta terminar turno mesmo sem ser o seu ---
+                val invalidEnd = gameService.endTurn(gameId, userId)
+
+                val leftResult = assertIs<Either.Left<GameError>>(invalidEnd)
+                assertEquals(GameError.IsNotYouTurn::class, leftResult.value::class)
+            }
+        }
     }
 
     // -------------------------------------------------------------------------
@@ -351,5 +388,5 @@ class GameServicesTests {
         }
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
-    }*/
+    }
 }

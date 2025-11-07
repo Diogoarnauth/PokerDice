@@ -70,23 +70,20 @@ class JdbiTurnRepository(
             .mapTo<Turn>()
             .list()
 
-    override fun getTurnsByRoundId(
-        roundId: Int,
-        userId: Int,
-    ): Turn =
+    override fun getTurnsByRoundId(roundId: Int): Turn =
         handle
             .createQuery(
                 """
-        SELECT id, round_id, player_id, roll_count, dice_faces, is_done
-        FROM dbo.turn
-        WHERE round_id = :roundId
-          AND player_id = :userId
-        ORDER BY id
-        """,
+                SELECT id, round_id, player_id, roll_count, dice_faces, is_done
+                FROM dbo.turn
+                WHERE round_id = :roundId
+                  AND is_done = FALSE
+                ORDER BY id ASC
+                LIMIT 1
+                """.trimIndent(),
             ).bind("roundId", roundId)
-            .bind("userId", userId)
             .mapTo<Turn>()
-            .first()
+            .single()
 
     override fun getNextPlayerInRound(
         roundId: Int,

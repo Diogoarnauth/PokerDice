@@ -142,25 +142,32 @@ class GameService(
     ): GameErrorResult =
 
         transactionManager.run {
+            println("1")
             val curGame =
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId))
-
+            println("2")
             val curRound =
                 it.roundRepository.getRoundsByGameId(curGame.id!!).first { it -> !it.roundOver }
-
+            println("3")
             val curTurn =
-                it.turnsRepository.getTurnsByRoundId(curRound.id!!, userId) // SÃ“ DEVE HAVER 1
+                it.turnsRepository.getTurnsByRoundId(curRound.id!!) // SÃ“ DEVE HAVER 1
 
+            if (curTurn.playerId != userId) {
+                println("entrou aqui")
+                return@run failure(GameError.IsNotYouTurn)
+            }
+            println("4")
             if (curTurn.rollCount != 0) return@run failure(GameError.NotFirstRoll)
-
+            println("5")
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)
             }
-            if (curTurn.playerId != userId) {
-                return@run failure(GameError.IsNotYouTurn)
-            }
+            println("6")
+            println("userId $userId")
+            println("curTurn.playerId ${curTurn.playerId}")
 
+            println("7")
             val rolledDice = gameDomain.rollDice(curTurn)
 
             val newRollCount = curTurn.rollCount + 1
@@ -210,7 +217,11 @@ class GameService(
 
             val round = it.roundRepository.getRoundsByGameId(game.id!!).first()
 
-            val curTurn = it.turnsRepository.getTurnsByRoundId(round.id!!, userId)
+            val curTurn = it.turnsRepository.getTurnsByRoundId(round.id!!)
+
+            if (curTurn.playerId != userId) {
+                return@run failure(GameError.IsNotYouTurn)
+            }
 
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)
@@ -218,10 +229,6 @@ class GameService(
 
             if (curTurn.rollCount >= 3) {
                 endTurn(game.id!!, userId)
-            }
-
-            if (curTurn.playerId != userId) {
-                return@run failure(GameError.IsNotYouTurn)
             }
 
             val updatedDice = gameDomain.rerollDice(curTurn, keepIndexes)
@@ -297,8 +304,12 @@ class GameService(
                     ?: return@run failure(GameError.NoActiveRound(game.id!!))
 
             val curTurn =
-                it.turnsRepository.getTurnsByRoundId(currentRound.id!!, userId)
+                it.turnsRepository.getTurnsByRoundId(currentRound.id!!)
                     ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
+
+            if (curTurn.playerId != userId) {
+                return@run failure(GameError.IsNotYouTurn)
+            }
 
             val diceList: List<Dice> =
                 curTurn.diceFaces

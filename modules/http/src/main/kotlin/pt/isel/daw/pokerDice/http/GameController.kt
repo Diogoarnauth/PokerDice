@@ -99,6 +99,7 @@ class GameController(
                     is GameError.GameNotFound -> Problem.response(404, Problem.gameNotFound)
                     is GameError.NoActiveRound -> Problem.response(409, Problem.noActiveRound)
                     is GameError.NoActiveTurn -> Problem.response(409, Problem.noActiveTurn)
+                    is GameError.IsNotYouTurn -> Problem.response(409, Problem.IsNotYouTurn)
                     else -> {
                         Problem.response(400, Problem.anotherError)
                     }

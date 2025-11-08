@@ -378,24 +378,27 @@ class GameService(
                     roundOver = false,
                 )
         }
+
         val players = it.usersRepository.getAllUsersInLobby(lobby.id)
         for (player in players) {
             val creditsDecremented =
                 it.usersRepository.decrementCreditsFromPlayer(lobby!!.minCreditToParticipate, player.id)
 
             if (!creditsDecremented) {
-                // saldo insuficiente → reage conforme precisares (ex.: falhar a jogada/entrada/etc.)
-                // TODO("check integrity of the lobby")
                 it.usersRepository.userExitsLobby(lobbyId = lobby.id, userId = player.id)
+                val playersOnLobby = it.usersRepository.getAllUsersInLobby(lobbyId = lobby.id)
 
-                val updatedPlayers = it.usersRepository.getAllUsersInLobby(lobby.id)
-                if (updatedPlayers.size < lobby.minUsers) {
-                    // Not enough players, end game immediatly
+                if (lobby.hostId == player.id) {
+                    // Remover todos os jogadores associados ao lobby
+                    it.usersRepository.clearLobbyForAllUsers(lobby.id)
 
-                    it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
-                    it.lobbiesRepository.markLobbyAsAvailable(lobby.id)
-                    return@run success("Game ended: Not enough players remaining with credits")
+                    // Eliminar o lobby da base de dados
+                    it.lobbiesRepository.deleteLobbyById(lobby.id)
+                } else if (playersOnLobby.size < lobby.minUsers) {
+                    endGame(gameId)
                 }
+
+                return@run success("Game ended: Not enough players remaining with credits")
             }
         }
 

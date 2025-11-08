@@ -98,7 +98,7 @@ class LobbiesService(
             }
             // TODO("SE FOR O HOST AO FAZER LEAVE DA KICK A TODOS NO LOBBY")
             // Remove o jogador do lobby (define lobby_id = NULL)
-            lobbiesRepo.updateLobbyIdForUser(userId, null)
+            usersRepo.updateLobbyIdForUser(userId, null)
 
             success(Unit)
         }
@@ -188,7 +188,7 @@ class LobbiesService(
                 )
 
             // UPDATE LOBBY ID FOR USER
-            lobbyRepo.updateLobbyIdForUser(hostId, lobbyId)
+            userRepo.updateLobbyIdForUser(hostId, lobbyId)
 
             if (lobbyId != null) {
                 success(lobbyId)
@@ -242,7 +242,7 @@ class LobbiesService(
             }
 
             // Adicionar jogador ao lobby
-            lobbiesRepo.updateLobbyIdForUser(userId, lobbyId)
+            usersRepo.updateLobbyIdForUser(userId, lobbyId)
 
             success(Unit)
         }

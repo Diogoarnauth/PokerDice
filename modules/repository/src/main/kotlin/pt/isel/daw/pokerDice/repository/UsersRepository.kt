@@ -40,6 +40,11 @@ interface UsersRepository {
         maxTokens: Int,
     )
 
+    fun updateLobbyIdForUser(
+        userId: Int,
+        lobbyId: Int?,
+    )
+
     fun countUsers(): Int
 
     fun updateTokenLastUsed(

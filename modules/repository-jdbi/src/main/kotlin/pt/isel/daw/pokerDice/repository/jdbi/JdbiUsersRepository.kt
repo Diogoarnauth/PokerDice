@@ -293,4 +293,15 @@ class JdbiUsersRepository(
         // Returns true if at least one row was updated
         return rows > 0
     }
+
+    override fun updateLobbyIdForUser(
+        userId: Int,
+        lobbyId: Int?,
+    ) {
+        handle
+            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
+            .bind("lobbyId", lobbyId)
+            .bind("playerId", userId)
+            .execute()
+    }
 }

@@ -9,11 +9,6 @@ interface LobbiesRepository {
 
     fun existsByHost(hostId: Int): Boolean
 
-    fun updateLobbyIdForUser(
-        userId: Int,
-        lobbyId: Int?,
-    )
-
     fun markGameAsStartedInLobby(lobbyId: Int)
 
     fun createLobby(

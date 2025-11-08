@@ -73,17 +73,6 @@ class JdbiLobbyRepository(
             .execute()
     }
 
-    override fun updateLobbyIdForUser(
-        userId: Int,
-        lobbyId: Int?,
-    ) {
-        handle
-            .createUpdate("UPDATE dbo.Users SET lobby_id = :lobbyId WHERE id = :playerId")
-            .bind("lobbyId", lobbyId)
-            .bind("playerId", userId)
-            .execute()
-    }
-
     override fun getLobbiesNotFull(): List<Lobby> =
         handle
             .createQuery(

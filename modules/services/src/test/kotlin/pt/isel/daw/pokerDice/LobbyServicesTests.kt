@@ -1,7 +1,6 @@
 
 package pt.isel.daw.pokerDice
 
-/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -34,14 +33,11 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
- */
-
 /**
  * Testes do UsersService — versão adaptada do stor.
  * Usa a BD local de desenvolvimento e domínio real.
  */
 class LobbyServicesTests {
-    /*
     private lateinit var service: LobbiesService
     private lateinit var userService: UsersService
 
@@ -358,7 +354,7 @@ class LobbyServicesTests {
     @Nested
     inner class GetVisibleLobbiesTests {
         @Test
-        fun `getVisibleLobbies should return non-empty list if there are visible lobbies`() {
+        fun `getVisibleLobbies should return non-empty list if there are visible lobbies`() { // failed
             // given
             val hostId = adminId
             val name = "Test Lobby"
@@ -388,7 +384,7 @@ class LobbyServicesTests {
         }
 
         @Test
-        fun `getVisibleLobbies should return empty list if no lobbies are visible`() {
+        fun `getVisibleLobbies should return empty list if no lobbies are visible`() { // failed
             // given
             // Nenhum lobby foi criado ainda
 
@@ -444,7 +440,7 @@ class LobbyServicesTests {
                 assertTrue(result[0].maxUsers > result[0].minUsers, "O lobby retornado não deve estar cheio")
             }
 
-     */
+             */
     }
 
     @Nested
@@ -474,7 +470,7 @@ class LobbyServicesTests {
         }
 
         @Test
-        fun `leaveLobby should close the lobby if host leaves`() {
+        fun `leaveLobby should close the lobby if host leaves`() { // failed
             // when
             val result = service.leaveLobby(lobbyId, adminId)
             // then
@@ -809,6 +805,4 @@ class LobbyServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
-
-     */
 }

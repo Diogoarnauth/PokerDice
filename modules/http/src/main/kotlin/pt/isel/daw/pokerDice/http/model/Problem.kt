@@ -56,6 +56,10 @@ class Problem(
         val notFirstRoll = Problem(URI("${BASE_URL}notFirstRoll"))
         val TurnAlreadyFinished = Problem(URI("${BASE_URL}TurnAlreadyFinished"))
         val IsNotYouTurn = Problem(URI("${BASE_URL}IsNotYouTurn"))
+        val gameAlreadyClosed = Problem(URI("${BASE_URL}gameAlreadyClosed"))
+
+        // val LobbyNotFound = Problem(URI("${BASE_URL}LobbyNotFound"))
+        val YouAreNotHost = Problem(URI("${BASE_URL}YouAreNotHost"))
 
         // Generic
         val anotherError = Problem(URI("${BASE_URL}anotherError"))

@@ -214,11 +214,10 @@ class UsersService(
                 return@run failure(UserRegisterError.InvitationDontExist)
             } else if (!inviteDomain.isInviteCodeValid(invite.state)) {
                 return@run failure(UserRegisterError.InvitationUsed)
-            }
-            /*else if (!inviteDomain.isInviteTimeNotExpired(invite.createdAt, clock)) {
+            } else if (!inviteDomain.isInviteTimeNotExpired(invite.createdAt, clock)) {
                 inviteRepository.changeInviteState(invite.id, inviteDomain.expiredState)
                 return@run failure(UserRegisterError.InvitationExpired)
-            }*/
+            }
 
             val userId = usersRepository.create(username, name, age, inviteCode, passwordValidationInfo)
 

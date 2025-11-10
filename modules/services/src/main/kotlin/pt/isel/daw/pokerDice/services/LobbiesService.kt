@@ -14,6 +14,8 @@ typealias CreateLobbyResult = Either<CreateLobbyError, Int>
 sealed class CreateLobbyError {
     data object HostAlreadyHasAnOpenLobby : CreateLobbyError()
 
+    // data object TimeToPlayInvalid : CreateLobbyError()
+
     data object HostAlreadyOnAnotherLobby : CreateLobbyError()
 
     data object InsecurePassword : CreateLobbyError()
@@ -138,7 +140,10 @@ class LobbiesService(
             if (lobbyRepo.existsByHost(hostId)) {
                 return@run failure(CreateLobbyError.HostAlreadyHasAnOpenLobby)
             }
-            println("vamos la ver onde andam")
+
+            /*if (timeToPlay != 1.minutes && timeToPlay != 2.minutes) {
+                return@run failure(CreateLobbyError.TimeToPlayInvalid)
+            }*/
 
             //  Verificar se o host já está noutro lobby
             if (host.lobbyId != null) {
@@ -146,22 +151,18 @@ class LobbiesService(
             }
 
             if (minUsers < 2) {
-                println("0")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (maxUsers < minUsers) {
-                println("1")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (minCreditToParticipate <= 0) {
-                println("2")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 
             if (maxUsers > 10) {
-                println("3")
                 return@run failure(CreateLobbyError.InvalidSettings)
             }
 

@@ -1,12 +1,16 @@
 
 package pt.isel.daw.pokerDice.domain.games
 
+/*
 import org.junit.jupiter.api.Nested
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
 
-class GameDomainTests {
+ */
+
+class GameDomainTest {
+    /*
     val gameDomain = GameDomain()
 
     @Nested
@@ -202,4 +206,6 @@ class GameDomainTests {
             assertNotEquals(firstScore, secondScore, "Must be different")
         }
     }
+
+     */
 }

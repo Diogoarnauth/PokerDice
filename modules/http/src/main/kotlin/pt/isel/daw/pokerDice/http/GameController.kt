@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
+import pt.isel.daw.pokerDice.services.EndGameError
 import pt.isel.daw.pokerDice.services.GameCreationError
 import pt.isel.daw.pokerDice.services.GameError
 import pt.isel.daw.pokerDice.services.GameService
@@ -35,7 +36,8 @@ class GameController(
                 when (res.value) {
                     is GameCreationError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     is GameCreationError.GameAlreadyRunning -> Problem.response(409, Problem.gameAlreadyRunning)
-                    is GameCreationError.NotEnoughPlayers -> Problem.response(400, Problem.notEnoughPlayers)
+                    // 422 porque viola regra de dominio
+                    is GameCreationError.NotEnoughPlayers -> Problem.response(422, Problem.notEnoughPlayers)
                     is GameCreationError.NotTheHost -> Problem.response(403, Problem.NotTheHost)
                 }
         }
@@ -121,11 +123,26 @@ class GameController(
 
     @PostMapping(GameUris.Games.END_GAME)
     fun endGame(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
-        println("DENTRO DO ENDGAME DO CONTROLLER")
-        gameService.endGame(gameId)
-        return ResponseEntity.ok(mapOf("message" to "Game ended"))
+        val res = gameService.endGame(gameId, authenticatedUser.user.id, true)
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok(mapOf("message" to "Game ended successfully"))
+
+            is Failure ->
+                when (res.value) {
+                    EndGameError.GameNotFound ->
+                        Problem.response(404, Problem.gameNotFound)
+                    EndGameError.GameAlreadyClosed ->
+                        Problem.response(409, Problem.gameAlreadyClosed)
+                    EndGameError.LobbyNotFound ->
+                        Problem.response(404, Problem.lobbyNotFound)
+                    EndGameError.YouAreNotHost ->
+                        Problem.response(409, Problem.YouAreNotHost)
+                }
+        }
     }
 
     @GetMapping(GameUris.Games.PLAYER_TURN)

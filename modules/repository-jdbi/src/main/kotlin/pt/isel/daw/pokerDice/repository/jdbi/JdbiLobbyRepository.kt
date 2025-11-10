@@ -25,24 +25,24 @@ class JdbiLobbyRepository(
         minCreditToParticipate: Int,
     ): Int? {
         val sql = """
-        INSERT INTO dbo.Lobby (
-            name, 
-            description, 
-            host_id, 
-            minPlayers, 
-            maxPlayers, 
-            rounds, 
-            min_credit_to_participate
-        ) VALUES (
-            :name, 
-            :description, 
-            :hostId, 
-            :minPlayers, 
-            :maxPlayers, 
-            :rounds, 
-            :minCreditToParticipate
-        )
-        RETURNING id
+    INSERT INTO dbo.Lobby (
+        name, 
+        description, 
+        host_id, 
+        minPlayers, 
+        maxPlayers, 
+        rounds, 
+        min_credit_to_participate
+    ) VALUES (
+        :name, 
+        :description, 
+        :hostId, 
+        :minPlayers, 
+        :maxPlayers, 
+        :rounds, 
+        :minCreditToParticipate
+    )
+    RETURNING id
     """
 
         return handle
@@ -84,7 +84,7 @@ class JdbiLobbyRepository(
                 l.minPlayers, 
                 l.maxPlayers, 
                 l.rounds, 
-                l.min_credit_to_participate,
+                l.min_credit_to_participate
                 COUNT(p.id) AS current_players
             FROM dbo.Lobby l
             LEFT JOIN dbo.Users p ON l.id = p.lobby_id

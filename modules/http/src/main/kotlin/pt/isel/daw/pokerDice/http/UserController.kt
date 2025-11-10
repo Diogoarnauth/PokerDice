@@ -201,17 +201,13 @@ class UserController(
                     .body(InviteAppOutputModel(res.value))
 
             is Failure ->
-                ResponseEntity
-                    .badRequest()
-                    .body(
-                        mapOf(
-                            "error" to
-                                when (res.value) {
-                                    CreatingAppInviteError.UserNotFound -> Problem.userNotFound
-                                    CreatingAppInviteError.CreatingInviteError -> Problem.inviteCreationError
-                                },
-                        ),
-                    )
+                when (res.value) {
+                    CreatingAppInviteError.UserNotFound ->
+                        Problem.response(404, Problem.userNotFound)
+
+                    CreatingAppInviteError.CreatingInviteError ->
+                        Problem.response(500, Problem.inviteCreationError)
+                }
         }
     }
 }

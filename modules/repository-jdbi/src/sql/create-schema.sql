@@ -21,6 +21,7 @@ CREATE TABLE dbo.lobby (
                            maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
                            rounds INT NOT NULL CHECK (rounds > 0),
                            min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10)
+
 );
 
 ALTER TABLE dbo.lobby

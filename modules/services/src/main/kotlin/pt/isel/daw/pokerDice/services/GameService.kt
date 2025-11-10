@@ -26,6 +26,17 @@ sealed class GameCreationError {
     data object NotTheHost : GameCreationError()
 }
 
+sealed class EndGameError {
+    data object GameNotFound : EndGameError()
+
+    data object GameAlreadyClosed : EndGameError()
+
+    data object LobbyNotFound : EndGameError()
+
+    data object YouAreNotHost : EndGameError()
+}
+typealias EndGameResult = Either<EndGameError, Unit> // UUID string
+
 typealias GameCreationResult = Either<GameCreationError, Int?> // UUID string
 
 sealed class GameGetByIdError {
@@ -83,16 +94,18 @@ class GameService(
                 it.lobbiesRepository.getById(lobbyId)
                     ?: return@run failure(GameCreationError.LobbyNotFound(lobbyId))
 
-            require(lobby.hostId == userId) {
-                "Only the host user can start the game"
+            if (lobby.hostId != userId) {
+                return@run failure(GameCreationError.NotTheHost)
             }
 
             if (existingGame != null) return@run failure(GameCreationError.GameAlreadyRunning)
 
-            val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
+            // Escusado porque se já entraram no lobby quer dizer que tem o dinheiro
+
+            /*val usersWithoutCredit = allUsersInLobby.filter { it.credit < lobby.minCreditToParticipate }
             require(usersWithoutCredit.isEmpty()) {
                 "Not all users have the necessary credits to participate"
-            }
+            }*/
 
             if (allUsersInLobby.count() < lobby.minUsers) {
                 return@run failure(GameCreationError.NotEnoughPlayers)
@@ -227,21 +240,48 @@ class GameService(
             success(game)
         }
 
-    fun endGame(gameId: Int) =
-        transactionManager.run {
-            val game = it.gamesRepository.getGameById(gameId) ?: return@run
+    fun endGame(
+        gameId: Int,
+        userId: Int?,
+        flagFromController: Boolean,
+    ) = transactionManager.run {
+        val game = it.gamesRepository.getGameById(gameId) ?: return@run failure(EndGameError.GameNotFound)
 
-            it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+        if (flagFromController) {
+            val lobby = it.lobbiesRepository.getById(game.lobbyId) ?: return@run failure(EndGameError.LobbyNotFound)
 
-            val winners = it.roundRepository.getGameWinner(game.id!!) // apenas calcula
-            println("Game ${game.id} ended. Winners: $winners")
-
-            if (winners.isNotEmpty()) {
-                it.gamesRepository.addGameWinners(game.id!!, winners) // aqui sim grava
+            if (lobby.hostId != userId) {
+                return@run failure(EndGameError.YouAreNotHost)
             }
 
-            it.lobbiesRepository.markLobbyAsAvailable(game.lobbyId)
+            if (game.state == Game.GameStatus.CLOSED) {
+                return@run failure(EndGameError.GameAlreadyClosed)
+            }
+
+            // verificar se havia algum round aberto para devolver o dinheiro
+            val allRounds = it.roundRepository.getRoundsByGameId(gameId)
+            for (round in allRounds) {
+                if (!round.roundOver) {
+                    val allUser = it.usersRepository.getAllUsersInLobby(lobby.id)
+                    allUser.forEach { user -> it.usersRepository.updateUserCredit(user.id, user.credit + lobby.minCreditToParticipate) }
+                    round.id?.let { roundId -> it.roundRepository.markRoundAsOver(roundId) }
+                    break
+                }
+            }
         }
+        it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+
+        val winners = it.roundRepository.getGameWinner(game.id!!) // apenas calcula
+        println("Game ${game.id} ended. Winners: $winners")
+
+        if (winners.isNotEmpty()) {
+            it.gamesRepository.addGameWinners(game.id!!, winners) // aqui sim grava
+        }
+
+        it.lobbiesRepository.markLobbyAsAvailable(game.lobbyId)
+
+        success(Unit)
+    }
 
     fun endTurn(
         gameId: Int,
@@ -343,7 +383,7 @@ class GameService(
             attributeWinnersCredits(winners, players, lobby)
 
             if (game.roundCounter++ >= lobby.rounds) {
-                endGame(game.id!!)
+                endGame(game.id!!, null, false)
                 success("Game Finished")
             } else {
                 startNewRound(currentRound, game.id!!, lobby)
@@ -395,7 +435,7 @@ class GameService(
                     // Eliminar o lobby da base de dados
                     it.lobbiesRepository.deleteLobbyById(lobby.id)
                 } else if (playersOnLobby.size < lobby.minUsers) {
-                    endGame(gameId)
+                    endGame(gameId, null, false)
                 }
 
                 return@run success("Game ended: Not enough players remaining with credits")

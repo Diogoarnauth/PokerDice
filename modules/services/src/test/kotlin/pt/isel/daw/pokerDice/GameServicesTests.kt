@@ -1,10 +1,10 @@
 package pt.isel.daw.pokerDice
 
-/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.postgresql.ds.PGSimpleDataSource
@@ -35,12 +35,9 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 import kotlin.time.Duration
- */
-class GameServicesTests {
-    /*
 
+class GameServicesTests {
     private lateinit var gameService: GameService
     private lateinit var userService: UsersService
     private lateinit var lobbyService: LobbiesService
@@ -148,7 +145,7 @@ class GameServicesTests {
         }
 
         @Test
-        fun `createGame should fail if user is not the host`() { // Failed
+        fun `createGame should fail if user is not the host`() {
             // when
             val result = gameService.createGame(userId, lobbyId)
 
@@ -214,7 +211,7 @@ class GameServicesTests {
     @Nested
     inner class GameFlowFullTests {
         @Test
-        fun `full game flow should end automatically after all rounds`() {
+        fun `full game flow should end automatically after all rounds`() { // failed
             println("=== Início do teste de fluxo completo ===")
 
             // criar game
@@ -370,7 +367,7 @@ class GameServicesTests {
         }
 
         @Test
-        fun `credits should be attributes to the winners`() {
+        fun `credits should be attributes to the winners`() { // failed
             println("=== Início do teste de fluxo completo ===")
 
             // criar game
@@ -512,6 +509,4 @@ class GameServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
-
-     */
 }

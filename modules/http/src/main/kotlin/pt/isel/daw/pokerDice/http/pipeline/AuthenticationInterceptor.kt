@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.http.pipeline
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.LoggerFactory
@@ -7,10 +8,12 @@ import org.springframework.stereotype.Component
 import org.springframework.web.method.HandlerMethod
 import org.springframework.web.servlet.HandlerInterceptor
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
+import pt.isel.daw.pokerDice.http.model.Problem
 
 @Component
 class AuthenticationInterceptor(
     private val authorizationHeaderProcessor: RequestTokenProcessor,
+    private val objectMapper: ObjectMapper,
 ) : HandlerInterceptor {
     override fun preHandle(
         request: HttpServletRequest,
@@ -26,10 +29,28 @@ class AuthenticationInterceptor(
             val user =
                 authorizationHeaderProcessor
                     .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
-            return if (user == null) {
-                response.status = 401
+            if (user == null) {
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
-                false
+
+                // Corpo uniforme com o teu Problem
+                val problem =
+                    mapOf(
+                        "error" to
+                            mapOf(
+                                "type" to Problem.tokenInvalid.type,
+                                "title" to "Unauthorized",
+                                "detail" to "Missing or invalid bearer token.",
+                            ),
+                    )
+
+                ProblemWriter.writeJson(
+                    response = response,
+                    status = HttpServletResponse.SC_UNAUTHORIZED,
+                    body = problem,
+                    mapper = objectMapper,
+                )
+
+                return false
             } else {
                 AuthenticatedUserArgumentResolver.addUserTo(user, request)
                 true

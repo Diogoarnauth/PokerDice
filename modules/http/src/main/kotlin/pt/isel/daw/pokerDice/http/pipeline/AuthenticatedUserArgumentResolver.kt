@@ -21,7 +21,7 @@ class AuthenticatedUserArgumentResolver : HandlerMethodArgumentResolver {
     ): Any? {
         val request =
             webRequest.getNativeRequest(HttpServletRequest::class.java)
-                ?: throw IllegalStateException("TODO")
+                ?: throw IllegalStateException("OLAAAAA")
         return getUserFrom(request) ?: throw IllegalStateException("TODO")
     }
 

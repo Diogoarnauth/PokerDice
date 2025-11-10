@@ -12,6 +12,10 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":services"))
 
+    implementation("com.fasterxml.jackson.core:jackson-core:2.17.1")
+    implementation("com.fasterxml.jackson.core:jackson-annotations:2.17.1")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.17.1")
+
     // To use Spring MVC and the Servlet API
     implementation("org.springframework:spring-webmvc:6.2.10")
     compileOnly("jakarta.servlet:jakarta.servlet-api:6.1.0")

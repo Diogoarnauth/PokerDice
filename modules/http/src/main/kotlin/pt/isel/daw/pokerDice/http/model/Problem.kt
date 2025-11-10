@@ -75,6 +75,9 @@ class Problem(
         val noActiveRound = Problem(URI("${BASE_URL}noActiveRound"))
         val noActiveTurn = Problem(URI("${BASE_URL}noActiveTurn"))
 
+        // token related
+        val tokenInvalid = Problem(URI("${BASE_URL}tokenInvalid"))
+
         // val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
         // val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))
         // val noUpdateProvided = Problem(URI("${BASE_URL}no-update-provided"))

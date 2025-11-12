@@ -39,24 +39,24 @@ class Problem(
         val invitationUsed = Problem(URI("${BASE_URL}invite-used")) // DONE
 
         // Lobby Related
-        val invalidLobbySettings = Problem(URI("${BASE_URL}invalid-Lobby-Settings"))
-        val lobbyAlreadyExists = Problem(URI("${BASE_URL}lobbyAlreadyExists"))
-        val HostAlreadyHasAnOpenLobby = Problem(URI("${BASE_URL}HostAlreadyHasAnOpenLobby"))
-        val HostAlreadyOnAnotherLobby = Problem(URI("${BASE_URL}HostAlreadyOnAnotherLobby"))
-        val NotEnoughCredit = Problem(URI("${BASE_URL}NotEnoughCredit"))
-        val lobbyNotFound = Problem(URI("${BASE_URL}lobbyNotFound"))
-        val alreadyInLobby = Problem(URI("${BASE_URL}AlreadyInLobby"))
-        val lobbyFull = Problem(URI("${BASE_URL}LobbyFull"))
-        val notInLobby = Problem(URI("${BASE_URL}notInLobby"))
+        val invalidLobbySettings = Problem(URI("${BASE_URL}invalid-Lobby-Settings")) // DONE
+        val lobbyAlreadyExists = Problem(URI("${BASE_URL}lobbyAlreadyExists")) // DONE
+        val HostAlreadyHasAnOpenLobby = Problem(URI("${BASE_URL}HostAlreadyHasAnOpenLobby")) // DONE
+        val HostAlreadyOnAnotherLobby = Problem(URI("${BASE_URL}HostAlreadyOnAnotherLobby")) // DONE
+        val NotEnoughCredit = Problem(URI("${BASE_URL}NotEnoughCredit")) // DONE
+        val lobbyNotFound = Problem(URI("${BASE_URL}lobbyNotFound")) // DONE
+        val alreadyInLobby = Problem(URI("${BASE_URL}AlreadyInLobby")) // DONE
+        val lobbyFull = Problem(URI("${BASE_URL}LobbyFull")) // DONE
+        val notInLobby = Problem(URI("${BASE_URL}notInLobby")) // DONE
         val onlyHostCanCloseLobby = Problem(URI("${BASE_URL}onlyHostCanCloseLobby"))
-        val LobbyAlreadyRunning = Problem(URI("${BASE_URL}LobbyAlreadyRunning"))
+        val LobbyAlreadyRunning = Problem(URI("${BASE_URL}LobbyAlreadyRunning")) // DONE
 
         // Game generic
-        val gameNotFound = Problem(URI("${BASE_URL}gameNotFound"))
-        val notFirstRoll = Problem(URI("${BASE_URL}notFirstRoll"))
-        val TurnAlreadyFinished = Problem(URI("${BASE_URL}TurnAlreadyFinished"))
-        val IsNotYouTurn = Problem(URI("${BASE_URL}IsNotYouTurn"))
-        val gameAlreadyClosed = Problem(URI("${BASE_URL}gameAlreadyClosed"))
+        val gameNotFound = Problem(URI("${BASE_URL}gameNotFound")) // DONE
+        val notFirstRoll = Problem(URI("${BASE_URL}notFirstRoll")) // DONE
+        val TurnAlreadyFinished = Problem(URI("${BASE_URL}TurnAlreadyFinished")) // DONE
+        val IsNotYouTurn = Problem(URI("${BASE_URL}IsNotYouTurn")) // DONE
+        val gameAlreadyClosed = Problem(URI("${BASE_URL}gameAlreadyClosed")) // DONE
 
         // val LobbyNotFound = Problem(URI("${BASE_URL}LobbyNotFound"))
         val YouAreNotHost = Problem(URI("${BASE_URL}YouAreNotHost"))

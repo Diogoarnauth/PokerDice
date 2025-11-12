@@ -1,3 +1,257 @@
+POST http://localhost:8080/api/lobbies/1/users
+Authorization: bearer ip52-ff4Dq4sOG61mkdb5-WHH1dGcjBzR9mBsqo3Ul0=
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+POST http://localhost:8080/api/games/1/start
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+content-length: 0
+
+<> 2025-11-07T164800.400.json
+
+###
+
+POST http://localhost:8080/api/lobbies/1/users
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-11-07T164757.409.json
+
+###
+
+POST http://localhost:8080/api/games/1/start
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+content-length: 0
+
+<> 2025-11-07T164726.400.json
+
+###
+
+POST http://localhost:8080/api/lobbies/1/users
+Authorization: bearer ip52-ff4Dq4sOG61mkdb5-WHH1dGcjBzR9mBsqo3Ul0=
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+###
+
+POST http://localhost:8080/deposit
+Content-Type: application/json
+Authorization: bearer ip52-ff4Dq4sOG61mkdb5-WHH1dGcjBzR9mBsqo3Ul0=
+Content-Length: 19
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "value": 1000
+}
+
+###
+
+POST http://localhost:8080/api/games/1/start
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+content-length: 0
+
+<> 2025-11-07T164655.400.json
+
+###
+
+POST http://localhost:8080/api/g%20ames/1/start
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+content-length: 0
+
+<> 2025-11-07T164648.404.json
+
+###
+
+POST http://localhost:8080/api/lobbies
+Content-Type: application/json
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+Content-Length: 145
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+
+{
+  "name": "Lobby Poker Dice",
+  "description": "Poker Dice",
+  "minUsers": 2,
+  "maxUsers": 6,
+  "rounds": 3,
+  "minCreditToParticipate": 100
+}
+
+###
+
+POST http://localhost:8080/api/users/token
+Content-Type: application/json
+Content-Length: 51
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Diogo",
+  "password": "Diogo123"
+}
+
+<> 2025-11-07T164541.200.json
+
+###
+
+POST http://localhost:8080/api/users
+Content-Type: application/json
+Content-Length: 127
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Diogo",
+  "name": "Diogo",
+  "age": 20,
+  "password": "Diogo123",
+  "inviteCode": "JAIjDHbrIyqmZh8WkO9ApQ=="
+}
+
+<> 2025-11-07T164531.201.json
+
+###
+
+POST http://localhost:8080/api/invite
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Accept: application/json
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+content-length: 0
+
+<> 2025-11-07T164521.201.json
+
+###
+
+POST http://localhost:8080/deposit
+Content-Type: application/json
+Authorization: bearer 2tDVUXt1d-s9zEpreg5xpCkYMO9EsbvxhKnv2X8MDjI=
+Content-Length: 19
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "value": 1000
+}
+
+<> 2025-11-07T164456.200.json
+
+###
+
+POST http://localhost:8080/api/users/token
+Content-Type: application/json
+Content-Length: 52
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Renata",
+  "password": "Renata12"
+}
+
+<> 2025-11-07T164438.200.json
+
+###
+
+POST http://localhost:8080/bootstrap
+Content-Type: application/json
+Content-Length: 85
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Renata",
+  "name": "Renata",
+  "age": 20,
+  "password": "Renata12"
+}
+
+<> 2025-11-07T164428.200.json
+
+###
+
+POST http://localhost:8080/bootstrap
+Content-Type: application/json
+Content-Length: 83
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Renata",
+  "name": "Renata",
+  "age": 20,
+  "password": "Renata"
+}
+
+<> 2025-11-07T164413.400.json
+
+###
+
+POST http://localhost:8080/api/users/token
+Content-Type: application/json
+Content-Length: 50
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Renata",
+  "password": "Renata"
+}
+
+<> 2025-11-07T164344.400.json
+
+###
+
+POST http://localhost:8080/bootstrap
+Content-Type: application/json
+Content-Length: 83
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+
+{
+  "username": "Renata",
+  "name": "Renata",
+  "age": 20,
+  "password": "Renata"
+}
+
+<> 2025-11-07T164329.400.json
+
+###
+
 POST http://localhost:8080/api/users
 Content-Type: application/json
 Content-Length: 125
@@ -460,255 +714,6 @@ Accept: */*
 content-length: 0
 
 <> 2025-10-23T113202.200.txt
-
-###
-
-POST http://localhost:8080/api/games/1/end
-Authorization: Bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113155.200.txt
-
-###
-
-POST http://localhost:8080/api/games/1/roll
-Authorization: bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113148.200.txt
-
-###
-
-POST http://localhost:8080/api/games/1/end
-Authorization: Bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113141.200.txt
-
-###
-
-POST http://localhost:8080/api/games/1/roll
-Authorization: bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113135.200.txt
-
-###
-
-POST http://localhost:8080/api/games/1/start
-Authorization: bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-###
-
-POST http://localhost:8080/api/lobbies/1/users
-Authorization: bearer R2l92P0GSh1H-HtmY9HfppXT-P4Srihkgu-Jzia6Y-U=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113119.200.json
-
-###
-
-POST http://localhost:8080/api/lobbies/1/users
-Authorization: bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113106.200.json
-
-###
-
-POST http://localhost:8080/api/games/1/start
-Authorization: bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-content-length: 0
-
-<> 2025-10-23T113058.500.json
-
-###
-
-POST http://localhost:8080/api/lobbies
-Content-Type: application/json
-Authorization: bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-Content-Length: 130
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "name": "teste",
-  "description": "asdads",
-  "minUsers": 3,
-  "maxUsers": 10,
-  "rounds": 3,
-  "minCreditToParticipate": 10
-}
-
-###
-
-POST http://localhost:8080/deposit
-Content-Type: application/json
-Authorization: bearer R2l92P0GSh1H-HtmY9HfppXT-P4Srihkgu-Jzia6Y-U=
-Content-Length: 19
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "value": 1000
-}
-
-<> 2025-10-23T113022.200.txt
-
-###
-
-POST http://localhost:8080/deposit
-Content-Type: application/json
-Authorization: bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-Content-Length: 19
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "value": 1000
-}
-
-<> 2025-10-23T113010.200.txt
-
-###
-
-POST http://localhost:8080/deposit
-Content-Type: application/json
-Authorization: bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-Content-Length: 19
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "value": 1000
-}
-
-<> 2025-10-23T112958.200.txt
-
-###
-
-POST http://localhost:8080/api/users/token
-Content-Type: application/json
-Content-Length: 149
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "username": "USER1",
-  "password": "abc123"
-}
-
-## AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-## M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-##
-
-<> 2025-10-23T112919.200.json
-
-###
-
-POST http://localhost:8080/api/users
-Content-Type: application/json
-Content-Length: 125
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "username": "USER1",
-  "name": "USER2",
-  "age": 20,
-  "password": "abc123",
-  "inviteCode": "TrvsbdTyfwPD3Q9dfEBRpQ=="
-}
-
-###
-
-POST http://localhost:8080/api/invite
-Authorization: bearer M_EYaXm2CYH-xqTY1eB5B2MOR3pnvcEwvDfaSlslMp4=
-Accept: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-content-length: 0
-
-<> 2025-10-23T112845.201.json
-
-###
-
-POST http://localhost:8080/api/users/token
-Content-Type: application/json
-Content-Length: 104
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "username": "USER2",
-  "password": "abc123"
-}
-
-## AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-##
-##
-
-<> 2025-10-23T112830.200.json
-
-###
-
-POST http://localhost:8080/api/users
-Content-Type: application/json
-Content-Length: 125
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-Accept: */*
-
-{
-  "username": "USER2",
-  "name": "USER2",
-  "age": 20,
-  "password": "abc123",
-  "inviteCode": "EADMGLmj6oTNma0TfasaSw=="
-}
-
-###
-
-POST http://localhost:8080/api/invite
-Authorization: bearer AV14q5riQv5HNbL2vlg_EWsWKfsRDrLytvYzc7jRefg=
-Accept: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-content-length: 0
-
-<> 2025-10-23T112758.201.json
 
 ###
 

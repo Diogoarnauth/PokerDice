@@ -87,7 +87,6 @@ class LobbiesService(
             if (userId == lobbiesRepo.getById(lobbyId)?.hostId) {
                 closeLobby(lobbyId, userId)
                 return@run success(Unit)
-                // TODO("VER O MELHOR MÉTODO PARA FAZER ESTA ALTERAÇÃO ENTRE CLOSE E LEAVE")
             }
 
             // Verifica se o jogador pertence a este lobby

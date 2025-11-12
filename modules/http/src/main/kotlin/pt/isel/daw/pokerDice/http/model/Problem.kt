@@ -59,21 +59,21 @@ class Problem(
         val gameAlreadyClosed = Problem(URI("${BASE_URL}gameAlreadyClosed")) // DONE
 
         // val LobbyNotFound = Problem(URI("${BASE_URL}LobbyNotFound"))
-        val YouAreNotHost = Problem(URI("${BASE_URL}YouAreNotHost"))
+        val YouAreNotHost = Problem(URI("${BASE_URL}YouAreNotHost")) // DONE
 
         // Generic
-        val anotherError = Problem(URI("${BASE_URL}anotherError"))
-        val insecurePassword = Problem(URI("${BASE_URL}insecure-password"))
+        val anotherError = Problem(URI("${BASE_URL}anotherError")) // DONE
+        val insecurePassword = Problem(URI("${BASE_URL}insecure-password")) // DONE
         val internalServerError = Problem(URI("${BASE_URL}InternalServerError"))
-        val invalidRequestContent = Problem(URI("${BASE_URL}invalid-content"))
+        val invalidRequestContent = Problem(URI("${BASE_URL}invalid-content")) // DONE
 
-        val gameAlreadyRunning = Problem(URI("${BASE_URL}game-already-running"))
-        val notEnoughPlayers = Problem(URI("${BASE_URL}not-enough-players"))
-        val NotTheHost = Problem(URI("${BASE_URL}NotTheHost"))
+        val gameAlreadyRunning = Problem(URI("${BASE_URL}game-already-running")) // DONE
+        val notEnoughPlayers = Problem(URI("${BASE_URL}not-enough-players")) // DONE
+        val NotTheHost = Problem(URI("${BASE_URL}NotTheHost")) // DONE
 
         // Round Related
-        val noActiveRound = Problem(URI("${BASE_URL}noActiveRound"))
-        val noActiveTurn = Problem(URI("${BASE_URL}noActiveTurn"))
+        val noActiveRound = Problem(URI("${BASE_URL}noActiveRound")) // DONE
+        val noActiveTurn = Problem(URI("${BASE_URL}noActiveTurn")) // DONE
 
         // token related
         val tokenInvalid = Problem(URI("${BASE_URL}tokenInvalid")) // DONE

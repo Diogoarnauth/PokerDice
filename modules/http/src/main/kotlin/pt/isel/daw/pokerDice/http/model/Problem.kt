@@ -24,19 +24,19 @@ class Problem(
         val userAlreadyInvited = Problem(URI("${BASE_URL}user-already-invited"))
         val todo = Problem(URI("${BASE_URL})TODO")) // TODO(ACERTAR OS ERROS)
         val dontHavePermission = Problem(URI("${BASE_URL}permission-denied"))
-        val userNotFound = Problem(URI("${BASE_URL}user-not-found"))
-        val userAlreadyExists = Problem(URI("${BASE_URL}user-already-exists"))
-        val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid"))
-        val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized"))
-        val badDeposit = Problem(URI("${BASE_URL}bad-deposit"))
-        val AdminAlreadyExists = Problem(URI("${BASE_URL}AdminAlreadyExists"))
-        val InvalidData = Problem(URI("${BASE_URL}InvalidData"))
+        val userNotFound = Problem(URI("${BASE_URL}user-not-found")) // DONE
+        val userAlreadyExists = Problem(URI("${BASE_URL}user-already-exists")) // DONE
+        val userOrPasswordAreInvalid = Problem(URI("${BASE_URL}user-or-password-are-invalid")) // DONE
+        val userNotAuthorized = Problem(URI("${BASE_URL}user-not-authorized")) // DONE
+        val badDeposit = Problem(URI("${BASE_URL}bad-deposit")) // DONE
+        val AdminAlreadyExists = Problem(URI("${BASE_URL}AdminAlreadyExists")) // DONE
+        val InvalidData = Problem(URI("${BASE_URL}InvalidData")) // DONE
 
         // Invitation Related
-        val invitationDontExist = Problem(URI("${BASE_URL}invite-dont-exist"))
-        val inviteCreationError = Problem(URI("${BASE_URL}invite-creation-error"))
-        val invitationExpired = Problem(URI("${BASE_URL}invite-expired"))
-        val invitationUsed = Problem(URI("${BASE_URL}invite-used"))
+        val invitationDontExist = Problem(URI("${BASE_URL}invite-dont-exist")) // DONE
+        val inviteCreationError = Problem(URI("${BASE_URL}invite-creation-error")) // DONE
+        val invitationExpired = Problem(URI("${BASE_URL}invite-expired")) // DONE
+        val invitationUsed = Problem(URI("${BASE_URL}invite-used")) // DONE
 
         // Lobby Related
         val invalidLobbySettings = Problem(URI("${BASE_URL}invalid-Lobby-Settings"))
@@ -76,7 +76,7 @@ class Problem(
         val noActiveTurn = Problem(URI("${BASE_URL}noActiveTurn"))
 
         // token related
-        val tokenInvalid = Problem(URI("${BASE_URL}tokenInvalid"))
+        val tokenInvalid = Problem(URI("${BASE_URL}tokenInvalid")) // DONE
 
         // val userNotInvited = Problem(URI("${BASE_URL}user-not-invited"))
         // val userNotInLobby = Problem(URI("${BASE_URL}user-not-in-channel"))

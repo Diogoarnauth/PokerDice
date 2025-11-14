@@ -1,0 +1,101 @@
+/* Container and common styles */
+.details-container {
+@apply p-6;
+}
+
+.details-title {
+@apply text-2xl font-bold text-gray-900 mb-6;
+}
+
+/* Error message */
+.details-error {
+@apply mb-4 p-4 bg-red-50 text-red-500 rounded-lg;
+}
+
+/* Member list */
+.members-list {
+@apply space-y-2 mb-6;
+}
+
+.member-item {
+@apply flex items-center p-3 bg-gray-50 rounded-lg;
+}
+
+.member-avatar {
+@apply w-10 h-10 rounded-full bg-purple-300 flex items-center justify-center text-white font-semibold;
+}
+
+.member-name {
+@apply ml-3 text-gray-700;
+}
+
+/* Button groups */
+.button-group {
+@apply flex flex-wrap gap-3;
+}
+
+.button-primary {
+@apply px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition;
+}
+
+.button-primary-disabled {
+    @apply px-4 py-2 bg-gray-300 text-white rounded-lg cursor-not-allowed;
+}
+.button-danger {
+@apply px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition;
+}
+
+.button-secondary {
+    @apply px-4 py-2 bg-white text-gray-600 border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition;
+}
+
+/* Navigation buttons */
+.nav-buttons {
+@apply flex justify-center gap-2 mt-2;
+}
+
+.nav-button {
+@apply flex items-center gap-1 px-4 py-2 rounded-lg border transition-all duration-200;
+}
+
+.nav-button-disabled {
+@apply bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed;
+}
+
+.nav-button-enabled {
+@apply bg-white text-purple-600 border-purple-200 hover:bg-purple-50 hover:border-purple-300;
+}
+
+/* Forms */
+.form-container {
+@apply space-y-6;
+}
+
+.form-group {
+@apply space-y-2;
+}
+
+.form-label {
+@apply block text-sm font-medium text-gray-700;
+}
+
+.form-input {
+@apply mt-1 block w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-purple-400;
+}
+
+.form-checkbox-group {
+@apply flex items-center gap-2;
+}
+
+.form-checkbox {
+@apply rounded border-gray-300 text-purple-500 focus:ring-purple-400;
+}
+
+/* Suggestions dropdown */
+.suggestions-container {
+@apply absolute w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10;
+}
+
+.suggestion-item {
+@apply px-4 py-2 hover:bg-purple-50 cursor-pointer;
+}

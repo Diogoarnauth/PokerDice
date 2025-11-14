@@ -1,0 +1,62 @@
+.create-channel-container {
+    @apply min-h-screen flex items-center justify-center bg-gray-50 p-4;
+  }
+  
+  .create-channel-wrapper {
+    @apply w-full max-w-md;
+  }
+  
+  .create-channel-form {
+    @apply bg-white rounded-2xl shadow-sm p-6 space-y-6;
+  }
+  
+  .create-channel-header {
+    @apply text-center;
+  }
+  
+  .create-channel-title {
+    @apply text-2xl font-bold text-gray-800;
+  }
+  
+  .create-channel-subtitle {
+    @apply mt-2 text-sm text-gray-500;
+  }
+  
+  .form-fields {
+    @apply space-y-4;
+  }
+  
+  .form-field {
+    @apply space-y-1;
+  }
+  
+  .form-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+  
+  .input-wrapper {
+    @apply relative;
+  }
+  
+  .input-hash {
+    @apply absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400;
+  }
+  
+  .channel-name-input {
+    @apply w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg
+           text-sm placeholder-gray-400
+           focus:outline-none focus:ring-2 focus:ring-purple-500/20
+           focus:border-purple-500 transition-all;
+  }
+  
+  .channel-type-select {
+    @apply w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg
+           text-sm text-gray-700
+           focus:outline-none focus:ring-2 focus:ring-purple-500/20
+           focus:border-purple-500 transition-all;
+  }
+  
+  .create-button {
+    @apply w-full py-2.5 bg-purple-600 text-white rounded-lg text-sm font-medium
+           hover:bg-purple-700 transition-colors flex items-center justify-center gap-2;
+  }

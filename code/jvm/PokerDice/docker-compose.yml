@@ -1,0 +1,12 @@
+services:
+  db-tests:
+    container_name: db-tests
+    build:
+      context: modules/repository-jdbi
+      dockerfile: modules/repository-jdbi/tests/Dockerfile-db-test
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=db
+    ports:
+      - 5432:5432

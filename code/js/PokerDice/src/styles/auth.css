@@ -1,0 +1,67 @@
+.auth-container {
+@apply w-full;
+}
+
+.auth-title {
+@apply text-2xl font-bold text-gray-800 mb-8 text-center;
+}
+
+.auth-form-group {
+@apply space-y-6;
+}
+
+.auth-label {
+@apply block text-sm font-medium text-gray-700;
+}
+
+.auth-input {
+@apply mt-1 w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent;
+}
+
+.auth-password-container {
+@apply relative;
+}
+
+.auth-toggle-password {
+@apply absolute right-3 top-1/2 transform -translate-y-1/2;
+}
+
+.auth-submit {
+@apply w-full py-3 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:opacity-90 transition duration-300;
+}
+
+.auth-submit[disabled] {
+@apply opacity-50 cursor-not-allowed;
+}
+
+.auth-links {
+@apply mt-6 text-center;
+}
+
+.auth-text {
+@apply text-sm text-gray-600;
+}
+
+.auth-link {
+@apply text-purple-600 hover:text-purple-500 font-medium;
+}
+
+.auth-error {
+@apply mt-4 text-red-500 text-center text-sm;
+}
+
+.auth-criteria-list {
+@apply mt-2 space-y-1 text-sm text-gray-600;
+}
+
+.auth-criteria-item {
+@apply flex items-center;
+}
+
+.auth-criteria-success {
+@apply text-green-600;
+}
+
+.auth-criteria-error {
+@apply text-red-600;
+}

@@ -8,6 +8,7 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import java.time.Duration
 
 typealias CreateLobbyResult = Either<CreateLobbyError, Int>
 
@@ -17,6 +18,8 @@ sealed class CreateLobbyError {
     // data object TimeToPlayInvalid : CreateLobbyError()
 
     data object HostAlreadyOnAnotherLobby : CreateLobbyError()
+
+    data object TurnTimeInvalid : CreateLobbyError()
 
     data object InsecurePassword : CreateLobbyError()
 
@@ -125,6 +128,7 @@ class LobbiesService(
         maxUsers: Int,
         rounds: Int,
         minCreditToParticipate: Int,
+        turnTime: Duration,
     ): CreateLobbyResult {
         return transactionManager.run {
             val lobbyRepo = it.lobbiesRepository
@@ -170,6 +174,15 @@ class LobbiesService(
                 return@run failure(CreateLobbyError.NotEnoughCredit)
             }
 
+            if (turnTime != Duration.ofMinutes(1) &&
+                turnTime != Duration.ofMinutes(2) &&
+                turnTime != Duration.ofMinutes(3) &&
+                turnTime != Duration.ofMinutes(4) &&
+                turnTime != Duration.ofMinutes(5)
+            ) {
+                return@run failure(CreateLobbyError.TurnTimeInvalid)
+            }
+
                 /* Verificar segurança da password se for privado
                 if (isPrivate && (passwordValidationInfo == null || passwordValidationInfo.validationInfo.length < 8)) {
                     return@run failure(CreateLobbyError.InsecurePassword)
@@ -185,6 +198,7 @@ class LobbiesService(
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // UPDATE LOBBY ID FOR USER

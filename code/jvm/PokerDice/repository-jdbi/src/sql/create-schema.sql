@@ -20,7 +20,8 @@ CREATE TABLE dbo.lobby (
                            minPlayers INT NOT NULL CHECK (minPlayers >= 2),
                            maxPlayers INT NOT NULL CHECK (maxPlayers >= minPlayers),
                            rounds INT NOT NULL CHECK (rounds > 0),
-                           min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10)
+                           min_credit_to_participate INT NOT NULL DEFAULT 10 CHECK (min_credit_to_participate >= 10),
+                           turn_time INTERVAL NOT NULL CHECK (turn_time > INTERVAL '0 seconds')
 
 );
 

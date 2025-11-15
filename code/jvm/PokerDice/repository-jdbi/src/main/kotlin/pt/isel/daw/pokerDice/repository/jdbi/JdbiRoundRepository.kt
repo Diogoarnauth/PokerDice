@@ -39,6 +39,14 @@ roundOver BOOLEAN DEFAULT FALSE,
 round_number INT NOT NULL
 */
 
+    override fun getRoundById(roundId: Int): Round? {
+        return handle
+            .createQuery("SELECT * FROM dbo.round WHERE id = :roundId")
+            .bind("roundId", roundId)
+            .mapTo<Round>()
+            .firstOrNull() // Retorna a primeira rodada ou null se não encontrar
+    }
+
     override fun createRound(
         gameId: Int,
         round: Round,

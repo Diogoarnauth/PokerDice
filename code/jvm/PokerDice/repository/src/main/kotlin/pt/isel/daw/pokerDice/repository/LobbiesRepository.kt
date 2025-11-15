@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.repository
 
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
+import java.time.Duration
 
 interface LobbiesRepository {
     fun getLobbiesNotFull(): List<Lobby>
@@ -19,6 +20,7 @@ interface LobbiesRepository {
         maxPlayers: Int,
         rounds: Int,
         minCreditToParticipate: Int,
+        turnTime: Duration,
     ): Int?
 
     fun markLobbyAsAvailable(lobbyId: Int)

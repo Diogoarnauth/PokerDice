@@ -50,6 +50,7 @@ class Problem(
         val notInLobby = Problem(URI("${BASE_URL}notInLobby")) // DONE
         val onlyHostCanCloseLobby = Problem(URI("${BASE_URL}onlyHostCanCloseLobby"))
         val LobbyAlreadyRunning = Problem(URI("${BASE_URL}LobbyAlreadyRunning")) // DONE
+        val TurnTimeInvalid = Problem(URI("${BASE_URL}TurnTimeInvalid"))
 
         // Game generic
         val gameNotFound = Problem(URI("${BASE_URL}gameNotFound")) // DONE

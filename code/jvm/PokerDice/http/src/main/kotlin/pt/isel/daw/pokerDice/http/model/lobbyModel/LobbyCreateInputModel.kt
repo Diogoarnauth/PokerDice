@@ -1,5 +1,7 @@
 package pt.isel.daw.pokerDice.http.model.lobbyModel
 
+import java.time.Duration
+
 class LobbyCreateInputModel(
     val name: String,
     val description: String,
@@ -8,4 +10,5 @@ class LobbyCreateInputModel(
     val maxUsers: Int,
     val rounds: Int,
     val minCreditToParticipate: Int,
+    val turnTime: Duration,
 )

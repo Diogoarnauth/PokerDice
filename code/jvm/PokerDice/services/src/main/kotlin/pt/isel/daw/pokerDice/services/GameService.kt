@@ -52,6 +52,8 @@ sealed class GameError {
 
     data object NotFirstRoll : GameError()
 
+    data object RoundDontExists : GameError()
+
     data object LobbyDontFoundByGame : GameError()
 
     data class NoActiveRound(

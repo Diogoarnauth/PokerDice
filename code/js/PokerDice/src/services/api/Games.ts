@@ -1,0 +1,70 @@
+import { fetchWrapper, Result } from "./utils"
+import { RequestUri } from "./RequestUri"
+
+export interface RollResult {
+  dice: string[] // backend devolve "A", "K", "10", etc
+}
+
+export interface RerollResult {
+  dice: string[]
+}
+
+export const gameService = {
+
+  // POST /games/{lobbyId}/start
+  startGame(lobbyId: number): Promise<Result<any>> {
+    return fetchWrapper(RequestUri.games.start(lobbyId), {
+      method: "POST",
+    })
+  },
+
+  // POST /games/{lobbyId}/roll
+  roll(lobbyId: number): Promise<Result<RollResult>> {
+    return fetchWrapper(RequestUri.games.roll(lobbyId), {
+      method: "POST",
+    })
+  },
+
+  // POST /games/{lobbyId}/reroll
+  reroll(lobbyId: number, diceMask: number[]): Promise<Result<RerollResult>> {
+    return fetchWrapper(RequestUri.games.reroll(lobbyId), {
+      method: "POST",
+      body: JSON.stringify(diceMask),
+    })
+  },
+
+  // POST /games/{gameId}/end
+  endTurn(gameId: number): Promise<Result<any>> {
+    return fetchWrapper(RequestUri.games.endTurn(gameId), {
+      method: "POST",
+    })
+  },
+
+  // GET /games/{gameId}
+  getById(gameId: number): Promise<Result<any>> {
+    return fetchWrapper(RequestUri.games.byId(gameId), {
+      method: "GET",
+    })
+  },
+
+  // POST /games/{gameId}/end-game
+  endGame(gameId: number): Promise<Result<any>> {
+    return fetchWrapper(RequestUri.games.endGame(gameId), {
+      method: "POST",
+    })
+  },
+
+  // GET /games/{gameId}/player-turn
+  getPlayerTurn(gameId: number): Promise<Result<string>> {
+    return fetchWrapper(RequestUri.games.playerTurn(gameId), {
+      method: "GET",
+    })
+  },
+
+  // POST /games/{gameId}/leave
+  leave(gameId: number): Promise<Result<any>> {
+    return fetchWrapper(RequestUri.games.leave(gameId), {
+      method: "POST",
+    })
+  },
+}

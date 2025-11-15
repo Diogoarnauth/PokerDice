@@ -30,7 +30,7 @@ import pt.isel.daw.pokerDice.utils.Success
 class UserController(
     private val userService: UsersService,
 ) {
-    @PostMapping("/bootstrap")
+    @PostMapping(Uris.Users.BOOTSTRAP)
     fun bootstrapAdmin(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
@@ -63,7 +63,7 @@ class UserController(
         }
     }
 
-    @PostMapping("/deposit")
+    @PostMapping(Uris.Users.DEPOSIT)
     fun deposit(
         @RequestBody input: DepositInputModel,
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
@@ -88,7 +88,7 @@ class UserController(
         }
     }
 
-    @PostMapping(UserUris.Users.CREATE)
+    @PostMapping(Uris.Users.CREATE)
     fun create(
         @RequestBody input: UserCreateInputModel,
     ): ResponseEntity<*> {
@@ -97,7 +97,7 @@ class UserController(
             is Success ->
                 ResponseEntity
                     .status(201)
-                    .body(mapOf("id" to res.value, "location" to UserUris.Users.byId(res.value).toASCIIString()))
+                    .body(mapOf("id" to res.value, "location" to Uris.Users.byId(res.value).toASCIIString()))
 
             is Failure ->
                 ResponseEntity.status(400).body(
@@ -121,7 +121,7 @@ class UserController(
         }
     }
 
-    @PostMapping(UserUris.Users.TOKEN)
+    @PostMapping(Uris.Users.TOKEN)
     fun token(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
@@ -151,7 +151,7 @@ class UserController(
         }
     }
 
-    @GetMapping(UserUris.Users.GET_BY_ID)
+    @GetMapping(Uris.Users.GET_BY_ID)
     fun getById(
         @PathVariable id: Int,
     ): ResponseEntity<*> {
@@ -189,7 +189,7 @@ class UserController(
         }
     }
 
-    @PostMapping(UserUris.Users.INVITE)
+    @PostMapping(Uris.Users.INVITE)
     fun appInvite(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
     ): ResponseEntity<*> {

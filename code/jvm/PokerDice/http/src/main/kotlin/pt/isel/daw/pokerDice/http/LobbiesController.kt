@@ -24,14 +24,14 @@ class LobbiesController(
     private val lobbiesServices: LobbiesService,
 ) {
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
-    @GetMapping(LobbyUris.Lobbies.LIST)
+    @GetMapping(Uris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
         val lista = lobbiesServices.getVisibleLobbies()
         return ResponseEntity.ok(lista)
     }
 
     // POST /lobbies → cria lobby (auth requerido)
-    @PostMapping(LobbyUris.Lobbies.CREATE)
+    @PostMapping(Uris.Lobbies.CREATE)
     fun create(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @RequestBody body: LobbyCreateInputModel,
@@ -51,7 +51,7 @@ class LobbiesController(
             is Success ->
                 ResponseEntity
                     .status(201)
-                    .header("Location", LobbyUris.Lobbies.BY_ID.replace("{id}", res.value.toString()))
+                    .header("Location", Uris.Lobbies.BY_ID.replace("{id}", res.value.toString()))
                     .build<Unit>()
 
             is Failure ->
@@ -67,7 +67,7 @@ class LobbiesController(
     }
 
     // GET /lobbies/{id} → detalhes do lobby
-    @GetMapping(LobbyUris.Lobbies.BY_ID)
+    @GetMapping(Uris.Lobbies.BY_ID)
     fun getById(
         @PathVariable id: String,
     ): ResponseEntity<*> {
@@ -99,7 +99,7 @@ class LobbiesController(
     }
 
     // POST /lobbies/{id}/users → entrar no lobby
-    @PostMapping(LobbyUris.Lobbies.JOIN)
+    @PostMapping(Uris.Lobbies.JOIN)
     fun join(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable id: String,
@@ -125,7 +125,7 @@ class LobbiesController(
     }
 
     // DELETE /lobbies/{id}/leave → sair do lobby
-    @DeleteMapping(LobbyUris.Lobbies.LEAVE_ME)
+    @DeleteMapping(Uris.Lobbies.LEAVE_ME)
     fun leave(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable id: String,

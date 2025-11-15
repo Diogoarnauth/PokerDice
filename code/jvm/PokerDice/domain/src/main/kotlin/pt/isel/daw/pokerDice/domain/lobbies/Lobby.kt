@@ -1,4 +1,5 @@
 package pt.isel.daw.pokerDice.domain.lobbies
+import java.time.Duration
 
 // Lobby interno
 data class Lobby(
@@ -11,4 +12,5 @@ data class Lobby(
     val rounds: Int,
     val minCreditToParticipate: Int,
     var isRunning: Boolean = false,
+    val turnTime: Duration,
 )

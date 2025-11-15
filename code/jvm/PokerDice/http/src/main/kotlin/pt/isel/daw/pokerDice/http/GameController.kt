@@ -20,7 +20,7 @@ import pt.isel.daw.pokerDice.utils.Success
 class GameController(
     private val gameService: GameService,
 ) {
-    @PostMapping(GameUris.Games.START)
+    @PostMapping(Uris.Games.START)
     fun startGame(
         @PathVariable("lobbyId") lobbyId: Int,
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
@@ -30,7 +30,7 @@ class GameController(
             is Success ->
                 ResponseEntity
                     .status(201)
-                    .header("Location", GameUris.Games.BY_ID.replace("{gameId}", res.value.toString()))
+                    .header("Location", Uris.Games.BY_ID.replace("{gameId}", res.value.toString()))
                     .build<Unit>()
             is Failure ->
                 when (res.value) {
@@ -43,7 +43,7 @@ class GameController(
         }
     }
 
-    @PostMapping(GameUris.Games.ROLL)
+    @PostMapping(Uris.Games.ROLL)
     fun rollDice(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable lobbyId: Int,
@@ -65,7 +65,7 @@ class GameController(
         }
     }
 
-    @PostMapping(GameUris.Games.REROLL)
+    @PostMapping(Uris.Games.REROLL)
     fun rerollDice(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable lobbyId: Int,
@@ -87,7 +87,7 @@ class GameController(
         }
     }
 
-    @PostMapping(GameUris.Games.END_TURN)
+    @PostMapping(Uris.Games.END_TURN)
     fun endTurn(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
@@ -110,7 +110,7 @@ class GameController(
         }
     }
 
-    @GetMapping(GameUris.Games.BY_ID)
+    @GetMapping(Uris.Games.BY_ID)
     fun getById(
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {
@@ -121,7 +121,7 @@ class GameController(
         }
     }
 
-    @PostMapping(GameUris.Games.END_GAME)
+    @PostMapping(Uris.Games.END_GAME)
     fun endGame(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @PathVariable gameId: Int,
@@ -145,7 +145,7 @@ class GameController(
         }
     }
 
-    @GetMapping(GameUris.Games.PLAYER_TURN)
+    @GetMapping(Uris.Games.PLAYER_TURN)
     fun whichPlayerTurn(
         @PathVariable gameId: Int,
     ): ResponseEntity<*> {

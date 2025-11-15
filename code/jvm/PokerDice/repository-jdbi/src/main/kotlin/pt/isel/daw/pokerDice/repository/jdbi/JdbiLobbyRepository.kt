@@ -4,6 +4,7 @@ import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
+import java.time.Duration
 
 class JdbiLobbyRepository(
     private val handle: Handle,
@@ -23,6 +24,7 @@ class JdbiLobbyRepository(
         maxPlayers: Int,
         rounds: Int,
         minCreditToParticipate: Int,
+        turnTime: Duration,
     ): Int? {
         val sql = """
     INSERT INTO dbo.Lobby (
@@ -32,7 +34,8 @@ class JdbiLobbyRepository(
         minPlayers, 
         maxPlayers, 
         rounds, 
-        min_credit_to_participate
+        min_credit_to_participate,
+        turnTime
     ) VALUES (
         :name, 
         :description, 
@@ -40,7 +43,8 @@ class JdbiLobbyRepository(
         :minPlayers, 
         :maxPlayers, 
         :rounds, 
-        :minCreditToParticipate
+        :minCreditToParticipate,
+        :turnTime
     )
     RETURNING id
     """
@@ -54,6 +58,7 @@ class JdbiLobbyRepository(
             .bind("maxPlayers", maxPlayers)
             .bind("rounds", rounds)
             .bind("minCreditToParticipate", minCreditToParticipate)
+            .bind("turnTime", turnTime.toString())
             .executeAndReturnGeneratedKeys("id")
             .mapTo<Int>()
             .singleOrNull()
@@ -84,7 +89,8 @@ class JdbiLobbyRepository(
                 l.minPlayers, 
                 l.maxPlayers, 
                 l.rounds, 
-                l.min_credit_to_participate
+                l.min_credit_to_participate,
+                l.turnTime
                 COUNT(p.id) AS current_players
             FROM dbo.Lobby l
             LEFT JOIN dbo.Users p ON l.id = p.lobby_id
@@ -95,7 +101,8 @@ class JdbiLobbyRepository(
                 l.minPlayers, 
                 l.maxPlayers, 
                 l.rounds, 
-                l.min_credit_to_participate
+                l.min_credit_to_participate,
+                l.turnTime
             HAVING COUNT(p.id) < l.maxPlayers
             """,
             ).map { rs, _ ->
@@ -109,6 +116,7 @@ class JdbiLobbyRepository(
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
+                    turnTime = Duration.parse(rs.getString("turnTime")),
                     isRunning = false,
                     // valor default
                 )
@@ -149,6 +157,7 @@ class JdbiLobbyRepository(
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
+                    turnTime = Duration.parse(rs.getString("turnTime")),
                     isRunning = false,
                 )
             }.singleOrNull()
@@ -165,6 +174,7 @@ private data class LobbyRow(
     val max_players: Int,
     val rounds: Int,
     val min_credit_to_participate: Int,
+    val turnTime: Duration,
     val current_players: Int,
 ) {
     fun toLobby() =
@@ -177,5 +187,6 @@ private data class LobbyRow(
             maxUsers = max_players,
             rounds = rounds,
             minCreditToParticipate = min_credit_to_participate,
+            turnTime = turnTime,
         )
 }

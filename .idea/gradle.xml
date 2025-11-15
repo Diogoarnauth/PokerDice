@@ -18,6 +18,20 @@
           </set>
         </option>
       </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/code/jvm/PokerDice" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/domain" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/host" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/http" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/repository" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/repository-jdbi" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/services" />
+          </set>
+        </option>
+      </GradleProjectSettings>
     </option>
   </component>
 </project>

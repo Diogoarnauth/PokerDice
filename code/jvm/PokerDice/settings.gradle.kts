@@ -7,28 +7,28 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "12.1.1" apply false
 }
 
-rootProject.name = "DAW_Project"
+rootProject.name = "PokerDice"
 
 // The host module - application configuration and entry-point
 include("host")
-project(":host").projectDir = file("modules/host")
+// project(":host").projectDir = file("host")
 
 // The domain module
 include("domain")
-project(":domain").projectDir = file("modules/domain")
+// project(":domain").projectDir = file("domain")
 
 // The HTTP module, with the HTTP interface
 include("http")
-project(":http").projectDir = file("modules/http")
+// project(":http").projectDir = file("http")
 
 // The services module
 include("services")
-project(":services").projectDir = file("modules/services")
+// project(":services").projectDir = file("services")
 
 // The repository module, with the repository interfaces
 include("repository")
-project(":repository").projectDir = file("modules/repository")
+// project(":repository").projectDir = file("repository")
 
 // The repository-jdbi module, with the JDBC/JDBI based repository implementation
 include("repository-jdbi")
-project(":repository-jdbi").projectDir = file("modules/repository-jdbi")
+// project(":repository-jdbi").projectDir = file("repository-jdbi")

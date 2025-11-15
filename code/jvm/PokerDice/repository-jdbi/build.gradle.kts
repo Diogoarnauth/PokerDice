@@ -53,6 +53,7 @@ kotlin {
 val composeFileDir: Directory by parent!!.extra
 println("composeFileDir - $composeFileDir")
 val dockerComposePath = composeFileDir.file("docker-compose.yml").toString()
+println("dockerComposePath $dockerComposePath")
 val dockerExe =
     when (
         org.gradle.internal.os.OperatingSystem

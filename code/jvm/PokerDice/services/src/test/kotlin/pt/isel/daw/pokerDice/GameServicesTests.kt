@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice
 
+/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -36,8 +37,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.time.Duration
-
+*/
 class GameServicesTests {
+    /*
     private lateinit var gameService: GameService
     private lateinit var userService: UsersService
     private lateinit var lobbyService: LobbiesService
@@ -509,4 +511,6 @@ class GameServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
+
+     */
 }

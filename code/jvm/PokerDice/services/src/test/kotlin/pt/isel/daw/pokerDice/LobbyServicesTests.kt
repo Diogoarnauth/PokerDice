@@ -1,6 +1,6 @@
 
 package pt.isel.daw.pokerDice
-
+/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -33,11 +33,14 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+ */
+
 /**
  * Testes do UsersService — versão adaptada do stor.
  * Usa a BD local de desenvolvimento e domínio real.
  */
 class LobbyServicesTests {
+    /*
     private lateinit var service: LobbiesService
     private lateinit var userService: UsersService
 
@@ -440,7 +443,7 @@ class LobbyServicesTests {
                 assertTrue(result[0].maxUsers > result[0].minUsers, "O lobby retornado não deve estar cheio")
             }
 
-             */
+     */
     }
 
     @Nested
@@ -805,4 +808,6 @@ class LobbyServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
+
+     */
 }

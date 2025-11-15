@@ -35,7 +35,7 @@ function Footer() {
     return (
         <footer className="mt-auto">
             <p className="text-gray-600 text-sm">Created by:</p>
-            <Contributors names={["Miguel Tavares", "Diogo Resende", "Francisco Encarnação"]} />
+            <Contributors names={["Diogo Leitão", "Renata Catanheira", "Humberto Carvalho"]} />
         </footer>
     );
 }

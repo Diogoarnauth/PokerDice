@@ -1,4 +1,4 @@
-import { fetchWrapper } from "./utils"
+import {fetchWrapper, Result} from "./utils"
 import { RequestUri } from "./RequestUri"
 
 export const settingsService = {
@@ -9,11 +9,11 @@ export const settingsService = {
   },
 
   // criar invite (se o teu backend realmente o usar)
-  createInvite() {
-    return fetchWrapper(RequestUri.user.invite, { method: "POST" })
-  },
+    createInvite(): Promise<Result<{ inviteCode: string }>> {
+        return fetchWrapper<{ inviteCode: string }>(RequestUri.user.invite, { method: "POST" });
+    },
 
-  // depositar créditos
+    // depositar créditos
   deposit(amount: number) {
     return fetchWrapper(RequestUri.user.deposit, {
       method: "POST",

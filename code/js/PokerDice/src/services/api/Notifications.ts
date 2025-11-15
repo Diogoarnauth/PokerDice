@@ -1,18 +1,16 @@
 import { RequestUri } from "./RequestUri";
-import { fetchWrapper, Result} from './utils';
+import { fetchWrapper, Result } from './utils';
 
 export const notificationsService = {
-    joinChannel: (channelId: number): Promise<Result<any>> => {
-        return fetchWrapper(RequestUri.channels.join(channelId),{
+    joinLobby: (lobbyId: number): Promise<Result<any>> => {
+        return fetchWrapper(RequestUri.lobbies.join(lobbyId), {
             method: 'POST',
-        })
+        });
     },
 
-
-    declineChannel: (channelId: number): Promise<Result<any>> => {
-        return fetchWrapper(RequestUri.channels.decline(channelId),
-        {
-            method: 'PATCH',
-        })
-    }
+    declineLobby: (lobbyId: number): Promise<Result<any>> => {
+        return fetchWrapper(RequestUri.lobbies.leave(lobbyId), {
+            method: 'PATCH', // ou DELETE, dependendo do backend
+        });
+    },
 }

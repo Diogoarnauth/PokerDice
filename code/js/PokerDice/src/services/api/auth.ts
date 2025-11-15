@@ -15,7 +15,7 @@ export const authService = {
     },
 
     signup(credentials: LoginCredentials): Promise<Result<any>> {
-        return fetchWrapper(RequestUri.user.signup, {
+        return fetchWrapper(RequestUri.user.register, {
             method: 'POST',
             body: JSON.stringify(credentials)
         });

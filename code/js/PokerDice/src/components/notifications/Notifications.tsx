@@ -65,7 +65,7 @@ function unexpectedAction(action: Action, state: State) {
 }
 
 export function Notifications() {
-    const fetchState = useFetch(RequestUri.notifications.getIvites);
+    const fetchState = useFetch(RequestUri.lobbies.list)
     const [state, dispatch] = useReducer(reducer, { type: 'loading', payload: {channels: []} });
 
     useMessageNotifications(dispatch)
@@ -90,7 +90,7 @@ export function Notifications() {
 
     const handleJoin = async (notificationId: number) => {
         dispatch({ type: 'start' });
-        const result = await notificationsService.joinChannel(notificationId);
+        const result = await notificationsService.joinLobby(notificationId);
         if (! isOk(result)) {
             dispatch({ type: 'setError', error: result.error });
         }else{
@@ -101,7 +101,7 @@ export function Notifications() {
 
     const handleDecline = async (notificationId: number) => {
         dispatch({ type: 'start' });
-        const result = await notificationsService.declineChannel(notificationId)
+        const result = await notificationsService.declineLobby(notificationId)
         if (!isOk(result)) {
             dispatch({ type: 'setError', error: result.error });
         }else{

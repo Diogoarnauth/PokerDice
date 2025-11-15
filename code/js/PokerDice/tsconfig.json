@@ -2,6 +2,10 @@
   "compilerOptions": {
     "noImplicitAny": false,
     "jsx": "react",
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "target": "es2017",
+    "lib": ["dom", "es2017"],
+    "moduleResolution": "node"
   }
 }
+

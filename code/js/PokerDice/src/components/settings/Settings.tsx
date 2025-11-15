@@ -106,13 +106,17 @@ export function Settings() {
 
     const handleCreateAppInvite = async () => {
         dispatch({type: 'load'})
-        const result = await settingsService.createAppInvite()
-        if (isOk(result)) {
-            dispatch({type: 'showAppInviteModal', appInviteCode: result.value})
+        const result = await settingsService.createInvite();
+
+        if (isOk(result) && result.value && typeof result.value.inviteCode === "string") {
+            dispatch({ type: "showAppInviteModal", appInviteCode: result.value });
+        } else if (!isOk(result) && 'error' in result) {
+            dispatch({ type: "setError", error: result.error });
         } else {
-            dispatch({type: 'setError', error: result.error})
+            dispatch({ type: "setError", error: "Código de convite não válido"});
         }
-    }
+
+        }
 
     if (state.type === 'redirect') {
         return <Navigate to={location.state?.source || '/'} replace={true} />
@@ -274,8 +278,8 @@ export function Settings() {
                 <div className="p-6">
                     <h1 className="text-2xl font-bold text-gray-800">Settings</h1>
                 </div>
-            } 
-            right={rightContent} 
+            }
+            right={rightContent}
         />
     );
 }

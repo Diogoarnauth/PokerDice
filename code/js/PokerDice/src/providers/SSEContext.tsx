@@ -30,7 +30,8 @@ export function SSEEmitterProvider({ children }: { children: React.ReactNode }) 
   const emitterRef = useRef<EventSource | null>(null);
   const [isSSEConnected, setIsConnected] = React.useState(false);
   // Para nao causar re-render
-  const handlers = useRef<MessageHandler>();
+    const handlers = useRef<MessageHandler | null>(null);
+
 
 
   const handleMessage = (event: MessageEvent) => {

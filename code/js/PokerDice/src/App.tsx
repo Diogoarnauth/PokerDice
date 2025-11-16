@@ -1,6 +1,7 @@
 import React from 'react';
 import {BrowserRouter, Link, Route, Routes} from "react-router-dom";
 import Login from "./components/auth/Login";
+import Signup from "./components/auth/Signup"
 
 // App.tsx
 function App() {
@@ -8,9 +9,13 @@ function App() {
         <BrowserRouter>
             <nav>
                 <Link to="/login">Login</Link>
+                <Link to="/signup">signUp</Link>
+
             </nav>
             <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+
                 {/*adicionar outras rotas */}
                 <Route path="*" element={
                     <div>

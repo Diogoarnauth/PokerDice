@@ -15,6 +15,7 @@ export const RequestUri = {
         bootstrap: `${BASE_API_URL}/bootstrap`,   // GET bootstrap info
         getById: (id: number) => `${BASE_API_URL}/users/${id}`,
         listen: `${BASE_API_URL}/sse`,
+        checkAdmin: `${BASE_API_URL}/checkAdmin`,
     },
 
     // -----------------------

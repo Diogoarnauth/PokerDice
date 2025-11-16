@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -26,6 +27,7 @@ import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
 class UserController(
     private val userService: UsersService,
@@ -34,29 +36,34 @@ class UserController(
     fun bootstrapAdmin(
         @RequestBody input: BootstrapRegisterInputModel,
     ): ResponseEntity<*> {
-        println("entrou")
-        // lógica passou para o services
-        // if (userService.hasAnyUser()) {
-        //      return ResponseEntity
-        //          .status(403)
-        //          .body(mapOf("error" to Problem.userAlreadyExists))
-        //  }
-
-        val res = userService.bootstrapFirstUser(input.username, input.name, input.age, input.password)
+        val res =
+            userService.bootstrapFirstUser(
+                input.username,
+                input.name,
+                input.age,
+                input.password,
+            )
 
         return when (res) {
-            is Success -> ResponseEntity.ok(mapOf("id" to res.value))
+            is Success -> {
+                val id = res.value
+                ResponseEntity
+                    .status(201)
+                    .body(
+                        mapOf(
+                            "id" to id,
+                            "location" to Uris.Users.byId(id).toASCIIString(),
+                        ),
+                    )
+            }
+
             is Failure ->
                 when (res.value) {
                     UserRegisterError.InvalidData ->
-                        ResponseEntity
-                            .badRequest()
-                            .body(mapOf("error" to Problem.InvalidData))
+                        Problem.response(400, Problem.InvalidData)
 
                     UserRegisterError.AdminAlreadyExists ->
-                        ResponseEntity
-                            .badRequest()
-                            .body(mapOf("error" to Problem.AdminAlreadyExists))
+                        Problem.response(403, Problem.AdminAlreadyExists)
 
                     else -> TODO()
                 }
@@ -100,24 +107,19 @@ class UserController(
                     .body(mapOf("id" to res.value, "location" to Uris.Users.byId(res.value).toASCIIString()))
 
             is Failure ->
-                ResponseEntity.status(400).body(
-                    mapOf(
-                        "error" to
-                            when (res.value) {
-                                UserRegisterError.InsecurePassword -> Problem.insecurePassword //
-                                UserRegisterError.InvalidUsername -> Problem.InvalidData // /
-                                UserRegisterError.InvalidAge -> Problem.InvalidData //
-                                UserRegisterError.InvalidName -> Problem.InvalidData //
-                                UserRegisterError.UserAlreadyExists -> Problem.userAlreadyExists //
-                                UserRegisterError.InvitationDontExist -> Problem.invitationDontExist //
-                                UserRegisterError.InvitationUsed -> Problem.invitationUsed //
-                                UserRegisterError.InvitationExpired -> Problem.invitationExpired // ainda n podemos testar
-                                else -> {
-                                    TODO()
-                                }
-                            },
-                    ),
-                )
+                when (res.value) {
+                    is UserRegisterError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    is UserRegisterError.InvalidUsername -> Problem.response(400, Problem.InvalidData)
+                    is UserRegisterError.InvalidAge -> Problem.response(400, Problem.InvalidData)
+                    is UserRegisterError.InvalidName -> Problem.response(400, Problem.InvalidData)
+                    is UserRegisterError.UserAlreadyExists -> Problem.response(409, Problem.userAlreadyExists)
+                    is UserRegisterError.InvitationDontExist -> Problem.response(404, Problem.invitationDontExist)
+                    is UserRegisterError.InvitationUsed -> Problem.response(409, Problem.invitationUsed)
+                    is UserRegisterError.InvitationExpired -> Problem.response(410, Problem.invitationExpired)
+                    else -> {
+                        TODO()
+                    }
+                }
         }
     }
 
@@ -131,23 +133,11 @@ class UserController(
                 ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
 
             is Failure ->
-                ResponseEntity
-                    .status(
-                        when (res.value) {
-                            TokenCreationError.UserOrPasswordAreInvalid -> 400
-                            TokenCreationError.TokenLimitReached -> 403
-                            TokenCreationError.UserNotFound -> 404
-                        },
-                    ).body(
-                        mapOf(
-                            "error" to
-                                when (res.value) {
-                                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.userOrPasswordAreInvalid //
-                                    TokenCreationError.TokenLimitReached -> Problem.userNotAuthorized
-                                    TokenCreationError.UserNotFound -> Problem.userNotFound
-                                },
-                        ),
-                    )
+                when (res.value) {
+                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.response(401, Problem.userOrPasswordAreInvalid)
+                    TokenCreationError.TokenLimitReached -> Problem.response(401, Problem.userNotAuthorized)
+                    TokenCreationError.UserNotFound -> Problem.response(401, Problem.userNotFound)
+                }
         }
     }
 
@@ -187,6 +177,12 @@ class UserController(
                         ),
                     )
         }
+    }
+
+    @GetMapping(Uris.Users.CHECK_ADMIN)
+    fun checkAdmin(): ResponseEntity<Map<String, Boolean>> {
+        val firstUser = userService.checkAdmin()
+        return ResponseEntity.ok(mapOf("firstUser" to firstUser))
     }
 
     @PostMapping(Uris.Users.INVITE)

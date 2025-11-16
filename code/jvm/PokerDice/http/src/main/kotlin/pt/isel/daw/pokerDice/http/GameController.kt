@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
@@ -16,6 +17,7 @@ import pt.isel.daw.pokerDice.services.GameService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
 class GameController(
     private val gameService: GameService,

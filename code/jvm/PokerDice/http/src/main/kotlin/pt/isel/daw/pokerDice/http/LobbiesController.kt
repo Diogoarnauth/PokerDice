@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.http
 
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
+import org.springframework.web.bind.annotation.CrossOrigin
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
@@ -19,6 +20,7 @@ import pt.isel.daw.pokerDice.services.LobbiesService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 
+@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
 class LobbiesController(
     private val lobbiesServices: LobbiesService,
@@ -45,6 +47,7 @@ class LobbiesController(
                 body.maxUsers,
                 body.rounds,
                 body.minCreditToParticipate,
+                body.turnTime,
             )
 
         return when (res) {
@@ -62,6 +65,7 @@ class LobbiesController(
                     CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(409, Problem.HostAlreadyOnAnotherLobby)
                     CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit) //
                     CreateLobbyError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
+                    CreateLobbyError.TurnTimeInvalid -> Problem.response(400, Problem.TurnTimeInvalid)
                 }
         }
     }
@@ -90,6 +94,7 @@ class LobbiesController(
                         maxUsers = lobby.maxUsers,
                         rounds = lobby.rounds,
                         minCreditToParticipate = lobby.minCreditToParticipate,
+                        turnTime = lobby.turnTime,
                     ),
                 )
             }

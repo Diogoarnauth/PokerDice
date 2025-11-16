@@ -26,6 +26,12 @@ export function Home() {
                         <Outlet />
                     </div>
                 </div>
+
+
+
+
+
+
             </div>
         </div>
     );

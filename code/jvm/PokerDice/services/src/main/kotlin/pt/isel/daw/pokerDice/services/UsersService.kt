@@ -96,6 +96,8 @@ class UsersService(
     private val inviteDomain: InviteDomain,
     private val clock: Clock,
 ) {
+    fun checkAdmin(): Boolean = !hasAnyUser()
+
     fun bootstrapFirstUser(
         username: String,
         name: String,

@@ -9,32 +9,35 @@ import pt.isel.daw.pokerDice.domain.EventEmitter
 // - SseEmitterBasedEventEmitter is our own type (http),
 //   which uses SseEmitter
 
-class SseEmitterBasedEventEmitter( // TODO()
+// TODO()
+class SseEmitterBasedEventEmitter(
     private val sseEmitter: SseEmitter,
 ) : EventEmitter {
     override fun emit(event: Event) {
-        val event =
-            when (event) {
-                is Event.Message ->
-                    SseEmitter
-                        .event()
-                        .id(event.id.toString())
-                        .name("message")
-                        .data(event)
+        /*
+       val event =
+           when (event) {
+               is Event.Message ->
+                   SseEmitter
+                       .event()
+                       .id(event.id.toString())
+                       .name("message")
+                       .data(event)
 
-                is Event.KeepAlive ->
-                    SseEmitter
-                        .event()
-                        .comment(event.timestamp.epochSeconds.toString())
-            }
-        sseEmitter.send(event)
+               is Event.KeepAlive ->
+                   SseEmitter
+                       .event()
+                       .comment(event.timestamp.epochSeconds.toString())
+           }
+       sseEmitter.send(event)
+         */
     }
 
     override fun onCompletion(callback: () -> Unit) {
-        sseEmitter.onCompletion(callback)
+        // sseEmitter.onCompletion(callback)
     }
 
     override fun onError(callback: (Throwable) -> Unit) {
-        sseEmitter.onError(callback)
+        // sseEmitter.onError(callback)
     }
 }

@@ -1,302 +1,231 @@
-import React, { useReducer} from 'react'
-import { Navigate, useLocation, Link } from 'react-router-dom'
-import { isOk } from '../../services/api/utils'
-import { authService } from '../../services/api/auth'
-import '../../styles/auth.css'
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { authService } from "../../services/api/auth";
+import { isOk } from "../../services/api/utils";
+import "../../styles/auth.css";
 
-type State =
-| {
-    type: 'editing';
-    inputs: {username: string; password: string; confirmPassword: string; inviteCode: string};
-    showPassword: boolean;
-    error: string | null;
-    shouldRedirect: boolean;
-    passwordCriteria: {
-        minLength: boolean;
-        maxLength: boolean;
-        hasNumber: boolean;
-        hasSpecialChar: boolean;
-        hasUppercase: boolean;
-    };
-}
-| {type: 'redirect'}
-| {
-    type: 'submitting';
-    inputs: {username: string; password: string; confirmPassword: string; inviteCode: string};
-    showPassword: boolean;
-    error: string | null;
-    isLoading: boolean;
-    shouldRedirect: boolean;
-    passwordCriteria: {
-        minLength: boolean;
-        maxLength: boolean;
-        hasNumber: boolean;
-        hasSpecialChar: boolean;
-        hasUppercase: boolean;
-    };
-}
+export default function Signup() {
+  // Router
+  const navigate = useNavigate();
 
-type Action =
-| { type: 'edit'; inputName: string; inputValue: string }
-| { type: 'submit'; inputs: {username: string; password: string; confirmPassword: string; inviteCode: string} }
-| { type: 'togglePassword' }
-| { type: 'setError'; error: string | null }
-| { type: 'setRedirect' }
-| { type: 'updatePasswordCriteria'; criteria: {
-    minLength: boolean;
-    maxLength: boolean;
-    hasNumber: boolean;
-    hasSpecialChar: boolean;
-    hasUppercase: boolean;
-}}
+  // Fields
+  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
 
-function logUnexpectedAction(state: State, action: Action) {
-    console.log(`Unexpected action '${action.type} on state '${state.type}'`)
-}
+  // State
+  const [isFirstUser, setIsFirstUser] = useState<boolean | null>(null);
+  const [loadingCheck, setLoadingCheck] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<string | null>(null);
 
-function reduce(state: State, action: Action): State {
-    switch (state.type) {
-        case 'editing':
-            switch(action.type) {
-                case 'edit':
-                    const newInputs = { ...state.inputs, [action.inputName]: action.inputValue }
-                    return { 
-                        ...state, 
-                        inputs: newInputs,
-                    }
-                case 'submit':
-                    return {
-                        type: 'submitting',
-                        inputs: action.inputs,
-                        showPassword: state.showPassword,
-                        error: null,
-                        isLoading: true,
-                        shouldRedirect: false,
-                        passwordCriteria: state.passwordCriteria
-                    }
-                case 'togglePassword':
-                    return { ...state, showPassword: !state.showPassword }
-                case 'updatePasswordCriteria':
-                    return { ...state, passwordCriteria: action.criteria }
-                default:
-                    logUnexpectedAction(state, action)
-                    return state
-            }
-        case 'submitting':
-            switch(action.type) {
-                case 'setError':
-                    return {
-                        type: 'editing',
-                        inputs: { ...state.inputs, password: '', confirmPassword: '' },
-                        showPassword: false,
-                        error: action.error,
-                        shouldRedirect: false,
-                        passwordCriteria: {
-                            minLength: false,
-                            maxLength: false,
-                            hasNumber: false,
-                            hasSpecialChar: false,
-                            hasUppercase: false,
-                        }
-                    }
-                case 'setRedirect':
-                    return { type: 'redirect' }
-                default:
-                    logUnexpectedAction(state, action)
-                    return state
-            }
-        default:
-            logUnexpectedAction(state, action)
-            return state
-    }
-}
-
-export function Signup() {
-    const [state, dispatch] = useReducer(reduce, {
-        type: 'editing',
-        inputs: { username: '', password: '', confirmPassword: '', inviteCode: '' },
-        showPassword: false,
-        error: null,
-        shouldRedirect: false,
-        passwordCriteria: {
-            minLength: false,
-            maxLength: false,
-            hasNumber: false,
-            hasSpecialChar: false,
-            hasUppercase: false,
-        }
-    })
-    
-    const location = useLocation()
-
-    if (state.type === 'redirect') {
-        return <Navigate to={location.state?.source || '/'} replace={true} />
+  // 1. Fazer checkAdmin antes de renderizar o formulário
+  useEffect(() => {
+    async function check() {
+      const response = await authService.checkAdmin();
+      if (isOk(response)) {
+        setIsFirstUser(response.value.firstUser);
+      } else {
+        setError(response.error || "Error checking admin status");
+      }
+      setLoadingCheck(false);
     }
 
-    function validatePassword(password: string) {
-        const criteria = {
-            minLength: password.length >= 8,
-            maxLength: password.length <= 30,
-            hasNumber: /\d/.test(password),
-            hasSpecialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password),
-            hasUppercase: /[A-Z]/.test(password),
-        }
-        dispatch({ type: 'updatePasswordCriteria', criteria })
-        return criteria
+    check();
+  }, []);
+
+  if (loadingCheck) {
+    return <p>Loading...</p>;
+  }
+
+  // 2. Submeter o formulário
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+    setResult(null);
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
     }
 
-    function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {
-        dispatch({ type: 'edit', inputName: ev.target.name, inputValue: ev.target.value })
-        
-        if (ev.target.name === 'password') {
-            validatePassword(ev.target.value)
-        }
+    const parsedAge = Number(age);
+    if (!Number.isInteger(parsedAge) || parsedAge <= 0) {
+      setError("Age must be a positive integer");
+      return;
     }
 
-    async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
-        ev.preventDefault()
-        if (state.type === 'editing') {
-            const { password, confirmPassword } = state.inputs
-            if (password !== confirmPassword) {
-                dispatch({ type: 'setError', error: 'Passwords do not match' })
-                return
-            }
-            const criteria = validatePassword(password)
-            if (!Object.values(criteria).every(Boolean)) {
-                dispatch({ type: 'setError', error: 'Password does not meet all requirements' })
-                return
-            }
-            dispatch({ type: 'submit', inputs: state.inputs })
-            const result = await authService.signup(state.inputs)
-            if (isOk(result)) {
-                dispatch({ type: 'setRedirect' })
-            } else {
-                dispatch({ type: 'setError', error: result.error })
-            }
-        }
-    }
-    
-    const inputs = state.type === 'editing' || state.type === 'submitting'
-        ? state.inputs 
-        : { username: '', password: '', confirmPassword: '', inviteCode: '' }
+    setLoadingSubmit(true);
 
-        return (
-            <div className="auth-container">
-                <h1 className="auth-title">Sign Up</h1>
-                <form onSubmit={handleSubmit}>
-                    <fieldset disabled={state.type === 'submitting'}>
-                        <div className="auth-form-group">
-                            <div>
-                                <label htmlFor="username" className="auth-label">
-                                    Username
-                                </label>
-                                <input
-                                    className="auth-input"
-                                    type="text"
-                                    id="username"
-                                    name="username"
-                                    value={inputs.username}
-                                    onChange={handleChange}
-                                    placeholder="Enter your username"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label htmlFor="password" className="auth-label">
-                                    Password
-                                </label>
-                                <div className="auth-password-container">
-                                    <input
-                                        className="auth-input"
-                                        type={state.showPassword ? "text" : "password"}
-                                        id="password"
-                                        name="password"
-                                        value={inputs.password}
-                                        onChange={handleChange}
-                                        placeholder="Enter your password"
-                                        required
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => dispatch({ type: 'togglePassword' })}
-                                        className="auth-toggle-password"
-                                    >
-                                        {state.showPassword ? '🙉' : '🙈'}
-                                    </button>
-                                </div>
-                                <ul className="auth-criteria-list">
-                                    {Object.entries(state.passwordCriteria).map(([key, value]) => (
-                                        <li key={key} className={`auth-criteria-item ${value ? 'auth-criteria-success' : 'auth-criteria-error'}`}>
-                                            {value ? '✓' : '×'} {key === 'minLength' ? 'At least 8 characters' :
-                                                key === 'maxLength' ? 'Less than 30 characters' :
-                                                key === 'hasNumber' ? 'Contains a number' :
-                                                key === 'hasSpecialChar' ? 'Contains a special character' :
-                                                'Contains an uppercase letter'}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-        
-                            <div>
-                                <label htmlFor="confirmPassword" className="auth-label">
-                                    Confirm Password
-                                </label>
-                                <input
-                                    className="auth-input"
-                                    type="password"
-                                    id="confirmPassword"
-                                    name="confirmPassword"
-                                    value={inputs.confirmPassword}
-                                    onChange={handleChange}
-                                    placeholder="Confirm your password"
-                                    required
-                                />
-                            </div>
-        
-                            <div>
-                                <label htmlFor="inviteCode" className="auth-label">
-                                    Invite Code
-                                </label>
-                                <input
-                                    className="auth-input"
-                                    type="text"
-                                    id="inviteCode"
-                                    name="inviteCode"
-                                    value={inputs.inviteCode}
-                                    onChange={handleChange}
-                                    placeholder="Enter your invite code"
-                                    required
-                                />
-                            </div>
-        
-                            <button
-                                type="submit"
-                                disabled={state.type === 'editing' && (
-                                    state.inputs.password !== state.inputs.confirmPassword ||
-                                    Object.values(state.passwordCriteria).some(criteria => !criteria)
-                                )}
-                                className="auth-submit"
-                            >
-                                Sign Up
-                            </button>
-                        </div>
-                    </fieldset>
-        
-                    <div className="auth-links">
-                        <p className="auth-text">
-                            Already have an account?{' '}
-                            <Link to="/" className="auth-link">
-                                Login
-                            </Link>
-                        </p>
-                    </div>
-        
-                    {state.error && (
-                        <div className="auth-error">
-                            {state.error}
-                        </div>
-                    )}
-                </form>
+    let response;
+    if (isFirstUser) {
+      // Primeiro utilizador → signup admin (sem invite)
+      response = await authService.signupAdmin({
+        username,
+        name,
+        age: parsedAge,
+        password,
+      });
+    } else {
+      // Utilizador normal → signup com invite
+      response = await authService.signup({
+        username,
+        name,
+        age: parsedAge,
+        password,
+        inviteCode,
+      });
+    }
+
+    if (isOk(response)) {
+      setResult("Signup made with success. Redirecting to login...");
+
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    } else {
+      setError(response.error || "Unknown error");
+    }
+
+    setLoadingSubmit(false);
+  }
+
+  return (
+    <div className="auth-container">
+      <h1 className="auth-title">
+        {isFirstUser ? "Create Admin Account" : "Sign Up"}
+      </h1>
+
+      {isFirstUser && (
+        <p className="auth-text" style={{ marginBottom: "10px" }}>
+          This will create the first user as <strong>admin</strong>.
+        </p>
+      )}
+
+      <form onSubmit={handleSubmit}>
+        {/* Desativa tudo enquanto está a submeter */}
+        <fieldset disabled={loadingSubmit}>
+          <div className="auth-form-group">
+            <div>
+              <label htmlFor="username" className="auth-label">
+                Username
+              </label>
+              <input
+                className="auth-input"
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter your username"
+                required
+              />
             </div>
-        );
+
+            <div>
+              <label htmlFor="name" className="auth-label">
+                Name
+              </label>
+              <input
+                className="auth-input"
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="age" className="auth-label">
+                Age
+              </label>
+              <input
+                className="auth-input"
+                type="number"
+                id="age"
+                value={age}
+                onChange={(e) => setAge(e.target.value)}
+                min={1}
+                placeholder="Enter your age"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="auth-label">
+                Password
+              </label>
+              <input
+                className="auth-input"
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="auth-label">
+                Confirm Password
+              </label>
+              <input
+                className="auth-input"
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                required
+              />
+            </div>
+
+            {/* Só mostramos inviteCode se NÃO for primeiro user */}
+            {!isFirstUser && (
+              <div>
+                <label htmlFor="inviteCode" className="auth-label">
+                  Invite Code
+                </label>
+                <input
+                  className="auth-input"
+                  type="text"
+                  id="inviteCode"
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value)}
+                  placeholder="Enter your invite code"
+                  required
+                />
+              </div>
+            )}
+
+            <button
+              type="submit"
+              className="auth-submit"
+              disabled={loadingSubmit}
+            >
+              {loadingSubmit
+                ? "Submitting..."
+                : isFirstUser
+                ? "Create Admin"
+                : "Sign Up"}
+            </button>
+          </div>
+        </fieldset>
+
+        {error && <div className="auth-error">{error}</div>}
+
+        {result && (
+          <p className="auth-info">
+            {result}
+          </p>
+        )}
+      </form>
+    </div>
+  );
 }

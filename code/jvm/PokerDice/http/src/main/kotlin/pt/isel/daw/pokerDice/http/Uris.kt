@@ -16,6 +16,7 @@ object Uris {
         const val INVITE = "$PREFIX/invite"
         const val DEPOSIT = "$PREFIX/deposit"
         const val BOOTSTRAP = "$PREFIX/bootstrap"
+        const val CHECK_ADMIN = "$PREFIX/checkAdmin"
 
         fun byId(id: Int): URI = UriTemplate(GET_BY_ID).expand(id)
 

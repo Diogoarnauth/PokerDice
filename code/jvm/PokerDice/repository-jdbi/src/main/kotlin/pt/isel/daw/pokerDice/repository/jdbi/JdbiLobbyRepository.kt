@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.repository.jdbi
 
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.kotlin.mapTo
+import org.postgresql.util.PGInterval
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.repository.LobbiesRepository
 import java.time.Duration
@@ -24,7 +25,7 @@ class JdbiLobbyRepository(
         maxPlayers: Int,
         rounds: Int,
         minCreditToParticipate: Int,
-        turnTime: Duration,
+        turn_time: Duration,
     ): Int? {
         val sql = """
     INSERT INTO dbo.Lobby (
@@ -35,7 +36,7 @@ class JdbiLobbyRepository(
         maxPlayers, 
         rounds, 
         min_credit_to_participate,
-        turnTime
+        turn_time
     ) VALUES (
         :name, 
         :description, 
@@ -44,7 +45,7 @@ class JdbiLobbyRepository(
         :maxPlayers, 
         :rounds, 
         :minCreditToParticipate,
-        :turnTime
+        :turn_time
     )
     RETURNING id
     """
@@ -58,7 +59,7 @@ class JdbiLobbyRepository(
             .bind("maxPlayers", maxPlayers)
             .bind("rounds", rounds)
             .bind("minCreditToParticipate", minCreditToParticipate)
-            .bind("turnTime", turnTime.toString())
+            .bind("turn_time", turn_time)
             .executeAndReturnGeneratedKeys("id")
             .mapTo<Int>()
             .singleOrNull()
@@ -83,26 +84,28 @@ class JdbiLobbyRepository(
             .createQuery(
                 """
             SELECT 
-                l.id, 
-                l.name, 
-                l.description, 
-                l.minPlayers, 
-                l.maxPlayers, 
-                l.rounds, 
+                l.id,
+                l.name,
+                l.description,
+                l.host_id,
+                l.minPlayers,
+                l.maxPlayers,
+                l.rounds,
                 l.min_credit_to_participate,
-                l.turnTime
+                l.turn_time,
                 COUNT(p.id) AS current_players
-            FROM dbo.Lobby l
-            LEFT JOIN dbo.Users p ON l.id = p.lobby_id
+            FROM dbo.lobby l
+            LEFT JOIN dbo.users p ON l.id = p.lobby_id
             GROUP BY 
-                l.id, 
-                l.name, 
-                l.description, 
-                l.minPlayers, 
-                l.maxPlayers, 
-                l.rounds, 
+                l.id,
+                l.name,
+                l.description,
+                l.host_id,
+                l.minPlayers,
+                l.maxPlayers,
+                l.rounds,
                 l.min_credit_to_participate,
-                l.turnTime
+                l.turn_time
             HAVING COUNT(p.id) < l.maxPlayers
             """,
             ).map { rs, _ ->
@@ -110,15 +113,16 @@ class JdbiLobbyRepository(
                     id = rs.getInt("id"),
                     name = rs.getString("name"),
                     description = rs.getString("description"),
-                    hostId = 0,
-                    // não existe host_id na tabela atual
+                    hostId = rs.getInt("host_id"),
                     minUsers = rs.getInt("minPlayers"),
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
-                    turnTime = Duration.parse(rs.getString("turnTime")),
+                    turnTime =
+                        rs.getObject("turn_time", PGInterval::class.java).let {
+                            Duration.ofSeconds(it.seconds.toLong() + it.minutes * 60L + it.hours * 3600L)
+                        },
                     isRunning = false,
-                    // valor default
                 )
             }.list()
 
@@ -157,7 +161,7 @@ class JdbiLobbyRepository(
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
-                    turnTime = Duration.parse(rs.getString("turnTime")),
+                    turnTime = rs.getObject("turn_time", Duration::class.java),
                     isRunning = false,
                 )
             }.singleOrNull()
@@ -174,7 +178,7 @@ private data class LobbyRow(
     val max_players: Int,
     val rounds: Int,
     val min_credit_to_participate: Int,
-    val turnTime: Duration,
+    val turn_time: Duration,
     val current_players: Int,
 ) {
     fun toLobby() =
@@ -187,6 +191,6 @@ private data class LobbyRow(
             maxUsers = max_players,
             rounds = rounds,
             minCreditToParticipate = min_credit_to_participate,
-            turnTime = turnTime,
+            turnTime = turn_time,
         )
 }

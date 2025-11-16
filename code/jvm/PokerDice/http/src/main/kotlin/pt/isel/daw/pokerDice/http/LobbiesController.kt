@@ -19,6 +19,7 @@ import pt.isel.daw.pokerDice.services.LeaveLobbyError
 import pt.isel.daw.pokerDice.services.LobbiesService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
+import java.time.Duration
 
 @CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
@@ -38,6 +39,8 @@ class LobbiesController(
         @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
         @RequestBody body: LobbyCreateInputModel,
     ): ResponseEntity<*> {
+        val turnTimeDuration = Duration.ofMinutes(body.turnTime.toLong())
+
         val res =
             lobbiesServices.createLobby(
                 authenticatedUser.user.id,
@@ -47,7 +50,7 @@ class LobbiesController(
                 body.maxUsers,
                 body.rounds,
                 body.minCreditToParticipate,
-                body.turnTime,
+                turnTimeDuration,
             )
 
         return when (res) {

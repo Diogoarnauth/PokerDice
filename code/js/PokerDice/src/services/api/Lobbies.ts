@@ -16,7 +16,7 @@ export const lobbiesService = {
     getLobbies(offset: number = 0) {
         // Se esperas uma lista
         return fetchWrapper<LobbiesInfoPayload>(
-            RequestUri.lobbies.list + `?offset=${offset}`, // usa 'list' ao invés 'getAll'
+            RequestUri.lobbies.list,
             {method: 'GET'}
         )
     },

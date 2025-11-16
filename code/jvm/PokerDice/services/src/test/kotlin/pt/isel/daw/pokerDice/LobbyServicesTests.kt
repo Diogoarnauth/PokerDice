@@ -1,5 +1,6 @@
 
 package pt.isel.daw.pokerDice
+
 /*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
@@ -9,11 +10,16 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.postgresql.ds.PGSimpleDataSource
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import pt.isel.daw.pokerDice.domain.invite.InviteDomain
+import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
+import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomainConfig
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.users.Sha256TokenEncoder
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.domain.users.UsersDomain
+import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
 import pt.isel.daw.pokerDice.services.CloseLobbyError
@@ -25,6 +31,7 @@ import pt.isel.daw.pokerDice.services.LobbiesService
 import pt.isel.daw.pokerDice.services.LobbyGetByIdError
 import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Either
+import kotlin.math.min
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -32,8 +39,8 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
- */
+import kotlin.time.Duration
+*/
 
 /**
  * Testes do UsersService — versão adaptada do stor.
@@ -85,11 +92,12 @@ class LobbyServicesTests {
             ).value
         val user: User = (assertIs<Either.Right<User>>(userService.getById(userId))).value
         userService.deposit(1000, user)
+        val turnTime = java.time.Duration.ofMinutes(1)
 
         appInvite2 = userService.createAppInvite(userId)
         appInviteString2 = (assertIs<Either.Right<String>>(appInvite2)).value
         // Lobby related
-        lobbyId = assertIs<Either.Right<Int>>(service.createLobby(adminId, "lobby", "Lobby teste", 3, 4, 5, 20)).value
+        lobbyId = assertIs<Either.Right<Int>>(service.createLobby(adminId, "lobby", "Lobby teste", 3, 4, 5, 20, turnTime)).value
 
         // Criação da instância de Jdbi
         val jdbi =
@@ -112,7 +120,7 @@ class LobbyServicesTests {
         handle.close()
     }
 
-    // --- BOOTSTRAP TESTS ---
+    // --- CREATE LOBBY TESTS ---
     @Nested
     inner class CreateLobbyTests {
         @Test
@@ -125,6 +133,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -136,6 +145,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
             println("result $result")
             // then
@@ -155,6 +165,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(4)
 
             // when
             val result =
@@ -166,6 +177,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -184,6 +196,7 @@ class LobbyServicesTests {
                 5,
                 3,
                 10,
+                java.time.Duration.ofMinutes(1),
             )
 
             // given
@@ -205,6 +218,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    java.time.Duration.ofMinutes(1),
                 )
 
             // then
@@ -222,6 +236,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -233,6 +248,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -250,6 +266,7 @@ class LobbyServicesTests {
             val maxUsers = 2
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -261,6 +278,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -278,6 +296,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 0 // Invalid credit
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -289,6 +308,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -306,6 +326,7 @@ class LobbyServicesTests {
             val maxUsers = 11 // Invalid maxUsers > 10
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -317,6 +338,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -334,6 +356,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 10000 // Host has less credit than required
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // when
             val result =
@@ -345,6 +368,7 @@ class LobbyServicesTests {
                     maxUsers,
                     rounds,
                     minCreditToParticipate,
+                    turnTime,
                 )
 
             // then
@@ -366,6 +390,7 @@ class LobbyServicesTests {
             val maxUsers = 5
             val rounds = 3
             val minCreditToParticipate = 100
+            val turnTime = java.time.Duration.ofMinutes(1)
 
             // Cria um lobby que não está cheio
             service.createLobby(
@@ -376,6 +401,7 @@ class LobbyServicesTests {
                 maxUsers,
                 rounds,
                 minCreditToParticipate,
+                turnTime,
             )
 
             // when
@@ -765,16 +791,14 @@ class LobbyServicesTests {
             val usersDomain =
                 UsersDomain(
                     passwordEncoder =
-                        org.springframework.security.crypto.bcrypt
-                            .BCryptPasswordEncoder(),
+                        BCryptPasswordEncoder(),
                     tokenEncoder =
-                        pt.isel.daw.pokerDice.domain.users
-                            .Sha256TokenEncoder(),
+                        Sha256TokenEncoder(),
                     config =
-                        pt.isel.daw.pokerDice.domain.users.UsersDomainConfig(
+                        UsersDomainConfig(
                             tokenSizeInBytes = 256 / 8,
-                            tokenTtl = kotlin.time.Duration.parse("30d"),
-                            tokenRollingTtl = kotlin.time.Duration.parse("30m"),
+                            tokenTtl = Duration.parse("30d"),
+                            tokenRollingTtl = Duration.parse("30m"),
                             maxTokensPerUser = 3,
                             minUsernameLength = 3,
                             minPasswordLength = 6,
@@ -784,13 +808,12 @@ class LobbyServicesTests {
                 )
 
             val inviteDomain =
-                pt.isel.daw.pokerDice.domain.invite.InviteDomain(
+                InviteDomain(
                     inviteEncoder =
-                        pt.isel.daw.pokerDice.domain.invite
-                            .Sha256InviteEncoder(),
+                        Sha256InviteEncoder(),
                     config =
-                        pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig(
-                            expireInviteTime = kotlin.time.Duration.parse("60m"),
+                        InviteDomainConfig(
+                            expireInviteTime = Duration.parse("60m"),
                             validState = "pending",
                             expiredState = "expired",
                             usedState = "used",
@@ -808,6 +831,5 @@ class LobbyServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
-
      */
 }

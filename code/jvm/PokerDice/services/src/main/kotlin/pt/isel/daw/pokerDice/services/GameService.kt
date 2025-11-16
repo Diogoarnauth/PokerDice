@@ -140,7 +140,7 @@ class GameService(
             val curRound =
                 it.roundRepository.getRoundsByGameId(curGame.id!!).first { it -> !it.roundOver }
             val curTurn =
-                it.turnsRepository.getTurnsByRoundId(curRound.id!!) // SÃ“ DEVE HAVER 1
+                it.turnsRepository.getTurnsByRoundId(curRound.id!!)
 
             if (curTurn.playerId != userId) {
                 return@run failure(GameError.IsNotYouTurn)

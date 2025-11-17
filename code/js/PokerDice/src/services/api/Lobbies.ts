@@ -1,6 +1,6 @@
 import {fetchWrapper, Result} from "./utils";
 import {RequestUri} from "./RequestUri";
-import {LobbiesInfoPayload, LobbyInfo} from "../../components/models/LobbyInfo";
+import { LobbyInfo } from "../../components/models/LobbyInfo";
 
 export interface CreateLobbyInput {
   name: string
@@ -13,13 +13,13 @@ export interface CreateLobbyInput {
 export const lobbiesService = {
 
     // GET /lobbies?offset=X
-    getLobbies(offset: number = 0) {
-        // Se esperas uma lista
-        return fetchWrapper<LobbiesInfoPayload>(
-            RequestUri.lobbies.list,
-            {method: 'GET'}
-        )
-    },
+     getLobbies(offset: number = 0) {
+         return fetchWrapper<LobbyInfo[]>(
+             RequestUri.lobbies.list,
+             { method: 'GET' }
+         );
+     },
+
 
     // POST /lobbies
     createLobby(input: CreateLobbyInput): Promise<Result<any>> {

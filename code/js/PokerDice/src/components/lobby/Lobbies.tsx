@@ -14,7 +14,8 @@ export default function LobbiesList() {
 
     if (isOk(response)) {
       // ✔ Aqui está a correção
-      setLobbies(response.value.lobbies);
+      console.log("responde.value", response.value)
+      setLobbies(response.value);
     } else {
       setError(response.error);
     }

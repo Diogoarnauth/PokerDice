@@ -1,11 +1,11 @@
-// src/components/lobby/Lobbies.tsx (ou LobbiesList.tsx)
+// src/components/lobby/Lobbies.tsx
 import React, { useEffect, useState } from "react";
 import { lobbiesService } from "../../services/api/Lobbies";
 import { playersService } from "../../services/api/Players";
 import { isOk } from "../../services/api/utils";
 import { useNavigate } from "react-router-dom";
 
-// Tipo auxiliar só para ter currentPlayers junto com o lobby
+// Tipo auxiliar
 type LobbyWithPlayers = {
   id: number;
   name: string;
@@ -16,7 +16,7 @@ type LobbyWithPlayers = {
   rounds: number;
   minCreditToParticipate: number;
   isRunning?: boolean;
-  currentPlayers: number; // vem do pedido extra
+  currentPlayers: number;
 };
 
 export default function LobbiesList() {
@@ -32,9 +32,8 @@ export default function LobbiesList() {
     const response = await lobbiesService.getLobbies();
 
     if (isOk(response)) {
-      const baseLobbies = response.value; // array vindo do backend
+      const baseLobbies = response.value;
 
-      // Para cada lobby, vamos buscar o nº de players
       const enriched = await Promise.all(
         baseLobbies.map(async (lobby) => {
           const playersResponse = await playersService.getPlayerCount(lobby.id);
@@ -63,6 +62,25 @@ export default function LobbiesList() {
     loadLobbies();
   }, []);
 
+  async function handleEnterLobby(lobbyId: number) {
+    console.log("Entering lobby:", lobbyId);
+
+    // ---- API call (comentado para já) ----
+    /*
+    const joinResponse = await playersService.joinLobby(lobbyId);
+
+    if (!isOk(joinResponse)) {
+      alert("Failed to join lobby: " + joinResponse.error);
+      return;
+    }
+    */
+
+    // Simulação de delay & redirect
+    setTimeout(() => {
+      navigate(`/lobbies/${lobbyId}/info`);
+    }, 1000);
+  }
+
   if (loading) return <p>Loading lobbies...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
@@ -84,12 +102,14 @@ export default function LobbiesList() {
           >
             <h2>{lobby.name}</h2>
             <p>{lobby.description}</p>
+
             <p>
               {lobby.currentPlayers} / {lobby.maxUsers} players
             </p>
+
             <p>Min Credit: {lobby.minCreditToParticipate}</p>
 
-            <button onClick={() => navigate(`/lobbies/${lobby.id}`)}>
+            <button onClick={() => handleEnterLobby(lobby.id)}>
               Enter Lobby
             </button>
           </div>

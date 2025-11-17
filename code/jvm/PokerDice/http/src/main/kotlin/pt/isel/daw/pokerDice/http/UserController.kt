@@ -87,6 +87,7 @@ class UserController(
                         ResponseEntity
                             .badRequest()
                             .body(mapOf("error" to Problem.badDeposit))
+
                     DepositError.UserNotFound ->
                         ResponseEntity
                             .status(404)
@@ -134,7 +135,12 @@ class UserController(
 
             is Failure ->
                 when (res.value) {
-                    TokenCreationError.UserOrPasswordAreInvalid -> Problem.response(401, Problem.userOrPasswordAreInvalid)
+                    TokenCreationError.UserOrPasswordAreInvalid ->
+                        Problem.response(
+                            401,
+                            Problem.userOrPasswordAreInvalid,
+                        )
+
                     TokenCreationError.TokenLimitReached -> Problem.response(401, Problem.userNotAuthorized)
                     TokenCreationError.UserNotFound -> Problem.response(401, Problem.userNotFound)
                 }
@@ -211,17 +217,16 @@ class UserController(
     fun getPlayersOnLobby(
         @PathVariable id: Int,
     ): ResponseEntity<*> {
-        // Usamos a função de contagem dos jogadores no lobby
         val res = userService.getPlayersInLobby(id)
+
         return when (res) {
-            is Success -> {
+            is Success ->
                 ResponseEntity.ok(
                     mapOf(
                         "lobbyId" to id,
                         "count" to res.value,
                     ),
                 )
-            }
 
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }

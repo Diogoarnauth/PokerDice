@@ -109,13 +109,13 @@ class UsersService(
             val lobbiesRepo = it.lobbiesRepository
 
             if (lobbiesRepo.getById(lobbyId) == null) {
-                failure(LobbyGetByIdError.LobbyNotFound)
+                return@run failure(GetUsersInLobbyError.LobbyDontExist)
             }
-            val usersRepo = it.usersRepository
 
+            val usersRepo = it.usersRepository
             val currentPlayers = usersRepo.countUsersInLobby(lobbyId)
 
-            success(currentPlayers)
+            return@run success(currentPlayers)
         }
 
     fun bootstrapFirstUser(

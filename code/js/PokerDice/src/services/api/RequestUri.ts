@@ -27,7 +27,7 @@ export const RequestUri = {
         byId: (id: number) => `${BASE_API_URL}/lobbies/${id}`, // GET
         join: (id: number) => `${BASE_API_URL}/lobbies/${id}/users`, // POST
         leave: (id: number) => `${BASE_API_URL}/lobbies/${id}/leave`, // DELETE
-            playerCount: (id: number) => `${BASE_API_URL}/lobbies/${id}/players/count`,
+        playerCount: (id: number) => `${BASE_API_URL}/users/lobby/${id}`
 
     },
 

@@ -152,6 +152,11 @@ class JdbiLobbyRepository(
             .createQuery(sql)
             .bind("id", id)
             .map { rs, _ ->
+                val turnTimeString = rs.getString("turn_time") // Obtém o intervalo como string
+
+                // Tenta converter o intervalo em uma Duration
+                val turnTime = convertToDuration(turnTimeString)
+
                 Lobby(
                     id = rs.getInt("id"),
                     name = rs.getString("name"),
@@ -161,36 +166,64 @@ class JdbiLobbyRepository(
                     maxUsers = rs.getInt("maxPlayers"),
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
-                    turnTime = rs.getObject("turn_time", Duration::class.java),
+                    turnTime = turnTime,
                     isRunning = false,
                 )
             }.singleOrNull()
     }
-}
 
-// Classe auxiliar interna para mapear o resultado SQL
-private data class LobbyRow(
-    val id: Int,
-    val name: String,
-    val description: String,
-    val host_id: Int,
-    val min_players: Int,
-    val max_players: Int,
-    val rounds: Int,
-    val min_credit_to_participate: Int,
-    val turn_time: Duration,
-    val current_players: Int,
-) {
-    fun toLobby() =
-        Lobby(
-            id = id,
-            name = name,
-            description = description,
-            hostId = host_id,
-            minUsers = min_players,
-            maxUsers = max_players,
-            rounds = rounds,
-            minCreditToParticipate = min_credit_to_participate,
-            turnTime = turn_time,
-        )
+    // Função para converter o intervalo (como string) em Duration
+    private fun convertToDuration(turnTimeString: String?): Duration {
+        println("<REPO> turnTimeString: $turnTimeString")
+        if (turnTimeString == null) {
+            println("<REPO> turnTimeString is null, returning Duration.ZERO")
+            return Duration.ZERO
+        }
+
+        // Regex para capturar minutos no formato HH:mm:ss
+        val regex = """^00:(\d{1,2}):00$""".toRegex()
+        println("<REPO> regex pattern: $regex")
+
+        // Tenta encontrar a correspondência com o regex
+        val matchResult = regex.find(turnTimeString)
+        println("<REPO> matchResult: $matchResult")
+
+        return if (matchResult != null) {
+            val minutes = matchResult.groupValues[1].toInt() // Captura os minutos
+            println("<REPO> Found minutes: $minutes")
+
+            // Cria a Duration com os minutos
+            Duration.ofMinutes(minutes.toLong())
+        } else {
+            println("<REPO> No match found, returning Duration.ZERO")
+            Duration.ZERO // Retorna Duration.ZERO se o formato não for reconhecido
+        }
+    }
+
+    // Classe auxiliar interna para mapear o resultado SQL
+    private data class LobbyRow(
+        val id: Int,
+        val name: String,
+        val description: String,
+        val host_id: Int,
+        val min_players: Int,
+        val max_players: Int,
+        val rounds: Int,
+        val min_credit_to_participate: Int,
+        val turn_time: Duration,
+        val current_players: Int,
+    ) {
+        fun toLobby() =
+            Lobby(
+                id = id,
+                name = name,
+                description = description,
+                hostId = host_id,
+                minUsers = min_players,
+                maxUsers = max_players,
+                rounds = rounds,
+                minCreditToParticipate = min_credit_to_participate,
+                turnTime = turn_time,
+            )
+    }
 }

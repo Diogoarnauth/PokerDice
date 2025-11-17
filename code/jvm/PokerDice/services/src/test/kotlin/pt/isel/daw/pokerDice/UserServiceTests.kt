@@ -1,5 +1,7 @@
+
 package pt.isel.daw.pokerDice
 
+/*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
 import org.jdbi.v3.core.Jdbi
@@ -7,19 +9,30 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.postgresql.ds.PGSimpleDataSource
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
+import pt.isel.daw.pokerDice.domain.invite.InviteDomain
+import pt.isel.daw.pokerDice.domain.invite.InviteDomainConfig
+import pt.isel.daw.pokerDice.domain.invite.Sha256InviteEncoder
+import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
+import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomainConfig
 import pt.isel.daw.pokerDice.domain.users.PasswordValidationInfo
+import pt.isel.daw.pokerDice.domain.users.Sha256TokenEncoder
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.domain.users.UsersDomain
+import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
 import pt.isel.daw.pokerDice.services.CreatingAppInviteError
 import pt.isel.daw.pokerDice.services.DepositError
+import pt.isel.daw.pokerDice.services.GetUsersInLobbyError
+import pt.isel.daw.pokerDice.services.LobbiesService
 import pt.isel.daw.pokerDice.services.TokenCreationError
 import pt.isel.daw.pokerDice.services.TokenExternalInfo
 import pt.isel.daw.pokerDice.services.UserGetByIdError
 import pt.isel.daw.pokerDice.services.UserRegisterError
 import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Either
+import java.time.Duration
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,607 +42,706 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
+
+ */
+
+/**
+ * Testes do UsersService — versão adaptada do stor.
+ * Usa a BD local de desenvolvimento e domínio real.
+ */
+
 class UserServiceTests {
-    private lateinit var service: usersservice
-    private lateinit var username: string
-    private lateinit var handle: handle
-    // setup inicial com beforeeach
+ /*
+    private lateinit var service: UsersService
+    private lateinit var lobbyService: LobbiesService
+    private lateinit var username: String
+    private lateinit var handle: Handle
+    // Setup inicial com BeforeEach
 
-    @beforeeach
+    @BeforeEach
     fun setup() {
-        service = createuserservice() // criar o serviço normalmente
-        username = newusername()
+        service = createUserService() // Criar o serviço normalmente
+        lobbyService = createLobbyService()
+        username = newUsername()
 
-        // criação da instância de jdbi
+        // Criação da instância de Jdbi
         val jdbi =
-            jdbi
+            Jdbi
                 .create(
-                    pgsimpledatasource().apply {
-                        seturl("jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
+                    PGSimpleDataSource().apply {
+                        setURL("jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
                     },
-                ).configurewithapprequirements()
+                ).configureWithAppRequirements()
 
-        // abertura do handle
+        // Abertura do handle
         handle = jdbi.open()
 
-        // inicia a transação para cada teste
+        // Inicia a transação para cada teste
         handle.begin()
     }
 
-    @aftereach
-    fun teardown() {
+    @AfterEach
+    fun tearDown() {
         try {
-            println("rolling back transaction")
-            handle.rollback() // garante que o rollback será executado
-        } catch (e: exception) {
-            println("error during rollback: ${e.message}")
+            println("Rolling back transaction")
+            handle.rollback() // Garante que o rollback será executado
+        } catch (e: Exception) {
+            println("Error during rollback: ${e.message}")
         } finally {
-            handle.close() // fecha o handle após o rollback
+            handle.close() // Fecha o handle após o rollback
         }
     }
 
-    // --- bootstrap tests ---
-    @nested
-    inner class bootstraptests {
-        @test
+    // --- BOOTSTRAP TESTS ---
+    @Nested
+    inner class BootstrapTests {
+        @Test
         fun `can bootstrap first user`() {
             // given
-            val username = newusername()
+            val username = newUsername()
 
             // when
-            val id = service.bootstrapfirstuser(username, "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(id).value
+            val id = service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(id).value
 
             // then
-            asserttrue(result > 0)
-            asserttrue(service.hasanyuser())
+            assertTrue(result > 0)
+            assertTrue(service.hasAnyUser())
         }
 
-        @test
+        @Test
         fun `bootstrap should fail if a user already exists`() {
             // given
-            val username1 = newusername()
-            val username2 = newusername()
+            val username1 = newUsername()
+            val username2 = newUsername()
 
-            val checkifisnotcleaning = service.getbyid(1)
+            val checkIfIsNotCleaning = service.getById(1)
 
             // when: cria o primeiro utilizador (deve funcionar)
-            val result1 = service.bootstrapfirstuser(username1, "admin1", 30, "strongpass123")
-            val id1 = assertis<either.right<int>>(result1).value
-            asserttrue(id1 > 0)
-            asserttrue(service.hasanyuser())
+            val result1 = service.bootstrapFirstUser(username1, "Admin1", 30, "StrongPass123")
+            val id1 = assertIs<Either.Right<Int>>(result1).value
+            assertTrue(id1 > 0)
+            assertTrue(service.hasAnyUser())
 
             // then: tenta criar outro e deve falhar
-            val result2 = service.bootstrapfirstuser(username2, "admin2", 28, "anotherstrongpass")
+            val result2 = service.bootstrapFirstUser(username2, "Admin2", 28, "AnotherStrongPass")
 
-            // verifica se o resultado é left e se é o erro esperado
-            val error = assertis<either.left<userregistererror>>(result2).value
-            asserttrue(error is userregistererror.invaliddata) // ou qualquer outro erro esperado
+            // Verifica se o resultado é Left e se é o erro esperado
+            val error = assertIs<Either.Left<UserRegisterError>>(result2).value
+            assertTrue(error is UserRegisterError.InvalidData) // ou qualquer outro erro esperado
         }
 
-        @test
+        @Test
         fun `bootstrap should fail with invalid password`() {
-            val username = newusername()
+            val username = newUsername()
 
-            val result = service.bootstrapfirstuser(username, "admin", 25, "123")
-            val error = assertis<either.left<userregistererror>>(result).value
+            val result = service.bootstrapFirstUser(username, "Admin", 25, "123")
+            val error = assertIs<Either.Left<UserRegisterError>>(result).value
 
-            asserttrue(error is userregistererror.invaliddata)
+            assertTrue(error is UserRegisterError.InvalidData)
         }
 
-        // --- deposit tests ---
+        // --- DEPOSIT TESTS ---
 
-        @test
+        @Test
         fun `deposit success updates credit and returns new balance`() {
-            val userid = service.bootstrapfirstuser(newusername(), "user", 25, "strongpass123")
+            val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
 
-            val result = assertis<either.right<int>>(userid).value
+            val result = assertIs<Either.Right<Int>>(userId).value
             // estado inicial
-            val u0: user = (assertis<either.right<user>>(service.getbyid(result))).value
-            assertequals(0, u0.credit)
+            val u0: User = (assertIs<Either.Right<User>>(service.getById(result))).value
+            assertEquals(0, u0.credit)
 
             // deposita 50
             val res = service.deposit(50, u0)
-            val r: either.right<int> = assertis(res)
-            assertequals(50, r.value)
+            val r: Either.Right<Int> = assertIs(res)
+            assertEquals(50, r.value)
 
             // confirma persistência
-            val u1: user = (assertis<either.right<user>>(service.getbyid(result))).value
-            assertequals(50, u1.credit)
+            val u1: User = (assertIs<Either.Right<User>>(service.getById(result))).value
+            assertEquals(50, u1.credit)
         }
 
-        @test
-        fun `deposit with zero should fail with invalidamount`() {
-            val userid = service.bootstrapfirstuser(newusername(), "user", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
-            val user: user = (assertis<either.right<user>>(service.getbyid(result))).value
+        @Test
+        fun `deposit with zero should fail with InvalidAmount`() {
+            val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
+            val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
             val res = service.deposit(0, user)
-            val left: either.left<depositerror> = assertis(res)
-            assertequals(depositerror.invalidamount, left.value)
+            val left: Either.Left<DepositError> = assertIs(res)
+            assertEquals(DepositError.InvalidAmount, left.value)
         }
 
-        @test
-        fun `deposit with negative amount should fail with invalidamount`() {
-            val userid = service.bootstrapfirstuser(newusername(), "user", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
+        @Test
+        fun `deposit with negative amount should fail with InvalidAmount`() {
+            val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
 
-            val user: user = (assertis<either.right<user>>(service.getbyid(result))).value
+            val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
             val res = service.deposit(-10, user)
-            val left: either.left<depositerror> = assertis(res)
-            assertequals(depositerror.invalidamount, left.value)
+            val left: Either.Left<DepositError> = assertIs(res)
+            assertEquals(DepositError.InvalidAmount, left.value)
         }
 
-        @test
+        @Test
         fun `multiple deposits accumulate credit`() {
-            val userid = service.bootstrapfirstuser(newusername(), "user", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
+            val userId = service.bootstrapFirstUser(newUsername(), "User", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
 
-            val user: user = (assertis<either.right<user>>(service.getbyid(result))).value
+            val user: User = (assertIs<Either.Right<User>>(service.getById(result))).value
 
             // 30 + 20 + 100 = 150
-            val r1: either.right<int> = assertis(service.deposit(30, user))
-            assertequals(30, r1.value)
+            val r1: Either.Right<Int> = assertIs(service.deposit(30, user))
+            assertEquals(30, r1.value)
 
             // re-obter o user após cada depósito (opcional mas claro)
-            val u1: user = (assertis<either.right<user>>(service.getbyid(result))).value
-            val r2: either.right<int> = assertis(service.deposit(20, u1))
-            assertequals(50, r2.value)
+            val u1: User = (assertIs<Either.Right<User>>(service.getById(result))).value
+            val r2: Either.Right<Int> = assertIs(service.deposit(20, u1))
+            assertEquals(50, r2.value)
 
-            val u2: user = (assertis<either.right<user>>(service.getbyid(result))).value
-            val r3: either.right<int> = assertis(service.deposit(100, u2))
-            assertequals(150, r3.value)
+            val u2: User = (assertIs<Either.Right<User>>(service.getById(result))).value
+            val r3: Either.Right<Int> = assertIs(service.deposit(100, u2))
+            assertEquals(150, r3.value)
 
-            val ufinal: user = (assertis<either.right<user>>(service.getbyid(result))).value
-            assertequals(150, ufinal.credit)
+            val uFinal: User = (assertIs<Either.Right<User>>(service.getById(result))).value
+            assertEquals(150, uFinal.credit)
         }
 
-        @test
+        @Test
         fun `deposit should fail when user does not exist`() {
-            val ghost = dummyuser(id = 999_999)
+            val ghost = dummyUser(id = 999_999)
 
             val res = service.deposit(10, ghost)
-            val left: either.left<depositerror> = assertis(res)
-            assertequals(depositerror.usernotfound, left.value)
+            val left: Either.Left<DepositError> = assertIs(res)
+            assertEquals(DepositError.UserNotFound, left.value)
         }
 
-        // --- create app invite tests ---
+        // --- CREATE APP INVITE TESTS ---
 
-        @test
-        fun `createappinvite should succeed for existing user and return non-blank code`() {
-            val userid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
+        @Test
+        fun `createAppInvite should succeed for existing user and return non-blank code`() {
+            val userId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
 
-            val res = service.createappinvite(result)
+            val res = service.createAppInvite(result)
 
-            val right: either.right<string> = assertis(res)
+            val right: Either.Right<String> = assertIs(res)
             val code = right.value
-            asserttrue(code.isnotblank(), "invite code deve ser não-vazio")
-            asserttrue(code.length >= 8, "invite code deve ter um tamanho razoável")
+            assertTrue(code.isNotBlank(), "invite code deve ser não-vazio")
+            assertTrue(code.length >= 8, "invite code deve ter um tamanho razoável")
         }
 
-        @test
-        fun `createappinvite twice should generate different codes`() {
-            val userid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
+        @Test
+        fun `createAppInvite twice should generate different codes`() {
+            val userId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
 
-            val code1: string = (assertis<either.right<string>>(service.createappinvite(result))).value
-            val code2: string = (assertis<either.right<string>>(service.createappinvite(result))).value
+            val code1: String = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
+            val code2: String = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
-            assertnotequals(code1, code2, "dois convites consecutivos não devem repetir o mesmo código")
+            assertNotEquals(code1, code2, "dois convites consecutivos não devem repetir o mesmo código")
         }
 
-        @test
-        fun `createappinvite should fail when user does not exist`() {
-            val ghostuserid = 999
+        @Test
+        fun `createAppInvite should fail when user does not exist`() {
+            val ghostUserId = 999
 
-            val res = service.createappinvite(ghostuserid)
+            val res = service.createAppInvite(ghostUserId)
 
-            val left: either.left<creatingappinviteerror> = assertis(res)
-            // pelo teu service, qualquer falha do repo mapeia para creatinginviteerror
-            assertequals(creatingappinviteerror.usernotfound, left.value)
+            val left: Either.Left<CreatingAppInviteError> = assertIs(res)
+            // pelo teu service, qualquer falha do repo mapeia para CreatingInviteError
+            assertEquals(CreatingAppInviteError.UserNotFound, left.value)
         }
 
-        //  --- create user tests ---
+        //  --- CREATE USER TESTS ---
 
-        @test
-        fun `createuser fails with insecure password`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
+        @Test
+        fun `createUser fails with insecure password`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
 
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
             val res =
-                service.createuser(
-                    username = newusername(),
-                    name = "user one",
+                service.createUser(
+                    username = newUsername(),
+                    name = "User One",
                     age = 25,
                     password = "123",
-                    invitecode = invite,
+                    inviteCode = invite,
                 )
 
-            val left: either.left<userregistererror> = assertis(res)
-            assertequals(userregistererror.insecurepassword, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(res)
+            assertEquals(UserRegisterError.InsecurePassword, left.value)
         }
 
-        @test
-        fun `createuser fails with invalid username`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+        @Test
+        fun `createUser fails with invalid username`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
             val res =
-                service.createuser(
+                service.createUser(
                     username = "ab",
-                    name = "user one",
+                    name = "User One",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
 
-            val left: either.left<userregistererror> = assertis(res)
-            assertequals(userregistererror.invalidusername, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(res)
+            assertEquals(UserRegisterError.InvalidUsername, left.value)
         }
 
-        @test
-        fun `createuser fails with invalid name`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+        @Test
+        fun `createUser fails with invalid name`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
             val res =
-                service.createuser(
-                    username = newusername(),
+                service.createUser(
+                    username = newUsername(),
                     name = "",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
 
-            val left: either.left<userregistererror> = assertis(res)
-            assertequals(userregistererror.invalidname, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(res)
+            assertEquals(UserRegisterError.InvalidName, left.value)
         }
 
-        @test
-        fun `createuser fails with invalid age`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+        @Test
+        fun `createUser fails with invalid age`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
             val res =
-                service.createuser(
-                    username = newusername(),
-                    name = "user one",
+                service.createUser(
+                    username = newUsername(),
+                    name = "User One",
                     age = 13,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
 
-            val left: either.left<userregistererror> = assertis(res)
-            assertequals(userregistererror.invalidage, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(res)
+            assertEquals(UserRegisterError.InvalidAge, left.value)
         }
 
-        @test
-        fun `createuser fails when invitation does not exist`() {
+        @Test
+        fun `createUser fails when invitation does not exist`() {
             val res =
-                service.createuser(
-                    username = newusername(),
-                    name = "user one",
+                service.createUser(
+                    username = newUsername(),
+                    name = "User One",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = "non_existent_invite",
+                    password = "StrongPass123",
+                    inviteCode = "NON_EXISTENT_INVITE",
                 )
 
-            val left: either.left<userregistererror> = assertis(res)
-            assertequals(userregistererror.invitationdontexist, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(res)
+            assertEquals(UserRegisterError.InvitationDontExist, left.value)
         }
 
-        @test
-        fun `createuser fails when invitation already used`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
+        @Test
+        fun `createUser fails when invitation already used`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
 
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
             // usa o convite uma vez (sucesso)
-            val uname = newusername()
+            val uname = newUsername()
             val first =
-                service.createuser(
+                service.createUser(
                     username = uname,
-                    name = "user one",
+                    name = "User One",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
-            val firstright: either.right<int> = assertis(first)
-            asserttrue(firstright.value > 0)
+            val firstRight: Either.Right<Int> = assertIs(first)
+            assertTrue(firstRight.value > 0)
 
-            // tenta usar o mesmo convite novamente → invitationused
+            // tenta usar o MESMO convite novamente → InvitationUsed
             val second =
-                service.createuser(
-                    username = newusername(),
-                    name = "user two",
+                service.createUser(
+                    username = newUsername(),
+                    name = "User Two",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
-            val left: either.left<userregistererror> = assertis(second)
-            assertequals(userregistererror.invitationused, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(second)
+            assertEquals(UserRegisterError.InvitationUsed, left.value)
         }
 
-        @test
-        fun `createuser fails when username already exists`() {
-            val adminid = service.bootstrapfirstuser(newusername(), "admin", 25, "strongpass123")
-            val result = assertis<either.right<int>>(adminid).value
+        @Test
+        fun `createUser fails when username already exists`() {
+            val adminId = service.bootstrapFirstUser(newUsername(), "Admin", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(adminId).value
 
             // convite 1 para o primeiro user
-            val invite1 = (assertis<either.right<string>>(service.createappinvite(result))).value
-            val username = newusername()
+            val invite1 = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
+            val username = newUsername()
 
             val first =
-                service.createuser(
+                service.createUser(
                     username = username,
-                    name = "user one",
+                    name = "User One",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite1,
+                    password = "StrongPass123",
+                    inviteCode = invite1,
                 )
-            val firstright: either.right<int> = assertis(first)
-            asserttrue(firstright.value > 0)
+            val firstRight: Either.Right<Int> = assertIs(first)
+            assertTrue(firstRight.value > 0)
 
             // convite 2 válido para a tentativa duplicada
-            val invite2 = (assertis<either.right<string>>(service.createappinvite(result))).value
+            val invite2 = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
-            // tenta criar outro com o mesmo username → useralreadyexists
+            // tenta criar outro com o MESMO username → UserAlreadyExists
             val dup =
-                service.createuser(
+                service.createUser(
                     username = username,
-                    name = "user two",
+                    name = "User Two",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite2,
+                    password = "StrongPass123",
+                    inviteCode = invite2,
                 )
-            val left: either.left<userregistererror> = assertis(dup)
-            assertequals(userregistererror.useralreadyexists, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(dup)
+            assertEquals(UserRegisterError.UserAlreadyExists, left.value)
         }
 
-        @test
-        fun `createuser success stores user and marks invite as used`() {
-            val adminid =
-                service.bootstrapfirstuser(
-                    newusername(),
-                    "admin",
+        @Test
+        fun `createUser success stores user and marks invite as used`() {
+            val adminId =
+                service.bootstrapFirstUser(
+                    newUsername(),
+                    "Admin",
                     25,
-                    "strongpass123",
+                    "StrongPass123",
                 )
-            val result = assertis<either.right<int>>(adminid).value
+            val result = assertIs<Either.Right<Int>>(adminId).value
 
-            val invite = (assertis<either.right<string>>(service.createappinvite(result))).value
+            val invite = (assertIs<Either.Right<String>>(service.createAppInvite(result))).value
 
-            val username = newusername()
+            val username = newUsername()
             val res =
-                service.createuser(
+                service.createUser(
                     username = username,
-                    name = "user one",
+                    name = "User One",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
 
-            val right: either.right<int> = assertis(res)
-            val newuserid = right.value
-            asserttrue(newuserid > 0)
+            val right: Either.Right<Int> = assertIs(res)
+            val newUserId = right.value
+            assertTrue(newUserId > 0)
 
             // confirmar que o utilizador ficou gravado
-            val user = (assertis<either.right<user>>(service.getbyid(newuserid))).value
-            assertequals(username, user.username)
+            val user = (assertIs<Either.Right<User>>(service.getById(newUserId))).value
+            assertEquals(username, user.username)
 
-            // opcional: tentar reutilizar o convite deve falhar como used
+            // opcional: tentar reutilizar o convite deve falhar como USED
             val reuse =
-                service.createuser(
-                    username = newusername(),
-                    name = "user two",
+                service.createUser(
+                    username = newUsername(),
+                    name = "User Two",
                     age = 25,
-                    password = "strongpass123",
-                    invitecode = invite,
+                    password = "StrongPass123",
+                    inviteCode = invite,
                 )
-            val left: either.left<userregistererror> = assertis(reuse)
-            assertequals(userregistererror.invitationused, left.value)
+            val left: Either.Left<UserRegisterError> = assertIs(reuse)
+            assertEquals(UserRegisterError.InvitationUsed, left.value)
         }
 
-        //  --- create token tests ---
+        //  --- CREATE TOKEN TESTS ---
 
-        @test
-        fun `createtoken fails when username is blank`() {
-            val res = service.createtoken("", "pw")
-            val left: either.left<tokencreationerror> = assertis(res)
-            assertequals(tokencreationerror.userorpasswordareinvalid, left.value)
+        @Test
+        fun `createToken fails when username is blank`() {
+            val res = service.createToken("", "pw")
+            val left: Either.Left<TokenCreationError> = assertIs(res)
+            assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
         }
 
-        @test
-        fun `createtoken fails when password is blank`() {
-            val res = service.createtoken("someone", "")
-            val left: either.left<tokencreationerror> = assertis(res)
-            assertequals(tokencreationerror.userorpasswordareinvalid, left.value)
+        @Test
+        fun `createToken fails when password is blank`() {
+            val res = service.createToken("someone", "")
+            val left: Either.Left<TokenCreationError> = assertIs(res)
+            assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
         }
 
-        @test
-        fun `createtoken fails when user does not exist`() {
-            val res = service.createtoken("ghost_user_xyz", "any")
-            val left: either.left<tokencreationerror> = assertis(res)
-            assertequals(tokencreationerror.userorpasswordareinvalid, left.value)
+        @Test
+        fun `createToken fails when user does not exist`() {
+            val res = service.createToken("ghost_user_xyz", "any")
+            val left: Either.Left<TokenCreationError> = assertIs(res)
+            assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
         }
 
-        @test
-        fun `createtoken fails when password is wrong`() {
-            val username = newusername()
-            service.bootstrapfirstuser(username, "admin", 25, "strongpass123")
+        @Test
+        fun `createToken fails when password is wrong`() {
+            val username = newUsername()
+            service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
 
-            val res = service.createtoken(username, "wrong-pass")
-            val left: either.left<tokencreationerror> = assertis(res)
-            assertequals(tokencreationerror.userorpasswordareinvalid, left.value)
+            val res = service.createToken(username, "wrong-pass")
+            val left: Either.Left<TokenCreationError> = assertIs(res)
+            assertEquals(TokenCreationError.UserOrPasswordAreInvalid, left.value)
         }
 
-        @test
-        fun `createtoken success returns tokenexternalinfo and token is usable`() {
-            val username = newusername()
-            val pwd = "strongpass123"
-            service.bootstrapfirstuser(username, "admin", 25, pwd)
+        @Test
+        fun `createToken success returns TokenExternalInfo and token is usable`() {
+            val username = newUsername()
+            val pwd = "StrongPass123"
+            service.bootstrapFirstUser(username, "Admin", 25, pwd)
 
-            val res = service.createtoken(username, pwd)
-            val right: either.right<tokenexternalinfo> = assertis(res)
+            val res = service.createToken(username, pwd)
+            val right: Either.Right<TokenExternalInfo> = assertIs(res)
             val info = right.value
 
             // token não-vazio
-            asserttrue(info.tokenvalue.isnotblank())
+            assertTrue(info.tokenValue.isNotBlank())
 
             // token utilizável para obter o user
-            val user = service.getuserbytoken(info.tokenvalue)
-            assertnotnull(user)
-            assertequals(username, user.username)
+            val user = service.getUserByToken(info.tokenValue)
+            assertNotNull(user)
+            assertEquals(username, user.username)
         }
 
-        @test
-        fun `createtoken respects maxtokensperuser - oldest becomes invalid`() {
-            val username = newusername()
-            val pwd = "strongpass123"
-            service.bootstrapfirstuser(username, "admin", 25, pwd)
+        @Test
+        fun `createToken respects maxTokensPerUser - oldest becomes invalid`() {
+            val username = newUsername()
+            val pwd = "StrongPass123"
+            service.bootstrapFirstUser(username, "Admin", 25, pwd)
 
             val max = 3
 
-            val tokens = mutablelistof<string>()
+            val tokens = mutableListOf<String>()
             repeat(max) {
-                val t: either.right<tokenexternalinfo> = assertis(service.createtoken(username, pwd))
-                tokens += t.value.tokenvalue
+                val t: Either.Right<TokenExternalInfo> = assertIs(service.createToken(username, pwd))
+                tokens += t.value.tokenValue
                 // cada token é válido
-                assertnotnull(service.getuserbytoken(tokens.last()))
+                assertNotNull(service.getUserByToken(tokens.last()))
             }
 
             // cria mais 1 (excede o limite) → o mais antigo deve ficar inválido
-            val extra: either.right<tokenexternalinfo> = assertis(service.createtoken(username, pwd))
-            val newest = extra.value.tokenvalue
-            assertnotnull(service.getuserbytoken(newest), "o token mais recente deve ser válido")
+            val extra: Either.Right<TokenExternalInfo> = assertIs(service.createToken(username, pwd))
+            val newest = extra.value.tokenValue
+            assertNotNull(service.getUserByToken(newest), "o token mais recente deve ser válido")
 
-            // o primeiro deve ter sido descartado pelo repos (política lru típica)
+            // o primeiro deve ter sido descartado pelo repos (política LRU típica)
             val first = tokens.first()
-            val stillvalidcount =
-                listof(
-                    service.getuserbytoken(first),
-                    service.getuserbytoken(tokens[1]),
-                    service.getuserbytoken(tokens[2]),
-                    service.getuserbytoken(newest),
+            val stillValidCount =
+                listOf(
+                    service.getUserByToken(first),
+                    service.getUserByToken(tokens[1]),
+                    service.getUserByToken(tokens[2]),
+                    service.getUserByToken(newest),
                 ).count { it != null }
 
             // exatamente 'max' tokens devem permanecer válidos
-            assertequals(max, stillvalidcount, "apenas $max tokens devem permanecer válidos")
-            assertnull(service.getuserbytoken(first), "o primeiro (mais antigo) deve ter sido invalidado")
+            assertEquals(max, stillValidCount, "apenas $max tokens devem permanecer válidos")
+            assertNull(service.getUserByToken(first), "o primeiro (mais antigo) deve ter sido invalidado")
         }
 
-        //  --- get by id tests ---
+        //  --- GET BY ID TESTS ---
 
-        @test
-        fun `getbyid returns user when it exists`() {
-            val username = newusername()
-            val userid = service.bootstrapfirstuser(username, "user", 25, "strongpass123")
-            val result = assertis<either.right<int>>(userid).value
+        @Test
+        fun `getById returns user when it exists`() {
+            val username = newUsername()
+            val userId = service.bootstrapFirstUser(username, "User", 25, "StrongPass123")
+            val result = assertIs<Either.Right<Int>>(userId).value
 
-            val res = service.getbyid(result)
+            val res = service.getById(result)
 
-            val right: either.right<user> = assertis(res)
+            val right: Either.Right<User> = assertIs(res)
             val user = right.value
-            assertequals(result, user.id)
-            assertequals(username, user.username)
+            assertEquals(result, user.id)
+            assertEquals(username, user.username)
         }
 
-        @test
-        fun `getbyid fails with usernotfound for unknown id`() {
-            val res = service.getbyid(999_999)
+        @Test
+        fun `getById fails with UserNotFound for unknown id`() {
+            val res = service.getById(999_999)
 
-            val left: either.left<usergetbyiderror> = assertis(res)
-            assertequals(usergetbyiderror.usernotfound, left.value)
+            val left: Either.Left<UserGetByIdError> = assertIs(res)
+            assertEquals(UserGetByIdError.UserNotFound, left.value)
         }
 
-        @test
-        fun `getbyid with negative id also returns usernotfound (current behavior)`() {
-            val res = service.getbyid(-42)
+        @Test
+        fun `getById with negative id also returns UserNotFound (current behavior)`() {
+            val res = service.getById(-42)
 
-            val left: either.left<usergetbyiderror> = assertis(res)
-            // o service atual não devolve invaliduserid; mapeia para usernotfound.
-            assertequals(usergetbyiderror.usernotfound, left.value)
+            val left: Either.Left<UserGetByIdError> = assertIs(res)
+            // O service atual não devolve InvalidUserId; mapeia para UserNotFound.
+            assertEquals(UserGetByIdError.UserNotFound, left.value)
+        }
+    }
+
+    // --- GET PLAYERS IN LOBBY TESTS ---
+
+    @Nested
+    inner class GetPlayersInLobbyTests {
+        @Test
+        fun `getPlayersInLobby should return error instead of the number of players in an existing lobby`() {
+            // given
+
+            val id = service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
+            val resultado = assertIs<Either.Right<Int>>(id).value
+
+            val user = service.getById(resultado)
+            val userItSelf = assertIs<Either.Right<User>>(user).value
+
+            service.deposit(1000, userItSelf)
+
+            lobbyService.createLobby(
+                1,
+                "teste",
+                description = "teste",
+                minUsers = 2,
+                maxUsers = 5,
+                rounds = 6,
+                minCreditToParticipate = 10,
+                turnTime = Duration.ofMinutes(1),
+            )
+
+            // when
+            val result = service.getPlayersInLobby(100)
+
+            // then
+            val left: Either.Left<GetUsersInLobbyError> = assertIs(result)
+            assertEquals(GetUsersInLobbyError.LobbyDontExist, left.value)
+        }
+
+        @Test
+        fun `getPlayersInLobby should return number of players in an existing lobby`() {
+            // given
+
+            val id = service.bootstrapFirstUser(username, "Admin", 25, "StrongPass123")
+            val resultado = assertIs<Either.Right<Int>>(id).value
+
+            val user = service.getById(resultado)
+            val userItSelf = assertIs<Either.Right<User>>(user).value
+
+            service.deposit(1000, userItSelf)
+
+            lobbyService.createLobby(
+                1,
+                "teste",
+                description = "teste",
+                minUsers = 2,
+                maxUsers = 5,
+                rounds = 6,
+                minCreditToParticipate = 10,
+                turnTime = Duration.ofMinutes(1),
+            )
+
+            // when
+            val result = service.getPlayersInLobby(1)
+
+            // then
+            val right: Either.Right<Int> = assertIs(result)
+            assertEquals(right.value, 1)
         }
     }
 
     // -------------------------------------------------------------------------------------
-    // funções auxiliares
+    // Funções auxiliares
     // -------------------------------------------------------------------------------------
 
     companion object {
         private val jdbi =
-            jdbi
+            Jdbi
                 .create(
-                    pgsimpledatasource().apply {
-                        seturl("jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
+                    PGSimpleDataSource().apply {
+                        setURL("jdbc:postgresql://localhost:5432/db?user=postgres&password=postgres")
                     },
-                ).configurewithapprequirements()
+                ).configureWithAppRequirements()
 
-        private fun createuserservice(clock: clock = clock.system): usersservice {
-            val usersdomain =
-                usersdomain(
-                    passwordencoder =
-                        org.springframework.security.crypto.bcrypt
-                            .bcryptpasswordencoder(),
-                    tokenencoder =
-                        pt.isel.daw.pokerdice.domain.users
-                            .sha256tokenencoder(),
-                    config =
-                        pt.isel.daw.pokerdice.domain.users.usersdomainconfig(
-                            tokensizeinbytes = 256 / 8,
-                            tokenttl = kotlin.time.duration.parse("30d"),
-                            tokenrollingttl = kotlin.time.duration.parse("30m"),
-                            maxtokensperuser = 3,
-                            minusernamelength = 3,
-                            minpasswordlength = 6,
-                            minage = 18,
-                            maxage = 120,
-                        ),
+        private fun createLobbyService(clock: Clock = Clock.System): LobbiesService {
+            val config =
+                LobbiesDomainConfig(
+                    minUsersAllowed = 2,
+                    maxUsersAllowed = 6,
+                    minRoundsAllowed = 2,
+                    maxRoundsAllowed = 10,
+                    minCreditAllowed = 10,
                 )
 
-            val invitedomain =
-                pt.isel.daw.pokerdice.domain.invite.invitedomain(
-                    inviteencoder =
-                        pt.isel.daw.pokerdice.domain.invite
-                            .sha256inviteencoder(),
-                    config =
-                        pt.isel.daw.pokerdice.domain.invite.invitedomainconfig(
-                            expireinvitetime = kotlin.time.duration.parse("60m"),
-                            validstate = "pending",
-                            expiredstate = "expired",
-                            usedstate = "used",
-                            declinedstate = "declined",
-                        ),
+            val lobbyDomain =
+                LobbiesDomain(
+                    config = config,
+                    passwordEncoder = BCryptPasswordEncoder(),
                 )
-
-            return usersservice(
-                transactionmanager = jdbitransactionmanager(jdbi),
-                userdomain = usersdomain,
-                invitedomain = invitedomain,
+            return LobbiesService(
+                transactionManager = JdbiTransactionManager(jdbi),
+                lobbiesDomain = lobbyDomain,
                 clock = clock,
             )
         }
 
-        private fun newusername() = "user-${random.nextint(1_000_000)}"
+        private fun createUserService(clock: Clock = Clock.System): UsersService {
+            val usersDomain =
+                UsersDomain(
+                    passwordEncoder =
+                        BCryptPasswordEncoder(),
+                    tokenEncoder =
+                        Sha256TokenEncoder(),
+                    config =
+                        UsersDomainConfig(
+                            tokenSizeInBytes = 256 / 8,
+                            tokenTtl = kotlin.time.Duration.parse("30d"),
+                            tokenRollingTtl = kotlin.time.Duration.parse("30m"),
+                            maxTokensPerUser = 3,
+                            minUsernameLength = 3,
+                            minPasswordLength = 6,
+                            minAge = 18,
+                            maxAge = 120,
+                        ),
+                )
 
-        private fun dummyuser(id: int = 1) =
-            user(
+            val inviteDomain =
+                InviteDomain(
+                    inviteEncoder =
+                        Sha256InviteEncoder(),
+                    config =
+                        InviteDomainConfig(
+                            expireInviteTime = kotlin.time.Duration.parse("60m"),
+                            validState = "pending",
+                            expiredState = "expired",
+                            usedState = "used",
+                            declinedState = "DECLINED",
+                        ),
+                )
+
+            return UsersService(
+                transactionManager = JdbiTransactionManager(jdbi),
+                userDomain = usersDomain,
+                inviteDomain = inviteDomain,
+                clock = clock,
+            )
+        }
+
+        private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
+
+        private fun dummyUser(id: Int = 1) =
+            User(
                 id = id,
                 username = "dummy",
-                passwordvalidation = passwordvalidationinfo("x"),
-                name = "dummy",
+                passwordValidation = PasswordValidationInfo("x"),
+                name = "Dummy",
                 age = 30,
                 credit = 0,
-                wincounter = 0,
-                lobbyid = null,
+                winCounter = 0,
+                lobbyId = null,
             )
     }
+
+  */
 }

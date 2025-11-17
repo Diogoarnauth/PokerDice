@@ -13,7 +13,7 @@ export default function Login() {
   // Authentication provider
   const [, setUsername] = useAuthentication();
 
-  // Fields
+
   const [username, setUsernameInput] = useState("");
   const [password, setPasswordInput] = useState("");
 

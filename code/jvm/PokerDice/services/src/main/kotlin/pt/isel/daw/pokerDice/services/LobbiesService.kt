@@ -112,6 +112,7 @@ class LobbiesService(
         transactionManager.run {
             val repo = it.lobbiesRepository
             val lobby = repo.getById(id)
+            println("<SERVICES> ${lobby!!.turnTime}")
             if (lobby == null) {
                 failure(LobbyGetByIdError.LobbyNotFound)
             } else {

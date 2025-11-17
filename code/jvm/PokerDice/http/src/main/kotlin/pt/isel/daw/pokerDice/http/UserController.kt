@@ -206,4 +206,24 @@ class UserController(
                 }
         }
     }
+
+    @GetMapping(Uris.Users.GETPLAYERSONLOBBY)
+    fun getPlayersOnLobby(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
+        // Usamos a função de contagem dos jogadores no lobby
+        val res = userService.getPlayersInLobby(id)
+        return when (res) {
+            is Success -> {
+                ResponseEntity.ok(
+                    mapOf(
+                        "lobbyId" to id,
+                        "count" to res.value,
+                    ),
+                )
+            }
+
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
 }

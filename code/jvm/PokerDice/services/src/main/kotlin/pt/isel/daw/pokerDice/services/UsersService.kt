@@ -88,6 +88,12 @@ sealed class CreatingAppInviteError {
 
 typealias CreatingAppInviteResult = Either<CreatingAppInviteError, String>
 
+typealias GetUsersInLobby = Either<GetUsersInLobbyError, Int>
+
+sealed class GetUsersInLobbyError {
+    data object LobbyDontExist : GetUsersInLobbyError()
+}
+
 // dúvida :falar com o stor acerca de usar service ou named
 @Named
 class UsersService(
@@ -97,6 +103,20 @@ class UsersService(
     private val clock: Clock,
 ) {
     fun checkAdmin(): Boolean = !hasAnyUser()
+
+    fun getPlayersInLobby(lobbyId: Int): GetUsersInLobby =
+        transactionManager.run {
+            val lobbiesRepo = it.lobbiesRepository
+
+            if (lobbiesRepo.getById(lobbyId) == null) {
+                failure(LobbyGetByIdError.LobbyNotFound)
+            }
+            val usersRepo = it.usersRepository
+
+            val currentPlayers = usersRepo.countUsersInLobby(lobbyId)
+
+            success(currentPlayers)
+        }
 
     fun bootstrapFirstUser(
         username: String,

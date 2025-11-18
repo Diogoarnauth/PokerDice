@@ -9,13 +9,13 @@ export const RequestUri = {
         register: `${BASE_API_URL}/users`,        // POST
         login: `${BASE_API_URL}/users/token`,     // POST (recebe token)
         logout: `${BASE_API_URL}/logout`,         // POST
-        me: `${BASE_API_URL}/me`,                 // GET user info
         invite: `${BASE_API_URL}/invite`,         // POST invite
         deposit: `${BASE_API_URL}/deposit`,       // POST deposit money
         bootstrap: `${BASE_API_URL}/bootstrap`,   // GET bootstrap info
         getById: (id: number) => `${BASE_API_URL}/users/${id}`,
         listen: `${BASE_API_URL}/sse`,
         checkAdmin: `${BASE_API_URL}/checkAdmin`,
+        getMe:  `${BASE_API_URL}/users/getMe`,
     },
 
     // -----------------------

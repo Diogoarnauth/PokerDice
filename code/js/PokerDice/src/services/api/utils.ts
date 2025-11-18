@@ -1,5 +1,3 @@
-
-
 export type Result<T> =
 | { success: true; value: T }
 | { success: false; error: string };
@@ -11,10 +9,14 @@ export async function fetchWrapper<T>(
   options: RequestInit = {}
 ): Promise<Result<T>> {
   try {
-    console.log('fetchWrapper', document.cookie);
+      //Obter token
+      const token = localStorage.getItem('token');
+      console.log("Token before request:", localStorage.getItem("token"))
+      console.log('fetchWrapper', document.cookie);
       const response = await fetch(url, {
           headers: {
               'Content-Type': 'application/json',
+              ...(token ? { Authorization : `Bearer ${token}`} : {}),
               ...options.headers,
           },
           ...options,

@@ -1,5 +1,6 @@
 import { fetchWrapper, Result } from "./utils"
 import { RequestUri } from "./RequestUri"
+import { User } from "../../components/lobby/LobbyDetails";
 
 // ----------------------------------------
 // Lobby Details API
@@ -14,6 +15,14 @@ export const lobbyDetailsService = {
       { method: "GET" }
     )
   },
+
+    // Função para obter os dados do usuário
+   getMe(token: string): Promise<Result<User>> {
+      return fetchWrapper(
+        RequestUri.user.getMe,
+        {method: "GET",}
+      );
+    },
 
   // POST /lobbies/{id}/users → entrar no lobby
   joinLobby(id: number): Promise<Result<any>> {

@@ -231,4 +231,23 @@ class UserController(
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }
+
+    @GetMapping(Uris.Users.GETME)
+    fun getUserByToken(
+        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
+    ): ResponseEntity<*> {
+        val user = authenticatedUser.user
+
+        return ResponseEntity.ok(
+            mapOf(
+                "id" to user.id,
+                "username" to user.username,
+                "name" to user.name,
+                "age" to user.age,
+                "credit" to user.credit,
+                "winCounter" to user.winCounter,
+                "lobbyId" to user.lobbyId,
+            ),
+        )
+    }
 }

@@ -39,8 +39,15 @@ export default function Login() {
 
     const response = await authService.login({ username, password });
 
+
     if (isOk(response)) {
+
       setResult("Login successful! Redirecting...");
+
+     if (response.value.token) {
+        localStorage.setItem("token", response.value.token);
+      }
+
       setUsername(username); // TODO() alterar isto depois pq queremos no token penso
 
       setTimeout(() => {

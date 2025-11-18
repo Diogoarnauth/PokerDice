@@ -1,4 +1,3 @@
-// src/components/lobby/LobbyDetails.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
@@ -17,34 +16,40 @@ type Lobby = {
   turnTime: string; // Formato de string para representar Duration
 };
 
-// Tipo para a resposta da API
 type LobbyApiResponse = {
   success: boolean;
   value: Lobby; // Aqui definimos que a resposta terá um campo 'value' que será do tipo 'Lobby'
   error?: string;
 };
 
-// Função para formatar a duração para um formato legível (minutos)
+export type User = {
+  id: number;
+  username: string;
+  name: string;
+  age: number;
+  credit: number;
+  winCounter: number;
+  lobbyId: number | null; // Pode ser null ou um número de lobby
+};
+
 function formatTurnTime(turnTime: string): string {
-  // Regex para capturar o número de minutos no formato PTxM
   const regex = /^PT(\d+)M$/;
-
-  // Tenta encontrar os minutos na string
   const match = regex.exec(turnTime);
-
   if (match) {
-    const minutes = match[1]; // Extrai o número de minutos como string
-    return `${minutes} min`; // Retorna o valor com "min"
+    const minutes = match[1];
+    return `${minutes} min`;
   }
-
-  return "Desconhecido"; // Caso não encontre o formato correto
+  return "Desconhecido";
 }
 
 
 export default function LobbyDetails() {
   const [lobby, setLobby] = useState<Lobby | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [joinLoading, setJoinLoading] = useState(false);
+  const [leaveLoading, setLeaveLoading] = useState(false);
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
@@ -54,16 +59,32 @@ export default function LobbyDetails() {
       setError(null);
 
       try {
-        // Aqui dizemos ao TypeScript que a resposta da API é do tipo 'LobbyApiResponse'
-        const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
+        // Pega o token do localStorage
+        const token = localStorage.getItem("token");
 
+        if (token) {
+          // Chama a API para obter os dados do usuário
+          const userResponse = await lobbyDetailsService.getMe(token);
+
+          console.log("userResponse", userResponse)
+          if (userResponse.success) {
+            setUser(userResponse.value);
+          } else {
+            setError("Failed to fetch user data");
+          }
+        } else {
+          setError("No token found");
+        }
+
+        // Requisição para obter detalhes do lobby
+        const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
         if (response.success) {
-          setLobby(response.value); // Agora TypeScript sabe que 'response.value' é um Lobby
+          setLobby(response.value);
         } else {
           setError("Failed to load lobby details");
         }
       } catch (err) {
-        setError("Error fetching lobby details");
+        setError("Error fetching data");
       }
 
       setLoading(false);
@@ -72,28 +93,45 @@ export default function LobbyDetails() {
     loadLobby();
   }, [id]);
 
-  // Função para quando o usuário clicar em "Leave Lobby"
-  async function handleLeaveLobby() {
-    console.log("Leaving lobby:", id);
-
+  // Função para quando o usuário clicar em "Join Lobby"
+  async function handleJoinLobby() {
+    console.log("Joining lobby:", id);
+    setJoinLoading(true);
     // ---- API call (comentado para já) ----
     /*
-    const leaveResponse = await lobbiesService.leaveLobby(Number(id));
-
-    if (!leaveResponse.success) {
-      alert("Failed to leave the lobby: " + leaveResponse.error);
+    const joinResponse = await playersService.joinLobby(Number(id));
+    if (!joinResponse.success) {
+      alert("Failed to join lobby: " + joinResponse.error);
       return;
     }
     */
+    setJoinLoading(false);
+    // Após juntar ao lobby, redireciona para os detalhes do lobby
+    navigate(`/lobbies/${id}/info`);
+  }
 
+  // Função para quando o usuário clicar em "Leave Lobby"
+  async function handleLeaveLobby() {
+    console.log("Leaving lobby:", id);
+    setLeaveLoading(true);
+    // ---- API call (comentado para já) ----
+    /*
+    const leaveResponse = await playersService.leaveLobby(Number(id));
+    if (!leaveResponse.success) {
+      alert("Failed to leave lobby: " + leaveResponse.error);
+      return;
+    }
+    */
+    setLeaveLoading(false);
     // Após deixar o lobby, redireciona para a lista de lobbies
     navigate("/lobbies");
   }
 
   if (loading) return <p>Loading lobby details...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
-
   if (!lobby) return <p>Lobby not found</p>;
+
+  const isUserInLobby = user?.lobbyId === lobby.id;
 
   return (
     <div>
@@ -104,11 +142,20 @@ export default function LobbyDetails() {
       <p><strong>Max Users:</strong> {lobby.maxUsers}</p>
       <p><strong>Rounds:</strong> {lobby.rounds}</p>
       <p><strong>Min Credit to Participate:</strong> {lobby.minCreditToParticipate}</p>
-
-      {/* Formatação do turnTime */}
       <p><strong>Turn Time:</strong> {formatTurnTime(lobby.turnTime)}</p>
 
-      <button onClick={handleLeaveLobby}>Leave Lobby</button>
+      {/* Condicional para mostrar o botão Join ou Leave */}
+      {user && user.lobbyId === null && (
+        <button onClick={handleJoinLobby} disabled={joinLoading}>
+          {joinLoading ? "Joining..." : "Join Lobby"}
+        </button>
+      )}
+
+      {isUserInLobby && (
+        <button onClick={handleLeaveLobby} disabled={leaveLoading}>
+          {leaveLoading ? "Leaving..." : "Leave Lobby"}
+        </button>
+      )}
     </div>
   );
 }

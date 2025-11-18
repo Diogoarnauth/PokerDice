@@ -1,6 +1,13 @@
+export class AppInvitePayload {
+    invite: AppInviteCode;
+
+    constructor(data: any) {
+        this.invite = new AppInviteCode(data);
+    }
+}
+
 export class AppInviteCode {
     inviteCode: string;
-//ola
     constructor(data: any) {
         this.inviteCode = data.inviteCode;
     }

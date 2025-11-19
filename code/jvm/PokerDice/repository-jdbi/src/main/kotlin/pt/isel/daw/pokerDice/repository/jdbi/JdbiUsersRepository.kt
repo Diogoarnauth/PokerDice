@@ -64,6 +64,7 @@ class JdbiUsersRepository(
                 u.age,
                 u.credit,
                 u.winCounter,
+                u.lobby_id, 
                 t.tokenValidation,
                 t.createdAt,
                 t.lastUsedAt,
@@ -82,6 +83,7 @@ class JdbiUsersRepository(
                     age = rs.getInt("age"),
                     credit = rs.getInt("credit"),
                     winCounter = rs.getInt("winCounter"),
+                    lobbyId = rs.getObject("lobby_id") as? Int,
                     tokenValidation = TokenValidationInfo(rs.getString("tokenValidation")),
                     createdAt = rs.getLong("createdAt"),
                     lastUsedAt = rs.getLong("lastUsedAt"),
@@ -220,12 +222,13 @@ class JdbiUsersRepository(
         var credit: Int,
         val winCounter: Int,
         val createdAt: Long,
+        val lobbyId: Int?,
         val lastUsedAt: Long,
     ) {
         val userAndToken: Pair<User, Token>
             get() =
                 Pair(
-                    User(id, username, passwordValidation, name, age, credit, winCounter),
+                    User(id, username, passwordValidation, name, age, credit, winCounter, lobbyId),
                     Token(
                         tokenValidation,
                         id,

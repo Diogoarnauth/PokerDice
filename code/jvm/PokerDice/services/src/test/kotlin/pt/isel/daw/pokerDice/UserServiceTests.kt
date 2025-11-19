@@ -1,6 +1,5 @@
 
 package pt.isel.daw.pokerDice
-
 /*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
@@ -41,9 +40,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
-
- */
+*/
 
 /**
  * Testes do UsersService — versão adaptada do stor.
@@ -51,7 +48,7 @@ import kotlin.test.assertTrue
  */
 
 class UserServiceTests {
- /*
+    /*
     private lateinit var service: UsersService
     private lateinit var lobbyService: LobbiesService
     private lateinit var username: String
@@ -95,6 +92,7 @@ class UserServiceTests {
     // --- BOOTSTRAP TESTS ---
     @Nested
     inner class BootstrapTests {
+
         @Test
         fun `can bootstrap first user`() {
             // given
@@ -743,5 +741,5 @@ class UserServiceTests {
             )
     }
 
-  */
+     */
 }

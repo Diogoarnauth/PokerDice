@@ -42,7 +42,6 @@ function formatTurnTime(turnTime: string): string {
   return "Desconhecido";
 }
 
-
 export default function LobbyDetails() {
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -65,10 +64,11 @@ export default function LobbyDetails() {
         if (token) {
           // Chama a API para obter os dados do usuário
           const userResponse = await lobbyDetailsService.getMe(token);
+          console.log("userResponse.value", userResponse)
 
-          console.log("userResponse", userResponse)
           if (userResponse.success) {
             setUser(userResponse.value);
+
           } else {
             setError("Failed to fetch user data");
           }
@@ -97,14 +97,13 @@ export default function LobbyDetails() {
   async function handleJoinLobby() {
     console.log("Joining lobby:", id);
     setJoinLoading(true);
-    // ---- API call (comentado para já) ----
-    /*
-    const joinResponse = await playersService.joinLobby(Number(id));
+
+    const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
     if (!joinResponse.success) {
-      alert("Failed to join lobby: " + joinResponse.error);
+      alert("Failed to join lobby: " + joinResponse);
       return;
     }
-    */
+
     setJoinLoading(false);
     // Após juntar ao lobby, redireciona para os detalhes do lobby
     navigate(`/lobbies/${id}/info`);
@@ -114,16 +113,15 @@ export default function LobbyDetails() {
   async function handleLeaveLobby() {
     console.log("Leaving lobby:", id);
     setLeaveLoading(true);
-    // ---- API call (comentado para já) ----
-    /*
-    const leaveResponse = await playersService.leaveLobby(Number(id));
+
+    const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
     if (!leaveResponse.success) {
-      alert("Failed to leave lobby: " + leaveResponse.error);
+        console.log("leaveResponse")
+      alert("Failed to leave lobby: " + leaveResponse);
       return;
     }
-    */
+
     setLeaveLoading(false);
-    // Após deixar o lobby, redireciona para a lista de lobbies
     navigate("/lobbies");
   }
 
@@ -137,7 +135,7 @@ export default function LobbyDetails() {
     <div>
       <h1>{lobby.name}</h1>
       <p>{lobby.description}</p>
-      <p><strong>Host ID:</strong> {lobby.hostId}</p>
+      <p><strong>Host ID:</strong> {user?.username}</p>
       <p><strong>Min Users:</strong> {lobby.minUsers}</p>
       <p><strong>Max Users:</strong> {lobby.maxUsers}</p>
       <p><strong>Rounds:</strong> {lobby.rounds}</p>

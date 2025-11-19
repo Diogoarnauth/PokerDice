@@ -17,7 +17,6 @@ import pt.isel.daw.pokerDice.services.GameService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 
-@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
 class GameController(
     private val gameService: GameService,

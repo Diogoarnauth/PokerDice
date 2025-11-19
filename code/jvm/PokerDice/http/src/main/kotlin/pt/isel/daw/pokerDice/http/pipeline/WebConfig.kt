@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.http.pipeline
 
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
+import org.springframework.web.servlet.config.annotation.CorsRegistry
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
@@ -17,5 +18,13 @@ class WebConfig(
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
         resolvers.add(authenticatedUserArgumentResolver)
+    }
+
+    override fun addCorsMappings(registry: CorsRegistry) {
+        registry
+            .addMapping("/api/**")
+            .allowedOrigins("*") // aceita qualquer origem/porta
+            .allowedMethods("GET", "POST", "OPTIONS")
+            .allowedHeaders("Authorization", "Content-Type")
     }
 }

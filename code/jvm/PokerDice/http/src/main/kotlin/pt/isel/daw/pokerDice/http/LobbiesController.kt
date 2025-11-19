@@ -21,7 +21,6 @@ import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
 import java.time.Duration
 
-@CrossOrigin(origins = ["http://localhost:3000"])
 @RestController
 class LobbiesController(
     private val lobbiesServices: LobbiesService,

@@ -16,6 +16,7 @@ export const RequestUri = {
         listen: `${BASE_API_URL}/sse`,
         checkAdmin: `${BASE_API_URL}/checkAdmin`,
         getMe:  `${BASE_API_URL}/users/getMe`,
+        getUser: (id: number) => `${BASE_API_URL}/users/${id}`,
     },
 
     // -----------------------

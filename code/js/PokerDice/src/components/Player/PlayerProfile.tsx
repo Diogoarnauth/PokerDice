@@ -5,7 +5,7 @@ import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
 export default function PlayerProfileComponent() {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);//
 
     useEffect(() => {
         async function fetchProfile() {
@@ -15,6 +15,7 @@ export default function PlayerProfileComponent() {
             const result = await playerProfileService.getProfile();
             if (result.success) {
                 const payload = new PlayerProfilePayload(result.value);
+                console.log("player",payload.profile);
                 setProfile(payload.profile);
             } else {
                 //setError(result.error);
@@ -35,6 +36,10 @@ export default function PlayerProfileComponent() {
                 <div>
                     <p><strong>Username:</strong> {profile.username}</p>
                     <p><strong>Name:</strong> {profile.name}</p>
+                    <p><strong>Age:</strong> {profile.age}</p>
+                    <p><strong>Lobby:</strong> {profile.lobbyId}</p>
+                    <p><strong>Credit:</strong> {profile.credit}</p>
+                    <p><strong>Win count:</strong> {profile.winCounter}</p>
                 </div>
             )}
         </div>

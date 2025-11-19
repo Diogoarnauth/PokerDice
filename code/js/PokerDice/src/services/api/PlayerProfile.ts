@@ -6,7 +6,7 @@ export const playerProfileService = {
     getProfile(): Promise<Result<any>> {
         return fetchWrapper(
             RequestUri.user.getMe,
-            { method: "GET" }
+            { method: "GET" }//
         );
     }
 };

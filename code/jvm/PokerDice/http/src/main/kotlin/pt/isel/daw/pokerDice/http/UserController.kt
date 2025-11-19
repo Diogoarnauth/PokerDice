@@ -156,10 +156,15 @@ class UserController(
         return when (res) {
             is Success -> {
                 val user: User = res.value
+
                 ResponseEntity.ok(
                     UserGetByIdOutputModel(
                         username = user.username,
                         name = user.name,
+                        age = user.age,
+                        lobby = user.lobbyId,
+                        credits = user.credit,
+                        winCounts = user.winCounter,
                     ),
                 )
             }

@@ -125,11 +125,31 @@ export default function LobbyDetails() {
     navigate("/lobbies");
   }
 
+  // Função para quando o host clicar em "Start Game"
+  async function handleStartGame() {
+    console.log("Starting game for lobby:", id);
+
+    try {
+      const startResponse = await lobbyDetailsService.startGame(Number(id));
+
+      if (startResponse.success) {
+        alert("Game started successfully!");
+        // Você pode redirecionar para outra página ou fazer o que for necessário após iniciar o jogo
+      } else {
+          console.log("startResponse", startResponse)
+        alert("Failed to start game: " + startResponse);
+      }
+    } catch (err) {
+      alert("Error starting game: " + err);
+    }
+  }
+
   if (loading) return <p>Loading lobby details...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
   if (!lobby) return <p>Lobby not found</p>;
 
   const isUserInLobby = user?.lobbyId === lobby.id;
+  const isUserHost = user?.id === lobby.hostId;  // Verifica se o usuário é o host
 
   return (
     <div>
@@ -152,6 +172,13 @@ export default function LobbyDetails() {
       {isUserInLobby && (
         <button onClick={handleLeaveLobby} disabled={leaveLoading}>
           {leaveLoading ? "Leaving..." : "Leave Lobby"}
+        </button>
+      )}
+
+      {/* Botão de Start Game só visível se o usuário for o host */}
+      {isUserHost && (
+        <button onClick={handleStartGame} disabled={loading}>
+          {loading ? "Starting Game..." : "Start Game"}
         </button>
       )}
     </div>

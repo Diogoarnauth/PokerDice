@@ -54,22 +54,25 @@ class LobbiesController(
             )
 
         return when (res) {
-            is Success ->
+            is Success -> {
+                // Em caso de sucesso, apenas retorne uma mensagem simples
                 ResponseEntity
-                    .status(201)
-                    .header("Location", Uris.Lobbies.BY_ID.replace("{id}", res.value.toString()))
-                    .build<Unit>()
+                    .status(201) // Código de status 201 para criação
+                    .body(mapOf("message" to "Lobby created successfully!"))
+            }
 
-            is Failure ->
+            is Failure -> {
+                // Caso haja erro, retorna o respectivo erro
                 when (res.value) {
-                    CreateLobbyError.InvalidSettings -> Problem.response(400, Problem.invalidLobbySettings) //
+                    CreateLobbyError.InvalidSettings -> Problem.response(400, Problem.invalidLobbySettings)
                     CreateLobbyError.CouldNotCreateLobby -> Problem.response(400, Problem.lobbyAlreadyExists)
-                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(403, Problem.HostAlreadyHasAnOpenLobby) //
+                    CreateLobbyError.HostAlreadyHasAnOpenLobby -> Problem.response(403, Problem.HostAlreadyHasAnOpenLobby)
                     CreateLobbyError.HostAlreadyOnAnotherLobby -> Problem.response(409, Problem.HostAlreadyOnAnotherLobby)
-                    CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit) //
+                    CreateLobbyError.NotEnoughCredit -> Problem.response(401, Problem.NotEnoughCredit)
                     CreateLobbyError.InsecurePassword -> Problem.response(400, Problem.insecurePassword)
                     CreateLobbyError.TurnTimeInvalid -> Problem.response(400, Problem.TurnTimeInvalid)
                 }
+            }
         }
     }
 

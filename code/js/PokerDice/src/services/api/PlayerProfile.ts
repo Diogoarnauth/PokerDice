@@ -11,19 +11,14 @@ export const playerProfileService = {
     },
 
     // POST /me/deposit → endpoint para depositar dinheiro
-    deposit(amount: number): Promise<Result<any>> {
-        const token = localStorage.getItem("token"); // adapta se diferente!
+    deposit(payload: { value: number }): Promise<Result<any>> {
+        console.log("Deposit payload:", payload); // Log do corpo enviado
         return fetchWrapper(
             RequestUri.user.deposit,
             {
                 method: "POST",
-                body: JSON.stringify({ amount }),
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `bearer ${token}`,
-                }
+                body: JSON.stringify(payload), // Aqui você envia o valor dentro de um objeto 'value'
             }
         );
     }
-
 };

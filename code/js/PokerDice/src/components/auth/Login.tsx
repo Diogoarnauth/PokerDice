@@ -1,131 +1,162 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { authService } from "../../services/api/auth";
-import { isOk } from "../../services/api/utils";
-import { useAuthentication } from "../../providers/authentication";
-import "../../styles/auth.css";
+import React, { useReducer, useState, useEffect } from 'react';
+import { Navigate, useLocation, Link, useNavigate } from 'react-router-dom'; // Corrigido: useNavigate
+import { useAuthentication } from '../../providers/authentication';
+import { authService } from '../../services/api/auth';
+import { isOk } from '../../services/api/utils';
+import '../../styles/login.css';
 
-//TODO VER MELHOR O QUE ESSES PROVIDERS FAZEM
-export default function Login() {
-  // Router
-  const navigate = useNavigate();
+// Tipos de estado para o formulário
+type State =
+  | { type: 'editing'; inputs: { username: string; password: string }; showPassword: boolean; error: string | null; shouldRedirect: boolean }
+  | { type: 'submitting'; inputs: { username: string; password: string }; showPassword: boolean; error: string | null; isLoading: boolean; shouldRedirect: boolean }
+  | { type: 'redirect' };
 
-  // Authentication provider
-  const [, setUsername] = useAuthentication();
+type Action =
+  | { type: 'edit'; inputName: string; inputValue: string }
+  | { type: 'submit'; inputs: { username: string; password: string } }
+  | { type: 'togglePassword' }
+  | { type: 'setError'; error: string | null }
+  | { type: 'setLoading'; isLoading: boolean }
+  | { type: 'setRedirect' };
 
-
-  const [username, setUsernameInput] = useState("");
-  const [password, setPasswordInput] = useState("");
-
-  // UI State
-  const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  // Messages
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<string | null>(null);
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setError(null);
-    setResult(null);
-
-    if (!username || !password) {
-      setError("Please fill in all fields");
-      return;
-    }
-
-    setLoading(true);
-
-    const response = await authService.login({ username, password });
-
-
-    if (isOk(response)) {
-
-      setResult("Login successful! Redirecting...");
-
-     if (response.value.token) {
-        localStorage.setItem("token", response.value.token);
+// Função para redução do estado do formulário
+function reduce(state: State, action: Action): State {
+  switch (state.type) {
+    case 'editing':
+      switch (action.type) {
+        case 'edit':
+          return { ...state, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
+        case 'submit':
+          return { type: 'submitting', inputs: action.inputs, showPassword: state.showPassword, error: null, isLoading: true, shouldRedirect: false };
+        case 'togglePassword':
+          return { ...state, showPassword: !state.showPassword };
+        default:
+          return state;
       }
+    case 'submitting':
+      switch (action.type) {
+        case 'setError':
+          return { type: 'editing', inputs: { ...state.inputs, password: '' }, showPassword: false, error: action.error, shouldRedirect: false };
+        case 'setRedirect':
+          return { type: 'redirect' };
+        default:
+          return state;
+      }
+    default:
+      return state;
+  }
+}
 
-      setUsername(username); // TODO() alterar isto depois pq queremos no token penso
+export default function Login() {
+  const [state, dispatch] = useReducer(reduce, {
+    type: 'editing',
+    inputs: { username: '', password: '' },
+    showPassword: false,
+    error: null,
+    shouldRedirect: false,
+  });
+  const [, setUsername] = useAuthentication();
+  const location = useLocation(); // Para obter a localização da página anterior
+  const navigate = useNavigate(); // Corrigido para usar o hook useNavigate
 
-      setTimeout(() => {
-        navigate("/"); // redirecionar para Home
-      }, 1000);
-    } else {
-      setError(response.error || "Unknown error");
-    }
-
-    setLoading(false);
+  // Se o estado for 'redirect', navegue para a página anterior ou para /channels
+  if (state.type === 'redirect') {
+    return <Navigate to={location.state?.source ?? '/channels'} replace={true} />;
   }
 
+  // Manipula as mudanças nos campos do formulário
+  function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {
+    dispatch({ type: 'edit', inputName: ev.target.name, inputValue: ev.target.value });
+  }
+
+  // Submete o formulário
+  async function handleSubmit(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    if (state.type === 'editing') {
+      dispatch({ type: 'submit', inputs: state.inputs });
+      const result = await authService.login(state.inputs);
+
+      if (isOk(result)) {
+        // Armazena o token no localStorage
+        if (result.value.token) {
+          localStorage.setItem("token", result.value.token); // Salva o token no localStorage
+        }
+
+        setUsername(state.inputs.username); // Armazena o nome de usuário após login
+        dispatch({ type: 'setRedirect' }); // Redireciona o usuário
+
+        // Aguarda e redireciona
+        setTimeout(() => {
+          navigate(location.state?.source ?? '/channels'); // Redireciona para a página de origem ou para /channels
+        }, 1000);
+      } else {
+        dispatch({ type: 'setError', error: result.error });
+      }
+    }
+  }
+
+  const inputs = state.type === 'editing' || state.type === 'submitting' ? state.inputs : { username: '', password: '' };
+
   return (
-    <div className="auth-container">
-      <h1 className="auth-title">Login</h1>
-
+    <div className="container">
+      <h1 className="title">Login</h1>
       <form onSubmit={handleSubmit}>
-        <fieldset disabled={loading}>
-          <div className="auth-form-group">
-
-            {/* Username */}
+        <fieldset disabled={state.type === 'submitting' && state.isLoading}>
+          <div className="input-container">
             <div>
-              <label htmlFor="username" className="auth-label">Username</label>
+              <label htmlFor="username" className="label">
+                Username
+              </label>
               <input
-                className="auth-input"
-                type="text"
+                className="input"
                 id="username"
-                value={username}
-                onChange={(e) => setUsernameInput(e.target.value)}
+                type="text"
+                name="username"
+                value={inputs.username}
+                onChange={handleChange}
                 placeholder="Enter your username"
                 required
               />
             </div>
 
-            {/* Password */}
             <div>
-              <label htmlFor="password" className="auth-label">Password</label>
-              <div className="auth-password-container">
+              <label htmlFor="password" className="label">
+                Password
+              </label>
+              <div className="password-container">
                 <input
-                  className="auth-input"
-                  type={showPassword ? "text" : "password"}
+                  className="input"
                   id="password"
-                  value={password}
-                  onChange={(e) => setPasswordInput(e.target.value)}
+                  type={state.showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={inputs.password}
+                  onChange={handleChange}
                   placeholder="Enter your password"
                   required
                 />
-
-                <button
-                  type="button"
-                  className="auth-toggle-password"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? "🙉" : "🙈"}
+                <button type="button" onClick={() => dispatch({ type: 'togglePassword' })} className="toggle-password">
+                  {state.showPassword ? '🙉' : '🙈'}
                 </button>
               </div>
             </div>
 
-            {/* Submit button */}
-            <button type="submit" className="auth-submit">
-              {loading ? "Loading..." : "Sign In"}
+            <button type="submit" className="submit-button">
+              {state.type === 'submitting' && state.isLoading ? 'Loading...' : 'Sign In'}
             </button>
           </div>
         </fieldset>
 
-        {/* Error message */}
-        {error && <div className="auth-error">{error}</div>}
-
-        {/* Success message */}
-        {result && <div className="auth-info">{result}</div>}
-
-        {/* Signup link */}
-        <div className="auth-links">
-          <p className="auth-text">
-            Don't have an account?{" "}
-            <a href="/signup" className="auth-link">Sign Up</a>
+        <div className="signup-container">
+          <p className="signup-text">
+            Don't have an account?{' '}
+            <Link to="/signup" className="signup-link">
+              Sign Up
+            </Link>
           </p>
         </div>
+
+        {state.error && <div className="error">{state.error}</div>}
+        {state.type === 'submitting' && state.isLoading && <div className="loading">Loading...</div>}
       </form>
     </div>
   );

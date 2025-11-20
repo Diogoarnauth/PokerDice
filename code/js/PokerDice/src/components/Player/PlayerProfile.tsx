@@ -41,17 +41,18 @@ export default function PlayerProfileComponent() {
             return;
         }
 
-        const result = await playerProfileService.deposit(depositAmount);
+        const result = await playerProfileService.deposit({ value: depositAmount }); // Envia 'value' ao invés de 'amount'
         if (result.success) {
             setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
-            // Atualiza o perfil para ver o novo saldo!
+
             const updatedProfile = new PlayerProfilePayload(result.value).profile;
             setProfile(updatedProfile);
         } else {
-            //setError(result.error ?? "Erro ao realizar depósito");
+            //setError(result ?? "Erro ao realizar depósito");
         }
         setDepositLoading(false);
     }
+
 
     if (loading) return <p>Loading profile...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;

@@ -59,9 +59,10 @@ export default function Login() {
   const location = useLocation(); // Para obter a localização da página anterior
   const navigate = useNavigate(); // Corrigido para usar o hook useNavigate
 
-  // Se o estado for 'redirect', navegue para a página anterior ou para /channels
+  // Se o estado for 'redirect', navegue para a página anterior
   if (state.type === 'redirect') {
-    return <Navigate to={location.state?.source ?? '/channels'} replace={true} />;
+      console.log("olaaaaaaa")
+    return <Navigate to={location.state?.source ?? '/home'} replace={true} />;
   }
 
   // Manipula as mudanças nos campos do formulário
@@ -86,9 +87,10 @@ export default function Login() {
         dispatch({ type: 'setRedirect' }); // Redireciona o usuário
 
         // Aguarda e redireciona
-        setTimeout(() => {
-          navigate(location.state?.source ?? '/channels'); // Redireciona para a página de origem ou para /channels
-        }, 1000);
+        //setTimeout(() => {
+          //navigate(location.state?.source ?? '/home');
+        //}, 1000);
+
       } else {
         dispatch({ type: 'setError', error: result.error });
       }

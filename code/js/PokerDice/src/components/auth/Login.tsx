@@ -59,11 +59,18 @@ export default function Login() {
   const location = useLocation(); // Para obter a localização da página anterior
   const navigate = useNavigate(); // Corrigido para usar o hook useNavigate
 
+
+
   // Se o estado for 'redirect', navegue para a página anterior
   if (state.type === 'redirect') {
       console.log("olaaaaaaa")
     return <Navigate to={location.state?.source ?? '/home'} replace={true} />;
   }
+
+const token = localStorage.getItem("token");
+if (token) {
+    return <div className="already-logged">Já estás com o login feito</div>;
+}
 
   // Manipula as mudanças nos campos do formulário
   function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {

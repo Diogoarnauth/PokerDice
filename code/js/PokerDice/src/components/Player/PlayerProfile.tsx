@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { playerProfileService } from "../../services/api/PlayerProfile";
-import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
+import { PlayerProfilePayload, PlayerProfile } from "../models/PlayerProfile";
+
+const TOKEN_KEY = "token"; // change here if you use a different key
 
 export default function PlayerProfileComponent() {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
@@ -9,6 +11,18 @@ export default function PlayerProfileComponent() {
     const [depositAmount, setDepositAmount] = useState<number>(0);
     const [depositLoading, setDepositLoading] = useState<boolean>(false);
     const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
+    const [hasToken, setHasToken] = useState<boolean>(false);
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+        return <div className="already-not-logged">Para aceder ao seu perfil tem de efetuar o login</div>;
+    }
+
+    // Check token on mount
+    useEffect(() => {
+        const token = localStorage.getItem(TOKEN_KEY);
+        setHasToken(!!token);
+    }, []);
 
     // Fetch profile
     useEffect(() => {
@@ -21,13 +35,24 @@ export default function PlayerProfileComponent() {
                 const payload = new PlayerProfilePayload(result.value);
                 setProfile(payload.profile);
             } else {
-                //setError(result.error ?? "Erro ao obter perfil");
+                // setError(result.error ?? "Erro ao obter perfil");
             }
             setLoading(false);
         }
 
         fetchProfile();
     }, []);
+
+    // Logout handler
+    function handleLogout() {
+        // remove token and update state
+        localStorage.removeItem(TOKEN_KEY);
+        setHasToken(false);
+        // optional: clear profile or redirect
+        setProfile(null);
+        // e.g. redirect:
+        // window.location.href = "/login";
+    }
 
     // Handler do formulário de depósito
     async function handleDeposit(e: React.FormEvent) {
@@ -41,25 +66,40 @@ export default function PlayerProfileComponent() {
             return;
         }
 
-        const result = await playerProfileService.deposit({ value: depositAmount }); // Envia 'value' ao invés de 'amount'
+        const result = await playerProfileService.deposit({ value: depositAmount });
         if (result.success) {
-            setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
+                setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
 
-            const updatedProfile = new PlayerProfilePayload(result.value).profile;
-            setProfile(updatedProfile);
-        } else {
-            //setError(result ?? "Erro ao realizar depósito");
-        }
+                // 👉 Atualizar só o credit no profile existente
+                setProfile(prev =>
+                    prev
+                        ? {
+                            ...prev,
+                            credit: result.value.newBalance
+                        }
+                        : prev
+                );
+            } else {
+                // setError(result?.error ?? "Erro ao realizar depósito");
+            }
+
         setDepositLoading(false);
     }
-
 
     if (loading) return <p>Loading profile...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <div style={{ maxWidth: 400, margin: "auto", padding: 24 }}>
-            <h1>Player Profile</h1>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h1>Player Profile</h1>
+                {hasToken && (
+                    <button onClick={handleLogout}>
+                        Logout
+                    </button>
+                )}
+            </div>
+
             {profile && (
                 <div>
                     <p><strong>Username:</strong> {profile.username}</p>

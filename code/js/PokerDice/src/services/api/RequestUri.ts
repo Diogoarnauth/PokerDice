@@ -49,6 +49,7 @@ export const RequestUri = {
         finalResult: (gameId: number) => `${BASE_API_URL}/games/${gameId}/final-result`,
         playerTurn: (gameId: number) => `${BASE_API_URL}/games/${gameId}/player-turn`,
         getGame: (gameId: number) => `${BASE_API_URL}/games/${gameId}`,
+        getGameByLobbyId :(lobbyId: number) => `${BASE_API_URL}/games/lobby/${lobbyId}`,
     },
 
     // -----------------------

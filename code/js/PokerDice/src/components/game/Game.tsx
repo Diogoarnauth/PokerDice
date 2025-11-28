@@ -6,19 +6,24 @@ import { GamePayload, Game } from "../models/Game";
 import { useParams } from "react-router-dom";
 
 export default function GamePage() {
-    const { gameId } = useParams<{ gameId: string }>(); // supõe rota /games/:gameId
+    const { lobbyId } = useParams<{ lobbyId: string }>(); // supõe rota /games/lobby/:lobbyId
     const [game, setGame] = useState<Game | null>(null);
+    const [gameId, setGameId] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [info, setInfo] = useState<string | null>(null);
     const [rerollInput, setRerollInput] = useState<string>("");
+    const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
+
 
     const token = localStorage.getItem("token");
     const currentUsername = localStorage.getItem("username"); // ou de onde guardares
 
     useEffect(() => {
-        if (!gameId) {
-            setError("Game id em falta.");
+        console.log("Fetching lobby:", lobbyId);
+
+        if (!lobbyId) {
+            setError("Lobby id em falta.");
             setLoading(false);
             return;
         }
@@ -28,10 +33,30 @@ export default function GamePage() {
             setError(null);
             setInfo(null);
 
-            const result = await gameService.getById(Number(gameId));
+            const result = await gameService.getGameByLobbyId(Number(lobbyId));
+            console.log("Fetching game:", result);
+
             if (isOk(result)) {
                 const payload = new GamePayload(result.value);
                 setGame(payload.game);
+                setGameId(payload.game.id);
+
+                // Buscar jogador atual via endpoint /games/{gameId}/player-turn
+                try {
+                    const gameIdFromPayload = payload.game.id;;
+                    console.log("Fetching player turn do game:", gameIdFromPayload);
+
+                    const turnRes = await gameService.getPlayerTurn(gameIdFromPayload);
+                    console.log("Fetching player turn:", turnRes);
+
+                    if (isOk(turnRes)) {
+                        setCurrentPlayer(turnRes.value.username); // string com username
+                    } else {
+                        setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
+                    }
+                } catch {
+                    setInfo("Erro ao obter o jogador atual.");
+                }
             } else {
                 setError(result.error ?? "Erro a carregar o jogo.");
             }
@@ -39,7 +64,8 @@ export default function GamePage() {
         }
 
         fetchGame();
-    }, [gameId]);
+    }, [lobbyId]);
+
 
     function ensureMyTurn(): boolean {
         if (!game || !currentUsername) return false;
@@ -126,7 +152,7 @@ export default function GamePage() {
             <h1>Game #{game.id}</h1>
 
             <p>
-                Jogador atual: <strong>{game.currentPlayerUsername}</strong>
+                Jogador atual: <strong>{currentPlayer}</strong>
             </p>
 
             {info && <p style={{ color: "blue" }}>{info}</p>}

@@ -145,7 +145,7 @@ export default function LobbyDetails() {
         alert("Game started successfully!");
         // Você pode redirecionar para outra página ou fazer o que for necessário após iniciar o jogo
           setTimeout(() => {
-              navigate(`/game/lobby/${id}`);
+              navigate(`/games/lobby/${id}`);
           }, 1000);
       } else {
           console.log("startResponse", startResponse)

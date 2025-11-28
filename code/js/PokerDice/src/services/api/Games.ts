@@ -47,6 +47,13 @@ export const gameService = {
         })
     },
 
+    //GET
+    getGameByLobbyId(lobbyId: number): Promise<Result<any>> {
+        return fetchWrapper(RequestUri.games.getGameByLobbyId(lobbyId), {
+            method: "GET",
+        })
+    },
+
     // POST /games/{gameId}/end-game
     endGame(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.endGame(gameId), {
@@ -55,10 +62,10 @@ export const gameService = {
     },
 
     // GET /games/{gameId}/player-turn
-    getPlayerTurn(gameId: number): Promise<Result<string>> {
+    getPlayerTurn(gameId: number): Promise<Result<{ username: string }>> {
         return fetchWrapper(RequestUri.games.playerTurn(gameId), {
             method: "GET",
-        })
+        });
     },
 
     // POST /games/{gameId}/leave

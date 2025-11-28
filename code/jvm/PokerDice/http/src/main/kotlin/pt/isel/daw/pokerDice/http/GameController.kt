@@ -173,7 +173,7 @@ class GameController(
     ): ResponseEntity<*> {
         val res = gameService.whichPlayerTurn(gameId)
         return when (res) {
-            is Success -> ResponseEntity.ok(res.value)
+            is Success -> ResponseEntity.ok(mapOf("username" to res.value))
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
         }
     }

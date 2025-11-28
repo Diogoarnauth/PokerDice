@@ -43,6 +43,9 @@ sealed class GameGetByIdError {
     data object GameNotFound : GameGetByIdError()
 }
 
+// Mudando o tipo para retornar o jogo completo
+typealias GetGameByLobby = Either<GameError, Game?> // Agora vai retornar o objeto Game completo
+
 typealias GameErrorResult = Either<GameError, String>
 
 sealed class GameError {
@@ -83,6 +86,15 @@ class GameService(
     private val gameDomain: GameDomain,
     private val lobbiesDomain: LobbiesDomain,
 ) {
+    fun getGameIdByLobby(lobbyId: Int): GetGameByLobby {
+        return transactionManager.run { it ->
+            val game =
+                it.gamesRepository.getGameByLobbyId(lobbyId)
+                    ?: return@run failure(GameError.GameNotFound(lobbyId)) // Retorna erro se não encontrar o jogo
+            success(game) // Retorna o jogo completo, não apenas o ID
+        }
+    }
+
     fun createGame(
         userId: Int,
         lobbyId: Int,
@@ -475,7 +487,7 @@ class GameService(
 
             // return the player's ID (you might want to return player info, but ID suffices)
 
-            success(currentPlayer.id.toString())
+            success(currentPlayer.username)
         }
 
     fun attributeWinnersCredits(

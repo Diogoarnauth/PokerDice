@@ -27,11 +27,11 @@ class GameController(
     ): ResponseEntity<*> {
         val res = gameService.createGame(authenticatedUser.user.id, lobbyId = lobbyId)
         return when (res) {
-            is Success ->
-                ResponseEntity
+            is Success -> ResponseEntity.ok(res.value.toString())
+                /*ResponseEntity
                     .status(201)
                     .header("Location", Uris.Games.BY_ID.replace("{gameId}", res.value.toString()))
-                    .build<Unit>()
+                    .build<Unit>()*/
             is Failure ->
                 when (res.value) {
                     is GameCreationError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
@@ -40,6 +40,28 @@ class GameController(
                     is GameCreationError.NotEnoughPlayers -> Problem.response(422, Problem.notEnoughPlayers)
                     is GameCreationError.NotTheHost -> Problem.response(403, Problem.NotTheHost)
                 }
+        }
+    }
+
+    @GetMapping(Uris.Games.GETGAME)
+    fun getGameIdByLobby(
+        @PathVariable id: String,
+    ): ResponseEntity<*> {
+        val lobbyId =
+            id.toIntOrNull()
+                ?: return Problem.response(400, Problem.invalidRequestContent)
+
+        val res = gameService.getGameIdByLobby(lobbyId)
+
+        return when (res) {
+            is Success -> {
+                val game = res.value // game é o objeto completo do jogo
+                ResponseEntity.ok(game) // Retorna o jogo completo com sucesso
+            }
+
+            is Failure -> {
+                ResponseEntity.status(404).body("Jogo não encontrado para o lobbyId $lobbyId")
+            }
         }
     }
 

@@ -121,6 +121,8 @@ export default function LobbyDetails() {
       return;
     }
 
+
+
     setLeaveLoading(false);
     navigate("/lobbies");
   }

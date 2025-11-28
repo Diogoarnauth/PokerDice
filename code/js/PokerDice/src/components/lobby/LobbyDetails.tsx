@@ -47,6 +47,7 @@ function formatTurnTime(turnTime: string): string {
 export default function LobbyDetails() {
   const [lobby, setLobby] = useState<Lobby | null>(null);
   const [user, setUser] = useState<User | null>(null);
+  const [owner, setOwner] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [joinLoading, setJoinLoading] = useState(false);
@@ -82,12 +83,23 @@ export default function LobbyDetails() {
         const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
         if (response.success) {
           setLobby(response.value);
+
+          const ownerId = response.value.hostId;
+
+            const ownerResponse = await lobbyDetailsService.getOwner(ownerId);
+            if (ownerResponse.success) {
+              setOwner(ownerResponse.value);
+            } else {
+              console.error("Failed to fetch owner", ownerResponse.error);
+            }
+
         } else {
           setError("Failed to load lobby details");
         }
       } catch (err) {
         setError("Error fetching data");
       }
+
 
       setLoading(false);
     }
@@ -96,38 +108,52 @@ export default function LobbyDetails() {
   }, [id]);
 
   // Função para quando o usuário clicar em "Join Lobby"
-  async function handleJoinLobby() {
-    console.log("Joining lobby:", id);
-    setJoinLoading(true);
+    async function handleJoinLobby() {
+      console.log("Joining lobby:", id);
+      setJoinLoading(true);
 
-    const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
-    if (!joinResponse.success) {
-      alert("Failed to join lobby: " + joinResponse);
-      return;
+      const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
+      console.log("joinResponse", joinResponse)
+
+      if (!joinResponse.success) {
+        alert("Failed to join lobby: " + joinResponse.error);
+        setJoinLoading(false);
+        return;
+      }
+
+      // 👉 ATUALIZAR O USER NO ESTADO PARA REFLETIR QUE ENTROU NO LOBBY
+      setUser(prev =>
+        prev
+          ? { ...prev, lobbyId: Number(id) }
+          : prev
+      );
+
+      setJoinLoading(false);
     }
-
-    setJoinLoading(false);
-    // Após juntar ao lobby, redireciona para os detalhes do lobby
-    navigate(`/lobbies/${id}/info`);
-  }
 
   // Função para quando o usuário clicar em "Leave Lobby"
-  async function handleLeaveLobby() {
-    console.log("Leaving lobby:", id);
-    setLeaveLoading(true);
+   async function handleLeaveLobby() {
+     console.log("Leaving lobby:", id);
+     setLeaveLoading(true);
 
-    const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
-    if (!leaveResponse.success) {
-        console.log("leaveResponse")
-      alert("Failed to leave lobby: " + leaveResponse);
-      return;
-    }
+     const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
+     if (!leaveResponse.success) {
+       console.log("leaveResponse")
+       alert("Failed to leave lobby: " + leaveResponse.error);
+       setLeaveLoading(false);
+       return;
+     }
 
+     // 👉 ATUALIZAR O USER NO ESTADO PARA REFLETIR QUE SAIU DO LOBBY
+     setUser(prev =>
+       prev
+         ? { ...prev, lobbyId: null }
+         : prev
+     );
 
-
-    setLeaveLoading(false);
-    navigate("/lobbies");
-  }
+     setLeaveLoading(false);
+     navigate("/lobbies");
+   }
 
   // Função para quando o host clicar em "Start Game"
   async function handleStartGame() {
@@ -166,8 +192,8 @@ export default function LobbyDetails() {
   return (
     <div>
       <h1>{lobby.name}</h1>
-      <p>{lobby.description}</p>
-      <p><strong>Host ID:</strong> {user?.username}</p>
+      <p><strong>Description:</strong>{lobby.description}</p>
+      <p><strong>Host:</strong> {owner?.username}</p>
       <p><strong>Min Users:</strong> {lobby.minUsers}</p>
       <p><strong>Max Users:</strong> {lobby.maxUsers}</p>
       <p><strong>Rounds:</strong> {lobby.rounds}</p>

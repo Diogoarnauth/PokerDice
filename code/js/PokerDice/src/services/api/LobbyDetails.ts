@@ -8,6 +8,13 @@ import { User } from "../../components/lobby/LobbyDetails";
 // ----------------------------------------
 export const lobbyDetailsService = {
 
+  getOwner(id: number) {
+    return fetchWrapper(
+      RequestUri.user.getUser(id),
+      { method: "GET" }
+    )
+  },
+
   // GET /lobbies/{id} → obter detalhes completos do lobby
   getLobby(id: number) {
     return fetchWrapper(

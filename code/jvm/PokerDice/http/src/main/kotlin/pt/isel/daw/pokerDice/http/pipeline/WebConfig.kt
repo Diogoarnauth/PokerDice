@@ -24,7 +24,7 @@ class WebConfig(
         registry
             .addMapping("/api/**")
             .allowedOrigins("*") // aceita qualquer origem/porta
-            .allowedMethods("GET", "POST", "OPTIONS")
+            .allowedMethods("GET", "POST", "OPTIONS", "DELETE")
             .allowedHeaders("Authorization", "Content-Type")
     }
 }

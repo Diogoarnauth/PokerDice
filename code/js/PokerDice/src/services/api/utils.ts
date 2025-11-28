@@ -3,38 +3,40 @@ export type Result<T> =
 | { success: false; error: string };
 
 export const isOk = <T>(result: Result<T>): result is { success: true; value: T } => result.success;
-
 export async function fetchWrapper<T>(
   url: string,
   options: RequestInit = {}
 ): Promise<Result<T>> {
   try {
-      //Obter token
-      const token = localStorage.getItem('token');
-      console.log("Token before request:", localStorage.getItem("token"))
-      console.log('fetchWrapper', document.cookie);
-      const response = await fetch(url, {
-          headers: {
-              'Content-Type': 'application/json',
-              ...(token ? { Authorization : `Bearer ${token}`} : {}),
-              ...options.headers,
-          },
-          ...options,
-      });
+    const token = localStorage.getItem('token');
 
-      if (!response.ok) {
-        console.log('fetchWrapper', response.status);
-        console.log('Response headers:', response.headers);
-        const errorData = await response.json();
-        return { success: false, error: errorData.message || 'Request failed' };
-      }
-      if (response.status === 204) {
-        return { success: true, value: undefined as T };
-      }
+    const headers: HeadersInit = {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    };
 
-      const data = await response.json();
-      return { success: true, value: data as T };
-  } catch (error) {
-      return { success: false, error: error.message };
+    // ❗ APENAS ADICIONA CONTENT-TYPE SE EXISTIR BODY
+    if (options.body) {
+      headers['Content-Type'] = 'application/json';
+    }
+
+    const response = await fetch(url, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => null);
+      return { success: false, error: errorData?.message || 'Request failed' };
+    }
+
+    if (response.status === 204) {
+      return { success: true, value: undefined as T };
+    }
+
+    const data = await response.json();
+    return { success: true, value: data as T };
+  } catch (error: any) {
+    return { success: false, error: error.message };
   }
 }

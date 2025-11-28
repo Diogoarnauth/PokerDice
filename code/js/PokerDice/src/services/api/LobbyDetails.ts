@@ -40,6 +40,7 @@ export const lobbyDetailsService = {
     )
   },
 
+    /*
   // POST /games/{lobbyId}/start → host inicia o jogo
   startGame(lobbyId: number): Promise<Result<any>> {
     return fetchWrapper(
@@ -47,4 +48,5 @@ export const lobbyDetailsService = {
       { method: "POST" }
     )
   }
+     */
 }

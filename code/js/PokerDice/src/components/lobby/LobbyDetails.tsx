@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
+import {gameService} from "../../services/api/Games";
+import {isOk} from "../../services/api/utils";
 
 // Tipo para armazenar as informações do Lobby
 type Lobby = {
@@ -127,21 +129,29 @@ export default function LobbyDetails() {
 
   // Função para quando o host clicar em "Start Game"
   async function handleStartGame() {
+
+    if (!id) return;
+    setError(undefined);
+
     console.log("Starting game for lobby:", id);
 
-    try {
-      const startResponse = await lobbyDetailsService.startGame(Number(id));
+      try {
+        const startResponse = await gameService.startGame(Number(id));
+        console.log("StartGame response:", startResponse);
 
       if (startResponse.success) {
         alert("Game started successfully!");
         // Você pode redirecionar para outra página ou fazer o que for necessário após iniciar o jogo
+          setTimeout(() => {
+              navigate(`/game/lobby/${id}`);
+          }, 1000);
       } else {
           console.log("startResponse", startResponse)
         alert("Failed to start game: " + startResponse);
       }
     } catch (err) {
-      alert("Error starting game: " + err);
-    }
+          alert("Error starting game: " + err);
+      }
   }
 
   if (loading) return <p>Loading lobby details...</p>;

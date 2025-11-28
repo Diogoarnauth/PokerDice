@@ -38,16 +38,17 @@ export const RequestUri = {
     games: {
         root: `${BASE_API_URL}/games`,
 
-        byId: (gameId: string) => `${BASE_API_URL}/games/${gameId}`,
+        byId: (gameId: number) => `${BASE_API_URL}/games/${gameId}`,
         start: (lobbyId: number) => `${BASE_API_URL}/games/${lobbyId}/start`,
-        roll: (gameId: string) => `${BASE_API_URL}/games/${gameId}/roll`,
-        reroll: (gameId: string) => `${BASE_API_URL}/games/${gameId}/reroll`,
-        leave: (gameId: string) => `${BASE_API_URL}/games/${gameId}/leave`,
-        endTurn: (gameId: string) => `${BASE_API_URL}/games/${gameId}/end`,
-        endGame: (gameId: string) => `${BASE_API_URL}/games/${gameId}/end-game`,
-        status: (gameId: string) => `${BASE_API_URL}/games/${gameId}/status`,
-        finalResult: (gameId: string) => `${BASE_API_URL}/games/${gameId}/final-result`,
-        playerTurn: (gameId: string) => `${BASE_API_URL}/games/${gameId}/player-turn`,
+        roll: (gameId: number) => `${BASE_API_URL}/games/${gameId}/roll`,
+        reroll: (gameId: number) => `${BASE_API_URL}/games/${gameId}/reroll`,
+        leave: (gameId: number) => `${BASE_API_URL}/games/${gameId}/leave`,
+        endTurn: (gameId: number) => `${BASE_API_URL}/games/${gameId}/end`,
+        endGame: (gameId: number) => `${BASE_API_URL}/games/${gameId}/end-game`,
+        status: (gameId: number) => `${BASE_API_URL}/games/${gameId}/status`,
+        finalResult: (gameId: number) => `${BASE_API_URL}/games/${gameId}/final-result`,
+        playerTurn: (gameId: number) => `${BASE_API_URL}/games/${gameId}/player-turn`,
+        getGame: (gameId: number) => `${BASE_API_URL}/games/${gameId}`,
     },
 
     // -----------------------
@@ -57,4 +58,5 @@ export const RequestUri = {
         hostname: `${BASE_API_URL}/status/hostname`,
         ip: `${BASE_API_URL}/status/ip`
     }
+
 }

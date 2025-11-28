@@ -19,14 +19,14 @@ export const gameService = {
     },
 
     // POST /games/{gameId}/roll
-    roll(gameId: string): Promise<Result<RollResult>> {
+    roll(gameId: number): Promise<Result<RollResult>> {
         return fetchWrapper(RequestUri.games.roll(gameId), {
             method: "POST",
         })
     },
 
     // POST /games/{gameId}/reroll
-    reroll(gameId: string, diceMask: number[]): Promise<Result<RerollResult>> {
+    reroll(gameId: number, diceMask: number[]): Promise<Result<RerollResult>> {
         return fetchWrapper(RequestUri.games.reroll(gameId), {
             method: "POST",
             body: JSON.stringify(diceMask),
@@ -34,35 +34,35 @@ export const gameService = {
     },
 
     // POST /games/{gameId}/end
-    endTurn(gameId: string): Promise<Result<any>> {
+    endTurn(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.endTurn(gameId), {
             method: "POST",
         })
     },
 
     // GET /games/{gameId}
-    getById(gameId: string): Promise<Result<any>> {
+    getById(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.byId(gameId), {
             method: "GET",
         })
     },
 
     // POST /games/{gameId}/end-game
-    endGame(gameId: string): Promise<Result<any>> {
+    endGame(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.endGame(gameId), {
             method: "POST",
         })
     },
 
     // GET /games/{gameId}/player-turn
-    getPlayerTurn(gameId: string): Promise<Result<string>> {
+    getPlayerTurn(gameId: number): Promise<Result<string>> {
         return fetchWrapper(RequestUri.games.playerTurn(gameId), {
             method: "GET",
         })
     },
 
     // POST /games/{gameId}/leave
-    leave(gameId: string): Promise<Result<any>> {
+    leave(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.leave(gameId), {
             method: "POST",
         })

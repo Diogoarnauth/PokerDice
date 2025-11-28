@@ -475,7 +475,7 @@ class GameService(
 
             // return the player's ID (you might want to return player info, but ID suffices)
 
-            success(currentPlayer.id.toString())
+            success(currentPlayer.username)
         }
 
     fun attributeWinnersCredits(

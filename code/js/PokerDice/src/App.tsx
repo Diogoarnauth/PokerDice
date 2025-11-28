@@ -8,6 +8,7 @@ import LobbyCreation from "./components/lobby/LobbyCreation";
 import PlayerProfile from "./components/Player/PlayerProfile";
 import AppInvite from "./components/auth/AppInvite";
 import About from "./components/about/About";
+import GamePage from "./components/game/Game";
 
 
 // App.tsx
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/playerProfile" element={<PlayerProfile />} />
                 <Route path="/about" element={<About />} />
                 <Route  path="/appInvite" element={<AppInvite />} />
+                <Route path="/games/lobby/:lobbyId" element={<GamePage />} />
 
 
 

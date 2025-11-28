@@ -72,7 +72,11 @@ class GameController(
     ): ResponseEntity<*> {
         val res = gameService.rollDice(lobbyId, authenticatedUser.user.id)
         return when (res) {
-            is Success -> ResponseEntity.ok(res.value)
+            is Success -> {
+                val dice = res.value // por ex. lista de ints ou strings
+
+                ResponseEntity.ok(mapOf("dice" to dice))
+            }
             is Failure -> {
                 when (res.value) {
                     is GameError.NotFirstRoll -> Problem.response(403, Problem.notFirstRoll)

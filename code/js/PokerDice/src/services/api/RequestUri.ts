@@ -40,7 +40,7 @@ export const RequestUri = {
 
         byId: (gameId: number) => `${BASE_API_URL}/games/${gameId}`,
         start: (lobbyId: number) => `${BASE_API_URL}/games/${lobbyId}/start`,
-        roll: (gameId: number) => `${BASE_API_URL}/games/${gameId}/roll`,
+        roll: (lobbyId: number) => `${BASE_API_URL}/games/${lobbyId}/roll`,
         reroll: (gameId: number) => `${BASE_API_URL}/games/${gameId}/reroll`,
         leave: (gameId: number) => `${BASE_API_URL}/games/${gameId}/leave`,
         endTurn: (gameId: number) => `${BASE_API_URL}/games/${gameId}/end`,

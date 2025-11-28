@@ -1,3 +1,14 @@
+POST http://localhost:8080/api/games/1/roll
+Authorization: bearer Jl75ppnsop2tLep_Sbl5gQAMKh-haWI5EnNzszXnPxM=
+User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2025-11-28T160230.200.txt
+
+###
+
 GET http://localhost:8080/api/games/1/player-turn
 Authorization: bearer A_2zuDNcNXUOki8HuFgAL_ekMcx9OEAE1Wy8uYpp_jY=
 Content-Type: application/json
@@ -672,17 +683,6 @@ Accept: */*
   "password": "abc123",
   "inviteCode": "MhapIPtL1KX7CCI6rhLMpw=="
 }
-
-###
-
-POST http://localhost:8080/api/invite
-Authorization: bearer t_I_RZF7d7G8eZz59sZD68MiCSh5gN6gjgy3VkdXKRA=
-Accept: application/json
-User-Agent: IntelliJ HTTP Client/IntelliJ IDEA 2025.2.3
-Accept-Encoding: br, deflate, gzip, x-gzip
-content-length: 0
-
-<> 2025-10-23T121511.201.json
 
 ###
 

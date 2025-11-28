@@ -85,10 +85,18 @@ export default function GamePage() {
             return;
         }
 
-        const result = await gameService.roll(Number(gameId));
+        const result = await gameService.roll(Number(lobbyId));
+        console.log("Rolling game:", result);
+
         if (isOk(result)) {
-            const payload = new GamePayload(result.value);
-            setGame(payload.game);
+
+            if (!game) return;
+            setGame({
+                ...game,
+                dice: result.value.dice,
+                isFirstRoll: false,
+            });
+
             setInfo("Dados rolados!");
         } else {
             setError(result.error ?? "Erro ao rolar dados.");

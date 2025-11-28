@@ -2,11 +2,11 @@ import { fetchWrapper, Result } from "./utils"
 import { RequestUri } from "./RequestUri"
 
 export interface RollResult {
-    dice: string[] // backend devolve "A", "K", "10", etc
+    dice: number[] // backend devolve "A", "K", "10", etc
 }
 
 export interface RerollResult {
-    dice: string[]
+    dice: number[]
 }
 
 export const gameService = {
@@ -19,10 +19,10 @@ export const gameService = {
     },
 
     // POST /games/{gameId}/roll
-    roll(gameId: number): Promise<Result<RollResult>> {
-        return fetchWrapper(RequestUri.games.roll(gameId), {
+    roll(lobbyId: number): Promise<Result<RollResult>> {
+        return fetchWrapper(RequestUri.games.roll(lobbyId), {
             method: "POST",
-        })
+        });
     },
 
     // POST /games/{gameId}/reroll

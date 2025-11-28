@@ -48,21 +48,25 @@ kotlin {
     jvmToolchain(21)
 }
 
-/**
- * Docker related tasks
- */
 tasks.register<Copy>("extractUberJar") {
     dependsOn("assemble")
     // opens the JAR containing everything...
-    from(zipTree(layout.buildDirectory.file("libs/host-$version.jar").get().toString()))
+    from(
+        zipTree(
+            layout.buildDirectory
+                .file("libs/host-$version.jar")
+                .get()
+                .toString(),
+        ),
+    )
     // ... into the 'build/dependency' folder
     into("build/dependency")
 }
 
-val dockerImageTagJvm = "tic-tac-toe-jvm"
-val dockerImageTagNginx = "tic-tac-toe-nginx"
-val dockerImageTagPostgresTest = "tic-tac-toe-postgres-test"
-val dockerImageTagUbuntu = "tic-tac-toe-ubuntu"
+val dockerImageTagJvm = "pokerdice-jvm"
+val dockerImageTagNginx = "pokerdice-nginx"
+val dockerImageTagPostgresTest = "pokerdice-postgres-test"
+val dockerImageTagUbuntu = "pokerdice-ubuntu"
 
 tasks.register<Exec>("buildImageJvm") {
     dependsOn("extractUberJar")

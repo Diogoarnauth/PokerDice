@@ -1,7 +1,7 @@
 services:
   pokerDice_tests:
-    container_name: ttt-postgres-tests
-    image: tic-tac-toe-postgres-test
+    container_name: pkdc-postgres-tests
+    image: pokerdice-postgres-test
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -9,51 +9,51 @@ services:
     ports:
       - 5432:5432
 
-  # ttt-jvm-1 and ttt-jvm-2 are used to illustrate scenarios with a fixed number of servers
+  # pkdc-jvm-1 and pkdc-jvm-2 are used to illustrate scenarios with a fixed number of servers
   # with static and well know names.
-  ttt-jvm-1:
-    container_name: ttt-jvm-1
-    hostname: ttt-jvm-1
-    image: tic-tac-toe-jvm
+  pkdc-jvm-1:
+    container_name: pkdc-jvm-1
+    hostname: pkdc-jvm-1
+    image: pokerdice-jvm
     environment:
       PORT: 8081
       DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
     ports:
       - 8081:8081
 
-  ttt-jvm-2:
-    container_name: ttt-jvm-2
-    hostname: ttt-jvm-2
-    image: tic-tac-toe-jvm
+  pkdc-jvm-2:
+    container_name: pkdc-jvm-2
+    hostname: pkdc-jvm-2
+    image: pokerdice-jvm
     environment:
       PORT: 8082
       DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
     ports:
       - 8082:8082
 
-  # ttt-jvm-dynamic is used to illustrate scenarios with a dynamic number of servers
+  # pkdc-jvm-dynamic is used to illustrate scenarios with a dynamic number of servers
   # without static and well know names.
   # We will use docker compose scaling to create multiple instances of this service
-  ttt-jvm-dynamic:
-    image: tic-tac-toe-jvm
-    hostname: ttt-jvm-dynamic
+  pkdc-jvm-dynamic:
+    image: pokerdice-jvm
+    hostname: pkdc-jvm-dynamic
     environment:
       PORT: 8080
       DB_URL: "jdbc:postgresql://pokerDice_tests:5432/db?user=postgres&password=postgres"
 
   # The service running the load-balancer
   nginx:
-    container_name: ttt-nginx
-    image: tic-tac-toe-nginx
+    container_name: pkdc-nginx
+    image: pokerdice-nginx
     ports:
       - 8080:8080
       - 8088:8088
     depends_on:
-      - ttt-jvm-1
-      - ttt-jvm-2
+      - pkdc-jvm-1
+      - pkdc-jvm-2
 
   # Just a machine running ubuntu, with 'dig' installed so that we can observe the docker compose environment.
   ubuntu:
     container_name: ubuntu
-    image: tic-tac-toe-ubuntu
+    image: pokerdice-ubuntu
     tty: true

@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.services
 
 import kotlinx.datetime.Clock
 import org.springframework.stereotype.Service
+import pt.isel.daw.pokerDice.domain.PokerEvent
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.repository.TransactionManager
@@ -70,6 +71,7 @@ class LobbiesService(
     private val transactionManager: TransactionManager,
     private val lobbiesDomain: LobbiesDomain,
     private val clock: Clock,
+    private val eventService: PokerDiceEventService,
 ) {
     /** Lista todos os lobbies visíveis (ainda não cheios) */
     fun getVisibleLobbies(): List<Lobby> =
@@ -206,6 +208,14 @@ class LobbiesService(
             userRepo.updateLobbyIdForUser(hostId, lobbyId)
 
             if (lobbyId != null) {
+                eventService.sendToAll(
+                    PokerEvent.LobbyCreated(
+                        lobbyId = lobbyId,
+                        name = name,
+                        hostUsername = host.username ?: "unknown",
+                    ),
+                )
+
                 success(lobbyId)
             } else {
                 failure(CreateLobbyError.CouldNotCreateLobby)

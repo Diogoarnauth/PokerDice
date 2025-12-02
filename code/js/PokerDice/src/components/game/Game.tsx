@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { gameService } from "../../services/api/Games";
 import { isOk } from "../../services/api/utils";
 import { GamePayload, Game } from "../models/Game";
+import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
 import { useParams } from "react-router-dom";
 
 export default function GamePage() {
@@ -13,11 +14,12 @@ export default function GamePage() {
     const [error, setError] = useState<string | null>(null);
     const [info, setInfo] = useState<string | null>(null);
     const [rerollInput, setRerollInput] = useState<string>("");
+    const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
 
-
     const token = localStorage.getItem("token");
-    const currentUsername = localStorage.getItem("username"); // ou de onde guardares
+
+    //melhorar o uso do GamePayload com o currentPlayer e com o game na atribuição dos dices
 
     useEffect(() => {
         console.log("Fetching lobby:", lobbyId);
@@ -33,11 +35,34 @@ export default function GamePage() {
             setError(null);
             setInfo(null);
 
+
+            // 1. Obter o token
+            if (!token) {
+                setError("Token em falta.");
+                setLoading(false);
+                return;
+            }
+
+
+
+        const meRes = await lobbyDetailsService.getMe(token);
+                console.log("getMe:", meRes);
+                if (isOk(meRes)) {
+                    setCurrentUser(meRes.value);
+                } else {
+                    setError("Não foi possível obter o utilizador autenticado.");
+                    setLoading(false);
+                    return;
+                }
+
+               // const currentUsername = currentUser?.username ?? null;
+
             const result = await gameService.getGameByLobbyId(Number(lobbyId));
             console.log("Fetching game:", result);
 
             if (isOk(result)) {
                 const payload = new GamePayload(result.value);
+                console.log("payload", payload)
                 setGame(payload.game);
                 setGameId(payload.game.id);
 
@@ -67,35 +92,46 @@ export default function GamePage() {
     }, [lobbyId]);
 
 
-    function ensureMyTurn(): boolean {
-        if (!game || !currentUsername) return false;
-        if (game.currentPlayerUsername !== currentUsername) {
-            setInfo("Não é a tua vez de jogar.");
-            return false;
-        }
-        setInfo(null);
-        return true;
-    }
+   function ensureMyTurn(): boolean {
+       console.log("game", game)
+       console.log("currentUser", currentUser)
+       console.log("currentPlayer", currentPlayer)
+
+       if (!game || !currentUser || currentUser.username != currentPlayer) {
+           alert("Não é a tua vez de jogar");
+           return false;
+       }
+   console.log("game", game)
+
+       /*if (game.currentPlayerUsername !== currentUsername) {
+           setInfo("Não é a tua vez de jogar.");
+           return false;
+       }*/
+
+       setInfo(null);
+       return true;
+   }
 
     async function handleRoll() {
+
         if (!gameId || !ensureMyTurn()) return;
 
-        if (!game?.isFirstRoll) {
-            setInfo("Já fizeste o primeiro roll. Usa o reroll.");
-            return;
-        }
-
+        console.log("lobbyId", lobbyId)
         const result = await gameService.roll(Number(lobbyId));
         console.log("Rolling game:", result);
 
+
         if (isOk(result)) {
+
+        const diceArray = result.value.dice.split(",");
 
             if (!game) return;
             setGame({
                 ...game,
-                dice: result.value.dice,
+                dice: diceArray,
                 isFirstRoll: false,
             });
+        console.log("game testezinho maroto", game)
 
             setInfo("Dados rolados!");
         } else {
@@ -119,14 +155,19 @@ export default function GamePage() {
             .map(Number)
             .filter(n => !Number.isNaN(n));
 
+            console.log("diceMask", diceMask)
+
         if (diceMask.length === 0) {
             setInfo("Indica pelo menos um índice de dado para reroll (ex: 0,2,4).");
             return;
         }
 
         const result = await gameService.reroll(Number(gameId), diceMask);
+        console.log("resultado", result)
+
         if (isOk(result)) {
-            const payload = new GamePayload(result.value);
+            const payload = new GamePayload(result.value); //aqui substituir apenas o campo dices e nao tudo.
+            console.log("payload", payload)
             setGame(payload.game);
             setInfo("Reroll efetuado!");
         } else {
@@ -138,7 +179,16 @@ export default function GamePage() {
         if (!gameId || !ensureMyTurn()) return;
 
         const result = await gameService.endTurn(Number(gameId));
+        console.log("result", result.value.winners)
+
         if (isOk(result)) {
+
+            if(result.value.winners){
+            console.log("ahhhhhhhhhhhhhhhhhhhhhhhhhhhh")
+            const winnersString = result.value.winners.join(", ");
+               alert(result.value.message + " winner: " + winnersString)
+            }
+
             const payload = new GamePayload(result.value);
             setGame(payload.game);
             setInfo("Jogada terminada, próximo jogador.");

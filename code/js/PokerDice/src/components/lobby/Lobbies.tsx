@@ -58,22 +58,37 @@ export default function LobbiesList() {
     setLoading(false);
   }
 
-  useEffect(() => {
+useEffect(() => {
     loadLobbies();
-  }, []);
+  const token = localStorage.getItem("token");
+  if (!token) {
+        alert("You are not authenticathed")
+            setTimeout(() => {
+              navigate(`/lobbies/${lobbyId}/info`);
+            }, 1000);
+        };
+
+  const es = new EventSource(`/api/users/listen?token=${token}`);
+
+  es.addEventListener("lobby_created", (e) => {
+
+      console.log("mamammamamamamamamama")
+    const data = JSON.parse(e.data);
+    console.log("novo lobby:", data);
+    loadLobbies();
+  });
+
+  es.onerror = err => console.error("SSE error:", err);
+
+  return () => es.close();
+}, []);
+
+
+
 
   async function handleEnterLobby(lobbyId: number) {
     console.log("Entering lobby:", lobbyId);
 
-    // ---- API call (comentado para já) ----
-    /*
-    const joinResponse = await playersService.joinLobby(lobbyId);
-
-    if (!isOk(joinResponse)) {
-      alert("Failed to join lobby: " + joinResponse.error);
-      return;
-    }
-    */
 
     // Simulação de delay & redirect
     setTimeout(() => {

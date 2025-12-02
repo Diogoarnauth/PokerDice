@@ -1,14 +1,19 @@
 package pt.isel.daw.pokerDice.http
 
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.server.ResponseStatusException
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.domain.users.User
+import pt.isel.daw.pokerDice.events.SseEmitterBasedEventEmitter
 import pt.isel.daw.pokerDice.http.model.Problem
 import pt.isel.daw.pokerDice.http.model.inviteModel.InviteAppOutputModel
 import pt.isel.daw.pokerDice.http.model.userModel.BootstrapRegisterInputModel
@@ -19,6 +24,7 @@ import pt.isel.daw.pokerDice.http.model.userModel.UserGetByIdOutputModel
 import pt.isel.daw.pokerDice.http.model.userModel.UserTokenCreateOutputModel
 import pt.isel.daw.pokerDice.services.CreatingAppInviteError
 import pt.isel.daw.pokerDice.services.DepositError
+import pt.isel.daw.pokerDice.services.PokerDiceEventService
 import pt.isel.daw.pokerDice.services.TokenCreationError
 import pt.isel.daw.pokerDice.services.UserGetByIdError
 import pt.isel.daw.pokerDice.services.UserRegisterError
@@ -29,6 +35,7 @@ import pt.isel.daw.pokerDice.utils.Success
 @RestController
 class UserController(
     private val userService: UsersService,
+    private val eventService: PokerDiceEventService,
 ) {
     @PostMapping(Uris.Users.BOOTSTRAP)
     fun bootstrapAdmin(
@@ -192,6 +199,27 @@ class UserController(
     fun checkAdmin(): ResponseEntity<Map<String, Boolean>> {
         val firstUser = userService.checkAdmin()
         return ResponseEntity.ok(mapOf("firstUser" to firstUser))
+    }
+
+    @GetMapping(Uris.Users.LISTEN)
+    fun listen(
+        @RequestParam token: String?,
+    ): SseEmitter {
+        if (token.isNullOrBlank()) {
+            throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+        }
+
+        // validar o token:
+        val authenticated =
+            userService.getUserByToken(token)
+                ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
+
+        val emitter = SseEmitter(60_000L * 60)
+        val wrapper = SseEmitterBasedEventEmitter(emitter)
+
+        eventService.addListener(authenticated.id, wrapper)
+
+        return emitter
     }
 
     @PostMapping(Uris.Users.INVITE)

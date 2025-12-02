@@ -174,8 +174,8 @@ export default function LobbyDetails() {
               navigate(`/games/lobby/${id}`);
           }, 1000);
       } else {
-          console.log("startResponse", startResponse)
-        alert("Failed to start game: " + startResponse);
+          console.log("startResponse", startResponse.error)
+        alert("Failed to start game: " + startResponse.error);
       }
     } catch (err) {
           alert("Error starting game: " + err);

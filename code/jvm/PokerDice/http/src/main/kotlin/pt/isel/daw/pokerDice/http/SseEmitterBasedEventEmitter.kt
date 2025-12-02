@@ -1,43 +1,31 @@
-package pt.isel.daw.pokerDice.http
+package pt.isel.daw.pokerDice.events
 
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
-import pt.isel.daw.pokerDice.domain.Event
 import pt.isel.daw.pokerDice.domain.EventEmitter
+import pt.isel.daw.pokerDice.domain.PokerEvent
 
-// - SseEmitter - Spring MVC type
-// - EventEmitter is our own type (domain)
-// - SseEmitterBasedEventEmitter is our own type (http),
-//   which uses SseEmitter
-
-// TODO()
 class SseEmitterBasedEventEmitter(
-    private val sseEmitter: SseEmitter,
+    private val emitter: SseEmitter,
 ) : EventEmitter {
-    override fun emit(event: Event) {
-        /*
-       val event =
-           when (event) {
-               is Event.Message ->
-                   SseEmitter
-                       .event()
-                       .id(event.id.toString())
-                       .name("message")
-                       .data(event)
+    override fun emit(event: PokerEvent) {
+        val sse =
+            SseEmitter
+                .event()
+                .name(event.type)
+                .data(event)
 
-               is Event.KeepAlive ->
-                   SseEmitter
-                       .event()
-                       .comment(event.timestamp.epochSeconds.toString())
-           }
-       sseEmitter.send(event)
-         */
+        emitter.send(sse)
     }
 
     override fun onCompletion(callback: () -> Unit) {
-        // sseEmitter.onCompletion(callback)
+        emitter.onCompletion(callback)
     }
 
     override fun onError(callback: (Throwable) -> Unit) {
-        // sseEmitter.onError(callback)
+        emitter.onError(callback)
+    }
+
+    override fun complete() {
+        emitter.complete()
     }
 }

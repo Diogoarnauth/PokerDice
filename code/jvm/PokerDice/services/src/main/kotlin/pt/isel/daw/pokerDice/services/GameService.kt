@@ -11,6 +11,7 @@ import pt.isel.daw.pokerDice.domain.lobbies.Lobby
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
+import pt.isel.daw.pokerDice.utils.Success
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
 
@@ -222,7 +223,14 @@ class GameService(
             if (isDone) {
                 getNextPlayerInRound(round.id!!, lobbyId, curTurn.playerId)
             }
-            success(updatedDice)
+
+            val jsonString = """{"dice": ${updatedDice.split(",").joinToString(
+                prefix = "[\"",
+                separator = "\",\"",
+                postfix = "\"]",
+            )}}"""
+
+            success(jsonString)
         }
 
     fun getNextPlayerInRound(
@@ -258,44 +266,64 @@ class GameService(
         gameId: Int,
         userId: Int?,
         flagFromController: Boolean,
-    ) = transactionManager.run {
-        val game = it.gamesRepository.getGameById(gameId) ?: return@run failure(EndGameError.GameNotFound)
+    ): Either<EndGameError, String> =
+        transactionManager.run {
+            val game = it.gamesRepository.getGameById(gameId) ?: return@run failure(EndGameError.GameNotFound)
 
-        if (flagFromController) {
-            val lobby = it.lobbiesRepository.getById(game.lobbyId) ?: return@run failure(EndGameError.LobbyNotFound)
+            if (flagFromController) {
+                val lobby = it.lobbiesRepository.getById(game.lobbyId) ?: return@run failure(EndGameError.LobbyNotFound)
 
-            if (lobby.hostId != userId) {
-                return@run failure(EndGameError.YouAreNotHost)
-            }
+                if (lobby.hostId != userId) {
+                    return@run failure(EndGameError.YouAreNotHost)
+                }
 
-            if (game.state == Game.GameStatus.CLOSED) {
-                return@run failure(EndGameError.GameAlreadyClosed)
-            }
+                if (game.state == Game.GameStatus.CLOSED) {
+                    return@run failure(EndGameError.GameAlreadyClosed)
+                }
 
-            // verificar se havia algum round aberto para devolver o dinheiro
-            val allRounds = it.roundRepository.getRoundsByGameId(gameId)
-            for (round in allRounds) {
-                if (!round.roundOver) {
-                    val allUser = it.usersRepository.getAllUsersInLobby(lobby.id)
-                    allUser.forEach { user -> it.usersRepository.updateUserCredit(user.id, user.credit + lobby.minCreditToParticipate) }
-                    round.id?.let { roundId -> it.roundRepository.markRoundAsOver(roundId) }
-                    break
+                // verificar se havia algum round aberto para devolver o dinheiro
+                val allRounds = it.roundRepository.getRoundsByGameId(gameId)
+                for (round in allRounds) {
+                    if (!round.roundOver) {
+                        val allUser = it.usersRepository.getAllUsersInLobby(lobby.id)
+                        allUser.forEach { user -> it.usersRepository.updateUserCredit(user.id, user.credit + lobby.minCreditToParticipate) }
+                        round.id?.let { roundId -> it.roundRepository.markRoundAsOver(roundId) }
+                        break
+                    }
                 }
             }
+            it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
+
+            val winners = it.roundRepository.getGameWinner(game.id!!) // apenas calcula
+            println("Game ${game.id} ended. Winners: $winners")
+
+            if (winners.isNotEmpty()) {
+                it.gamesRepository.addGameWinners(game.id!!, winners) // aqui sim grava
+            }
+
+            it.lobbiesRepository.markLobbyAsAvailable(game.lobbyId)
+
+            val winnerNames =
+                winners.mapNotNull { playerId ->
+                    it.usersRepository.getUserById(playerId)?.username
+                }
+
+            val winnersJson =
+                winnerNames.joinToString(
+                    prefix = "[\"",
+                    separator = "\",\"",
+                    postfix = "\"]",
+                )
+
+            val json =
+                if (winnerNames.isNotEmpty()) {
+                    """{"message": "Game ended", "winners": $winnersJson}"""
+                } else {
+                    """{"message": "Game ended"}"""
+                }
+
+            success(json)
         }
-        it.gamesRepository.updateGameState(gameId, Game.GameStatus.CLOSED)
-
-        val winners = it.roundRepository.getGameWinner(game.id!!) // apenas calcula
-        println("Game ${game.id} ended. Winners: $winners")
-
-        if (winners.isNotEmpty()) {
-            it.gamesRepository.addGameWinners(game.id!!, winners) // aqui sim grava
-        }
-
-        it.lobbiesRepository.markLobbyAsAvailable(game.lobbyId)
-
-        success(Unit)
-    }
 
     fun endTurn(
         gameId: Int,
@@ -371,7 +399,8 @@ class GameService(
                     // terminar ronda e começar nova
                     endRound(game, lobby, currentRound)
                 }
-                success("Turno terminado com sucesso.")
+                val jsonString = """{"message": "Turno terminado com sucesso."}"""
+                success(jsonString)
             }
         }
 
@@ -397,12 +426,37 @@ class GameService(
             attributeWinnersCredits(winners, players, lobby)
 
             if (game.roundCounter++ >= lobby.rounds) {
-                endGame(game.id!!, null, false)
-                success("Game Finished")
+                val endGameResp = endGame(game.id!!, null, false)
+
+                val messageSuccessFinished =
+                    if (endGameResp is Success) {
+                        // 👉 aqui usamos diretamente o JSON vindo do endGame
+                        endGameResp.value
+                    } else {
+                        // 👉 fallback se algo correr mal dentro do endGame
+                        """{"message": "Game Finished."}"""
+                    }
+
+                return@run success(messageSuccessFinished)
             } else {
                 startNewRound(currentRound, game.id!!, lobby)
 
-                success("old round ended with success")
+                val winnerUsernames =
+                    winners.mapNotNull { turn ->
+                        players.firstOrNull { it.id == turn.playerId }?.username
+                    }
+
+                val winnersJson =
+                    winnerUsernames.joinToString(
+                        prefix = "[\"",
+                        separator = "\",\"",
+                        postfix = "\"]",
+                    )
+
+                val messageSuccess =
+                    """{"message": "Round ended", "winners": $winnersJson}"""
+
+                success(messageSuccess)
             }
         }
 
@@ -452,7 +506,9 @@ class GameService(
                     endGame(gameId, null, false)
                 }
 
-                return@run success("Game ended: Not enough players remaining with credits")
+                val messageSuccess = """{"Game ended: Not enough players remaining with credits."}"""
+
+                return@run success(messageSuccess)
             }
         }
 
@@ -468,7 +524,10 @@ class GameService(
                 isDone = false,
             )
         it.turnsRepository.createTurn(nextRoundId, firstTurn)
-        success("new round started with success")
+
+        val messageSuccess = """{"new round started with success."}"""
+
+        success(messageSuccess)
     }
 
     fun whichPlayerTurn(gameId: Int): GameErrorResult =

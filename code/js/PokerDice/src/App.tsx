@@ -33,7 +33,12 @@ function App() {
                 <Route path="/lobbies/create" element={<LobbyCreation />} />
                 <Route path="/playerProfile" element={<PlayerProfile />} />
                 <Route path="/about" element={<About />} />
-                <Route  path="/appInvite" element={<AppInvite />} />
+                <Route path="/appInvite" element={<AppInvite />} />
+                <Route path="/games/lobby/:lobbyId" element={<GamePage/>} />
+
+
+
+
                 <Route path="/games/lobby/:lobbyId" element={<GamePage />} />
 
 

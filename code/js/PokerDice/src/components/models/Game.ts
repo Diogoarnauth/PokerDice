@@ -10,7 +10,7 @@ export class GamePayload {
 export class Game {
     id: number;
     currentPlayerUsername: string;
-    dice: number[];               // ex: [1, 3, 5, 2, 6]
+    dice: string[];               // ex: [1, 3, 5, 2, 6]
     isFirstRoll: boolean;
     // adiciona outros campos conforme o backend devolver (scores, state, etc.)
 

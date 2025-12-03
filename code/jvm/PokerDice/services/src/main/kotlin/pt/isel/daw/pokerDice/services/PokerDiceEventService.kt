@@ -1,9 +1,11 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
+import kotlinx.datetime.Clock
 import org.slf4j.LoggerFactory
 import pt.isel.daw.pokerDice.domain.EventEmitter
 import pt.isel.daw.pokerDice.domain.PokerEvent
+import pt.isel.daw.pokerDice.domain.Topic
 import java.util.concurrent.Executors
 import java.util.concurrent.ScheduledExecutorService
 import java.util.concurrent.TimeUnit
@@ -13,6 +15,7 @@ import kotlin.concurrent.withLock
 data class ListenerInfo(
     val emitter: EventEmitter,
     val userId: Int,
+    val topic: Topic,
 )
 
 @Named
@@ -29,60 +32,91 @@ class PokerDiceEventService {
             it.scheduleAtFixedRate({ keepAlive() }, 2, 2, TimeUnit.SECONDS)
         }
 
-    fun addListener(
-        userId: Int,
-        emitter: EventEmitter,
-    ) = lock.withLock {
-        logger.info("Added listener for user $userId")
-
-        listeners.add(ListenerInfo(emitter, userId))
-
-        emitter.onCompletion {
-            removeListener(emitter)
-        }
-        emitter.onError {
-            removeListener(emitter)
-        }
+    fun shutdown() {
+        logger.info("shutting down event scheduler")
+        scheduler.shutdown()
     }
+
+    /**
+     * Register a new SSE listener for an authenticated user and a specific Topic.
+     */
+    fun addEventEmitter(
+        userId: Int,
+        topic: Topic,
+        listener: EventEmitter,
+    ) = lock.withLock {
+        logger.info("Added listener for user $userId on topic '${topic.value}'")
+
+        listeners.add(ListenerInfo(listener, userId, topic))
+
+        listener.onCompletion { removeListener(listener) }
+        listener.onError { removeListener(listener) }
+
+        listener
+    }
+
+    /**
+     * Send event to all listeners that are subscribed to a specific Topic.
+     */
+    fun sendToTopic(
+        topic: Topic,
+        event: PokerEvent,
+    ) = lock.withLock {
+        listeners
+            .filter { it.topic.value == topic.value }
+            .forEach {
+                try {
+                    it.emitter.emit(event)
+                } catch (e: Exception) {
+                    logger.warn("Error sending event to topic '${topic.value}': ${e.message}")
+                }
+            }
+    }
+
+    /**
+     * Send event to a single user, no matter what topic they're listening to.
+     */
+    fun sendToUser(
+        userId: Int,
+        event: PokerEvent,
+    ) = lock.withLock {
+        listeners
+            .filter { it.userId == userId }
+            .forEach {
+                try {
+                    it.emitter.emit(event)
+                } catch (_: Exception) {
+                }
+            }
+    }
+
+    /**
+     * Send event to every connected listener (rarely useful now).
+     */
+    fun sendToAll(event: PokerEvent) =
+        lock.withLock {
+            listeners.forEach {
+                try {
+                    it.emitter.emit(event)
+                } catch (_: Exception) {
+                }
+            }
+        }
 
     fun removeListener(emitter: EventEmitter) =
         lock.withLock {
             listeners.removeIf { it.emitter == emitter }
         }
 
-    fun sendToUser(
-        userId: Int,
-        event: PokerEvent,
-    ) = lock.withLock {
-        listeners.find { it.userId == userId }?.emitter?.emit(event)
-    }
-
-    fun sendToLobby(
-        userIds: List<Int>,
-        event: PokerEvent,
-    ) = lock.withLock {
-        userIds.forEach { id ->
-            listeners.find { it.userId == id }?.emitter?.emit(event)
-        }
-    }
-
-    fun sendToAll(event: PokerEvent) =
-        lock.withLock {
-            listeners.forEach {
-                try {
-                    it.emitter.emit(event)
-                } catch (e: Exception) {
-                    logger.info("Error while sending SSE: ${e.message}")
-                }
-            }
-        }
-
+    /**
+     * Keep SSE connection alive with periodic pings.
+     */
     private fun keepAlive() =
         lock.withLock {
-            val event = PokerEvent.KeepAlive
+            val keepAliveEvent = PokerEvent.KeepAlive(Clock.System.now())
             listeners.forEach {
                 try {
-                    it.emitter.emit(event)
+                    it.emitter.emit(keepAliveEvent)
                 } catch (_: Exception) {
                 }
             }

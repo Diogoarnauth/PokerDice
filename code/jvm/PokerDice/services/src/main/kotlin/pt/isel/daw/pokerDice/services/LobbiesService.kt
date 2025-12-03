@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import pt.isel.daw.pokerDice.domain.PokerEvent
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
 import pt.isel.daw.pokerDice.domain.lobbies.Lobby
+import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
@@ -89,20 +90,18 @@ class LobbiesService(
             val usersRepo =
                 it.usersRepository
 
-            if (userId == lobbiesRepo.getById(lobbyId)?.hostId) {
-                closeLobby(lobbyId, userId)
-                return@run success(Unit)
-            }
-
-            // Verifica se o jogador pertence a este lobby
             val user =
                 usersRepo.getUserById(userId)
                     ?: return@run failure(LeaveLobbyError.NotInLobby)
 
+            if (userId == lobbiesRepo.getById(lobbyId)?.hostId) {
+                closeLobby(lobbyId, user)
+                return@run success(Unit)
+            }
+
             if (user.lobbyId != lobbyId) {
                 return@run failure(LeaveLobbyError.NotInLobby)
             }
-            // TODO("SE FOR O HOST AO FAZER LEAVE DA KICK A TODOS NO LOBBY")
             // Remove o jogador do lobby (define lobby_id = NULL)
             usersRepo.updateLobbyIdForUser(userId, null)
 
@@ -209,10 +208,11 @@ class LobbiesService(
 
             if (lobbyId != null) {
                 eventService.sendToAll(
-                    PokerEvent.LobbyCreated(
+                    PokerEvent.LobbiesListChanges(
                         lobbyId = lobbyId,
                         name = name,
                         hostUsername = host.username ?: "unknown",
+                        changeType = "created",
                     ),
                 )
 
@@ -274,7 +274,7 @@ class LobbiesService(
 
     fun closeLobby(
         lobbyId: Int,
-        userId: Int,
+        user: User,
     ): CloseLobbyResult =
         transactionManager.run {
             val lobbiesRepo = it.lobbiesRepository
@@ -286,7 +286,7 @@ class LobbiesService(
                     ?: return@run failure(CloseLobbyError.LobbyNotFound)
 
             // Verificar se o jogador é o host, está repetido mas pronto
-            if (lobby.hostId != userId) {
+            if (lobby.hostId != user.id) {
                 return@run failure(CloseLobbyError.NotHost)
             }
 
@@ -295,6 +295,14 @@ class LobbiesService(
 
             // Eliminar o lobby da base de dados
             lobbiesRepo.deleteLobbyById(lobbyId)
+            eventService.sendToAll(
+                PokerEvent.LobbiesListChanges(
+                    lobbyId = lobbyId,
+                    name = null,
+                    hostUsername = user.username ?: "unknown",
+                    changeType = "deleted",
+                ),
+            )
 
             success(Unit)
         }

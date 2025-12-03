@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter
+import pt.isel.daw.pokerDice.domain.Topic
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.domain.users.User
 import pt.isel.daw.pokerDice.events.SseEmitterBasedEventEmitter
@@ -31,6 +32,7 @@ import pt.isel.daw.pokerDice.services.UserRegisterError
 import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Failure
 import pt.isel.daw.pokerDice.utils.Success
+import java.util.concurrent.TimeUnit
 
 @RestController
 class UserController(
@@ -204,23 +206,53 @@ class UserController(
     @GetMapping(Uris.Users.LISTEN)
     fun listen(
         @RequestParam token: String?,
-    ): SseEmitter {
+        @RequestParam topic: String,
+    ): ResponseEntity<SseEmitter> {
         if (token.isNullOrBlank()) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }
-
-        // validar o token:
         val authenticated =
             userService.getUserByToken(token)
                 ?: throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
 
-        val emitter = SseEmitter(60_000L * 60)
-        val wrapper = SseEmitterBasedEventEmitter(emitter)
+        // converter string -> Topic sealed class
+        val resolvedTopic = resolveTopic(topic)
 
-        eventService.addListener(authenticated.id, wrapper)
+        val sseEmitter = SseEmitter(TimeUnit.HOURS.toMillis(1))
 
-        return emitter
+        eventService.addEventEmitter(
+            userId = authenticated.id,
+            topic = resolvedTopic,
+            listener = SseEmitterBasedEventEmitter(sseEmitter),
+        )
+
+        return ResponseEntity
+            .status(200)
+            .header("Content-Type", "text/event-stream; charset=utf-8")
+            .header("Connection", "keep-alive")
+            .header("X-Accel-Buffering", "no")
+            .body(sseEmitter)
     }
+
+    private fun resolveTopic(raw: String): Topic =
+        when {
+            raw == "lobbies" -> Topic.Lobbies
+
+           /* raw.startsWith("lobby:") -> {
+                val id = raw.removePrefix("lobby:").toInt()
+                Topic.Lobby(id)
+            }
+
+            raw.startsWith("game:") -> {
+                val id = raw.removePrefix("game:").toInt()
+                Topic.Game(id)
+            }*/
+
+            // raw == "profile" -> Topic.Profile
+            // raw == "home" -> Topic.Home
+
+            else -> Topic.Home // fallback seguro
+        }
 
     @PostMapping(Uris.Users.INVITE)
     fun appInvite(

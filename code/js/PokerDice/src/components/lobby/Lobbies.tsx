@@ -1,11 +1,10 @@
-// src/components/lobby/Lobbies.tsx
 import React, { useEffect, useState } from "react";
 import { lobbiesService } from "../../services/api/Lobbies";
 import { playersService } from "../../services/api/Players";
 import { isOk } from "../../services/api/utils";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import { useSSE } from "../../providers/SSEContext"; // Importando o contexto SSE
 
-// Tipo auxiliar
 type LobbyWithPlayers = {
   id: number;
   name: string;
@@ -20,11 +19,13 @@ type LobbyWithPlayers = {
 };
 
 export default function LobbiesList() {
+  const { addHandler, updateTopic, removeHandler } = useSSE(); // Usando o contexto para lidar com eventos SSE
   const [lobbies, setLobbies] = useState<LobbyWithPlayers[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
+  // Função para carregar lobbies
   async function loadLobbies() {
     setLoading(true);
     setError(null);
@@ -58,39 +59,38 @@ export default function LobbiesList() {
     setLoading(false);
   }
 
-useEffect(() => {
+  useEffect(() => {
+    // 1) Verificar auth
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("You are not authenticated");
+      navigate("/login"); // ou outra rota
+      return;
+    }
+
     loadLobbies();
-  const token = localStorage.getItem("token");
-  if (!token) {
-        alert("You are not authenticathed")
-            setTimeout(() => {
-              navigate(`/lobbies/${lobbyId}/info`);
-            }, 1000);
-        };
 
-  const es = new EventSource(`/api/users/listen?token=${token}`);
+    updateTopic("lobbies");
 
-  es.addEventListener("lobby_created", (e) => {
+    addHandler("lobbies_list_changes", (data) => {
+        console.log("entrei no handler data:", data)
+       if (data.changeType === "created") {
+           console.log("Novo lobby criado via SSE:", data);
+           loadLobbies(); // Recarregar a lista de lobbies após a criação de um novo lobby
+       } else if (data.changeType === "deleted") {
+           console.log("Lobby fechado via SSE:", data);
+           loadLobbies(); // Recarregar a lista de lobbies após a exclusão de um lobby
+       }
+    });
 
-      console.log("mamammamamamamamamama")
-    const data = JSON.parse(e.data);
-    console.log("novo lobby:", data);
-    loadLobbies();
-  });
-
-  es.onerror = err => console.error("SSE error:", err);
-
-  return () => es.close();
-}, []);
-
-
-
+    // Cleanup ao desmontar o componente
+    return () => {
+      removeHandler("lobby_created"); // Remover o handler quando o componente for desmontado
+    };
+  }, [navigate, updateTopic, addHandler, removeHandler]); // Dependências ajustadas para garantir que o `useEffect` seja re-executado corretamente
 
   async function handleEnterLobby(lobbyId: number) {
     console.log("Entering lobby:", lobbyId);
-
-
-    // Simulação de delay & redirect
     setTimeout(() => {
       navigate(`/lobbies/${lobbyId}/info`);
     }, 1000);

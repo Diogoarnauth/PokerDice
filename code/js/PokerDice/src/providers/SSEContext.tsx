@@ -1,150 +1,108 @@
-import React, {createContext, useCallback, useContext, useRef} from 'react';
-import {MessagesEvent} from '../components/models/MessagesEvent';
-import {RequestUri} from "../services/api/RequestUri";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import { RequestUri } from "../services/api/RequestUri";
 
-export type HandlerType = 'chat' | 'other';
+type SSEContextType = {
+  isConnected: boolean;
+  addHandler: (type: string, handler: (data: any) => void) => void;
+  removeHandler: (type: string) => void;
+  updateTopic: (newTopic: string) => void; // Função para atualizar o tópico
+};
 
-interface MessageHandler {
-  type: HandlerType;
-  channelId: number | null;
-  onMessage: (message: MessagesEvent) => void;
-  onOtherChannelMessage: (channelId: number | MessagesEvent) => void;
-}
+const SSEContext = createContext<SSEContextType | null>(null);
 
-interface SSEEmitterContextType {
-  connectSSE: () => Promise<void>
-  disconnectSSE: () => void
-  isSSEConnected: boolean
-  registerMessageHandler: (
-    type: HandlerType,
-    channelId: number | null,
-    onMessage: (message: MessagesEvent) => void,
-    onOtherChannelMessage: (channelId: number | MessagesEvent) => void) => void
-  unregisterMessageHandler: () => void
-}
+export function SSEProvider({ children }: { children: React.ReactNode }) {
+  const eventSourceRef = useRef<EventSource | null>(null);
+  const handlers = useRef<Record<string, (data: any) => void>>({});
+  const [isConnected, setConnected] = useState(false);
+  const [topic, setTopic] = useState<string>("lobbies"); // Definindo o tópico inicial
 
-const SSEEmitterContext = createContext<SSEEmitterContextType | undefined>(undefined);
+  // Função para atualizar o tópico
+  const updateTopic = (newTopic: string) => {
+    setTopic(newTopic);
+  };
 
+  useEffect(() => {
+      console.log("Topic atualizado:", topic);
 
-export function SSEEmitterProvider({ children }: { children: React.ReactNode }) {
-  const emitterRef = useRef<EventSource | null>(null);
-  const [isSSEConnected, setIsConnected] = React.useState(false);
-  // Para nao causar re-render
-    const handlers = useRef<MessageHandler | null>(null);
+    const token = localStorage.getItem("token");
+    if (!token) return;
 
+    // Montar a URL do EventSource com o tópico dinâmico
+    const url = `/api/users/listen?token=${encodeURIComponent(token)}&topic=${topic}`;
 
+    console.log("Vou me conectar")
 
-  const handleMessage = (event: MessageEvent) => {
-    try {
-        const data = JSON.parse(event.data);
-        const message = new MessagesEvent(data);
-        const handler = handlers.current
-          if (handler.type === 'chat') {
-            if (handler.channelId === message.channelId) {
-                handler.onMessage(message);
-            } else {
-                handler.onOtherChannelMessage(message.channelId);
-            }
-          } else {
-            handler.onOtherChannelMessage(message);
+        if (eventSourceRef.current) {
+            console.log("Fechando EventSource antigo");
+            eventSourceRef.current.close(); // Fechando a conexão SSE existente, se houver
         }
-    } catch (e) {
-        console.log('Raw SSE data:', event.data);
-    }
-  }
-  const registerMessageHandler = useCallback((
-    type: HandlerType,
-    channelId: number | null,
-    onMessage: (message: MessagesEvent) => void,
-    onOtherChannelMessage: (channelId: number | MessagesEvent) => void
-  ) => {
-      handlers.current= {
-        type,
-        channelId,
-        onMessage,
-        onOtherChannelMessage
+
+    const es = new EventSource(url);
+    eventSourceRef.current = es;
+
+    es.onopen = () => {
+      console.log("SSE connected");
+      setConnected(true);
     };
-      console.log('Message Handler Registered ', handlers.current)
-  }, []);
 
-  const unregisterMessageHandler = useCallback(() => {
-    handlers.current = null
-  }, []);
+    es.onerror = (err) => {
+      console.error("SSE error", err);
+      setConnected(false);
+    };
 
-  const connectSSE = useCallback(() => {
-    return new Promise<void>((resolve, reject) => {
-        if (!emitterRef.current) {
-            console.log('Connecting to SSE Emitter...')
+    es.onmessage = (msg) => {
+      console.warn("Received unnamed event:", msg.data);
+    };
 
-            emitterRef.current = new EventSource(RequestUri.user.listen, {
-                withCredentials: true
-            });
+    // Eventos nomeados dinâmicos
+    //es.addEventListener("*", (e: any) => {
+      //console.log("RAW EVENT", e);
+    //});
 
-            emitterRef.current.onopen = () => {
-                console.log('SSE Emitter Connected')
-                setIsConnected(true)
-                resolve()
-            };
-
-            emitterRef.current.onerror = (error) => {
-                console.error('SSE Emitter Error:', error)
-                setIsConnected(false)
-                reject(error)
-            };
-            emitterRef.current.addEventListener('message', handleMessage);
-        } else {
-            resolve()
-        }
+    // Handlers para eventos nomeados
+    es.addEventListener("lobbies_list_changes", (e: any) => {
+        console.log("addEventListener lobby_created")
+      const h = handlers.current["lobbies_list_changes"];
+      if (h) h(JSON.parse(e.data));
     });
-}, []);
 
-  const disconnectSSE = useCallback(() => {
-    if (emitterRef.current) {
+    es.addEventListener("player_joined", (e: any) => {
+      const h = handlers.current["player_joined"];
+      if (h) h(JSON.parse(e.data));
+    });
 
-      emitterRef.current.removeEventListener('message', handleMessage);
+    es.addEventListener("player_left", (e: any) => {
+      const h = handlers.current["player_left"];
+      if (h) h(JSON.parse(e.data));
+    });
 
-      emitterRef.current.onopen = null;
-      emitterRef.current.onerror = null;
+    // Cleanup ao desmontar o componente
+    return () => {
+      console.log("SSE CLOSED");
+      es.close();
+    };
+  }, [topic]); // Use o tópico como dependência para refazer a conexão quando o tópico mudar
 
-      emitterRef.current.close();
-      emitterRef.current = null;
-      setIsConnected(false);
-    }
-  }, []);
+  // Função para adicionar handler
+  function addHandler(type: string, handler: (data: any) => void) {
+    handlers.current[type] = handler;
+  }
 
+  // Função para remover handler
+  function removeHandler(type: string) {
+    delete handlers.current[type];
+  }
 
   return (
-    <SSEEmitterContext.Provider value={{
-        connectSSE,
-        disconnectSSE,
-        isSSEConnected,
-        registerMessageHandler,
-        unregisterMessageHandler
-    }}>
-        {children}
-    </SSEEmitterContext.Provider>
-);
+    <SSEContext.Provider value={{ isConnected, addHandler, removeHandler, updateTopic }}>
+      {children}
+    </SSEContext.Provider>
+  );
 }
 
-export function useSSEEmitter(): [
-  () => Promise<void>,
-  () => void,
-  boolean,
-  (type: HandlerType,
-   channelId: number | null,
-   onMessage: (message: MessagesEvent) => void,
-   onOtherChannelMessage: (channelId: number | MessagesEvent) => void) => void,
-  () => void
-] {
-  const context = useContext(SSEEmitterContext);
-  if (context === undefined) {
-      throw new Error('useSSEEmitter must be used within a SSEEmitterProvider');
-  }
-  return [
-      context.connectSSE,
-      context.disconnectSSE,
-      context.isSSEConnected,
-      context.registerMessageHandler,
-      context.unregisterMessageHandler
-  ];
+// Hook para consumir o SSEContext
+export function useSSE() {
+  const ctx = useContext(SSEContext);
+  if (!ctx) throw new Error("useSSE must be inside SSEProvider");
+  return ctx;
 }

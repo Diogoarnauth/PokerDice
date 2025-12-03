@@ -1,14 +1,17 @@
 package pt.isel.daw.pokerDice.domain
 
+import kotlinx.datetime.Instant
+
 sealed interface PokerEvent {
     val type: String
 
-    data class LobbyCreated(
+    data class LobbiesListChanges(
         val lobbyId: Int,
-        val name: String,
-        val hostUsername: String,
+        val name: String?,
+        val hostUsername: String?,
+        val changeType: String,
     ) : PokerEvent {
-        override val type = "lobby_created"
+        override val type = "lobbies_list_changes"
     }
 
     data class LobbyUpdated(
@@ -57,8 +60,9 @@ sealed interface PokerEvent {
         override val type = "game_ended"
     }
 
-    /** KeepAlive para evitar timeout */
-    object KeepAlive : PokerEvent {
+    data class KeepAlive(
+        val timestamp: Instant,
+    ) : PokerEvent {
         override val type = "keepalive"
     }
 }

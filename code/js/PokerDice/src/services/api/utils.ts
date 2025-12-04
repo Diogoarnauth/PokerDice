@@ -4,39 +4,33 @@ export type Result<T> =
 
 export const isOk = <T>(result: Result<T>): result is { success: true; value: T } => result.success;
 export async function fetchWrapper<T>(
-  url: string,
-  options: RequestInit = {}
+    url: string,
+    options: RequestInit = {}
 ): Promise<Result<T>> {
-  try {
-    const token = localStorage.getItem('token');
-    //console.log('fetchWrapper', document.cookie);
+    try {
+        const response = await fetch(url, {
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            credentials: 'include',  // Garante que os cookies sejam enviados
+            ...options,
+        });
+        console.log('fetchWrapperUtils', document.cookie);  // Agora deve exibir os cookies
 
-    const headers: HeadersInit = {
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    };
+        if (!response.ok) {
+            console.log('fetchWrapper', response.status);
+            console.log('Response headers:', response.headers);
+            const errorData = await response.json();
+            return { success: false, error: errorData.message || 'Request failed' };
+        }
+        if (response.status === 204) {
+            return { success: true, value: undefined as T };
+        }
 
-    if (options.body) {
-      headers['Content-Type'] = 'application/json';
+        const data = await response.json();
+        return { success: true, value: data as T };
+    } catch (error) {
+        return { success: false, error: error.message };
     }
-
-    const response = await fetch(url, {
-      ...options,
-      headers,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => null);
-      return { success: false, error: errorData?.message || 'Request failed' };
-    }
-
-    if (response.status === 204) {
-      return { success: true, value: undefined as T };
-    }
-
-    const data = await response.json();
-    return { success: true, value: data as T };
-  } catch (error: any) {
-    return { success: false, error: error.message };
-  }
 }

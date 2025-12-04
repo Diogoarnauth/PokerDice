@@ -26,5 +26,6 @@ class WebConfig(
             .allowedOrigins("*") // aceita qualquer origem/porta
             .allowedMethods("GET", "POST", "OPTIONS", "DELETE")
             .allowedHeaders("Authorization", "Content-Type")
+            .allowCredentials(true) // permite que as cookies sejam enviadas
     }
 }

@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.http
 
+import jakarta.servlet.http.Cookie
 import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -140,9 +141,18 @@ class UserController(
     ): ResponseEntity<*> {
         val res = userService.createToken(input.username, input.password)
         return when (res) {
-            is Success ->
-                ResponseEntity.ok(UserTokenCreateOutputModel(res.value.tokenValue))
-
+            is Success -> {
+                val token = res.value.tokenValue
+                val cookie = Cookie("token", token)
+                cookie.path = "/"
+                cookie.maxAge = 24 * 60 * 60
+                cookie.secure = false
+                val cookieHeader = "token=${cookie.value}; Path=${cookie.path}; Max-Age=${cookie.maxAge}; SameSite=Strict; Secure"
+                ResponseEntity
+                    .status(200)
+                    .header("Set-Cookie", cookieHeader)
+                    .body(UserTokenCreateOutputModel(res.value.tokenValue))
+            }
             is Failure ->
                 when (res.value) {
                     TokenCreationError.UserOrPasswordAreInvalid ->
@@ -155,6 +165,21 @@ class UserController(
                     TokenCreationError.UserNotFound -> Problem.response(401, Problem.userNotFound)
                 }
         }
+    }
+
+    @PostMapping(Uris.Users.LOGOUT)
+    fun logout(userAuthenticatedUser: AuthenticatedUser): ResponseEntity<*> {
+        userService.deleteToken(userAuthenticatedUser.user.id)
+        val listener = eventService.getListener(userAuthenticatedUser.user.id)
+        eventService.logout(listener!!)
+        val cookie = Cookie("token", "")
+        cookie.path = "/"
+        cookie.maxAge = -1
+        val cookieHeader = "token=${cookie.value}; Path=${cookie.path}; Max-Age=${cookie.maxAge}"
+        return ResponseEntity
+            .status(204)
+            .header("Set-Cookie", cookieHeader)
+            .build<Unit>()
     }
 
     @GetMapping(Uris.Users.GET_BY_ID)

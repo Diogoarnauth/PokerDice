@@ -40,6 +40,8 @@ interface UsersRepository {
         maxTokens: Int,
     )
 
+    fun deleteToken(userId: Int): Int
+
     fun updateLobbyIdForUser(
         userId: Int,
         lobbyId: Int?,

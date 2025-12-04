@@ -64,7 +64,7 @@ export default function Login() {
   // Se o estado for 'redirect', navegue para a página anterior
   if (state.type === 'redirect') {
       console.log("olaaaaaaa")
-    return <Navigate to={location.state?.source ?? '/home'} replace={true} />;
+    return <Navigate to={location.state?.source ?? '/'} replace={true} />;
   }
 
 const token = localStorage.getItem("token");

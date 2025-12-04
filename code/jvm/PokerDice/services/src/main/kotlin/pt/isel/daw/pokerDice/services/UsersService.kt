@@ -11,6 +11,7 @@ import pt.isel.daw.pokerDice.repository.TransactionManager
 import pt.isel.daw.pokerDice.utils.Either
 import pt.isel.daw.pokerDice.utils.failure
 import pt.isel.daw.pokerDice.utils.success
+import kotlin.run
 
 data class TokenExternalInfo(
     val tokenValue: String,
@@ -295,6 +296,13 @@ class UsersService(
             )
         }
     }
+
+    fun deleteToken(userId: Int) =
+        transactionManager.run {
+            val userRepository = it.usersRepository
+            userRepository.deleteToken(userId)
+            success("You have been logged out")
+        }
 
     fun getById(id: Int): UserGetByIdResult {
         return transactionManager.run {

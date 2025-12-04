@@ -149,6 +149,12 @@ class JdbiUsersRepository(
             .execute()
     }
 
+    override fun deleteToken(userId: Int) =
+        handle
+            .createUpdate("delete from dbo.Token where userId = :userId")
+            .bind("userId", userId)
+            .execute()
+
     override fun updateUserCredit(
         userId: Int,
         credit: Int,

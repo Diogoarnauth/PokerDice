@@ -51,8 +51,8 @@ class PokerDiceEventService {
 
         listeners.add(ListenerInfo(listener, userId, topic))
 
-        listener.onCompletion { /*removeListener(listener)*/ }
-        listener.onError { /*removeListener(listener)*/ }
+        listener.onCompletion { removeListener(listener) }
+        listener.onError { removeListener(listener) }
 
         listener
     }
@@ -74,6 +74,16 @@ class PokerDiceEventService {
                 }
             }
     }
+
+    fun getListener(userId: Int) =
+        lock.withLock {
+            listeners.find { it.userId == userId }?.emitter
+        }
+
+    fun logout(listener: EventEmitter) =
+        lock.withLock {
+            listener.complete()
+        }
 
     /**
      * Send event to a single user, no matter what topic they're listening to.

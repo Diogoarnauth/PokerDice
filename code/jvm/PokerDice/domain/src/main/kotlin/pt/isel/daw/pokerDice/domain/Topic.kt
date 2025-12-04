@@ -6,6 +6,7 @@ sealed class Topic(
     // Página da lista de lobbies
     data object Lobbies : Topic("lobbies")
 
+    // data object PlayerProfile : Topic("playerProfile")
     // TODO() Implementar mais depois
 
     // Um lobby específico (ex: lobby 5)

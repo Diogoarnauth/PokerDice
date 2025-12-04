@@ -26,9 +26,15 @@ class AuthenticationInterceptor(
             } // valida se o endPoint (@get...@post etc, exige algum AuthenticatedUser)
         ) {
             // enforce authentication
-            val user =
-                authorizationHeaderProcessor
-                    .processAuthorizationHeaderValue(request.getHeader(NAME_AUTHORIZATION_HEADER))
+
+            val userFromAuthHeader =
+                authorizationHeaderProcessor.processAuthorizationHeaderValue(
+                    request.getHeader(NAME_AUTHORIZATION_HEADER),
+                )
+            val userFromCookie = authorizationHeaderProcessor.processCookieToken(request.cookies)
+
+            val user = userFromAuthHeader ?: userFromCookie
+
             if (user == null) {
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
 

@@ -9,13 +9,13 @@ export async function fetchWrapper<T>(
 ): Promise<Result<T>> {
   try {
     const token = localStorage.getItem('token');
+    //console.log('fetchWrapper', document.cookie);
 
     const headers: HeadersInit = {
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     };
 
-    // ❗ APENAS ADICIONA CONTENT-TYPE SE EXISTIR BODY
     if (options.body) {
       headers['Content-Type'] = 'application/json';
     }

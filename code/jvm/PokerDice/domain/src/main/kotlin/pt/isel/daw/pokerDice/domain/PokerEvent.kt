@@ -14,10 +14,12 @@ sealed interface PokerEvent {
         override val type = "lobbies_list_changes"
     }
 
-    data class LobbyUpdated(
+    data class PlayerProfLobby(
         val lobbyId: Int,
+        val username: String,
+        val changeType: String,
     ) : PokerEvent {
-        override val type = "lobby_updated"
+        override val type = "player_prof_lobby"
     }
 
     data class PlayerJoined(

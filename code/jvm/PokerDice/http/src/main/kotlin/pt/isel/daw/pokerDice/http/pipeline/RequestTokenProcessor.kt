@@ -1,12 +1,13 @@
 package pt.isel.daw.pokerDice.http.pipeline
 
+import jakarta.servlet.http.Cookie
 import org.springframework.stereotype.Component
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.services.UsersService
 
 @Component
 class RequestTokenProcessor(
-    val playerService: UsersService,
+    val usersService: UsersService,
 ) {
     fun processAuthorizationHeaderValue(authorizationValue: String?): AuthenticatedUser? {
         if (authorizationValue == null) {
@@ -20,12 +21,25 @@ class RequestTokenProcessor(
             return null
         }
 
-        return playerService.getUserByToken(parts[1])?.let {
+        return usersService.getUserByToken(parts[1])?.let {
             AuthenticatedUser(
                 it,
                 parts[1],
             )
         }
+    }
+
+    fun processCookieToken(cookies: Array<Cookie>?): AuthenticatedUser? {
+        val tokenCookie = cookies?.find { it.name == "token" }
+        tokenCookie?.value?.let { token ->
+            return usersService.getUserByToken(token)?.let {
+                AuthenticatedUser(
+                    it,
+                    token,
+                )
+            }
+        }
+        return null
     }
 
     companion object {

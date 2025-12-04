@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { playerProfileService } from "../../services/api/PlayerProfile";
 import { PlayerProfilePayload, PlayerProfile } from "../models/PlayerProfile";
+//import { useSSE } from "../../providers/SSEContext";  // Importando o contexto SSE
+
 
 const TOKEN_KEY = "token"; // change here if you use a different key
 
@@ -12,6 +14,7 @@ export default function PlayerProfileComponent() {
     const [depositLoading, setDepositLoading] = useState<boolean>(false);
     const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
     const [hasToken, setHasToken] = useState<boolean>(false);
+    //const { addHandler, removeHandler } = useSSE();
 
     const token = localStorage.getItem("token");
     if (!token) {
@@ -41,7 +44,24 @@ export default function PlayerProfileComponent() {
         }
 
         fetchProfile();
-    }, []);
+
+                /*// Adiciona o handler para o evento "PlayerProfLobby"
+                       addHandler("player_prof_lobby", (data) => {
+                           if (data.changeType === "joined") {
+                               console.log(`${data.username} entrou no lobby ${data.lobbyId}`);
+                               setProfile(prev => prev ? { ...prev, lobbyId: data.lobbyId } : prev);
+                           } else if (data.changeType === "left") {
+                               console.log(`${data.username} saiu do lobby ${data.lobbyId}`);
+                               setProfile(prev => prev ? { ...prev, lobbyId: null } : prev); // Remove o lobbyId
+                           }
+                       });
+
+                       // Cleanup ao desmontar o componente
+                       return () => {
+                           removeHandler("player_prof_lobby"); // Remove o handler quando o componente for desmontado
+                       };
+                   }, [addHandler, removeHandler]);*/
+                }, []);
 
     // Logout handler
     function handleLogout() {
@@ -105,7 +125,7 @@ export default function PlayerProfileComponent() {
                     <p><strong>Username:</strong> {profile.username}</p>
                     <p><strong>Name:</strong> {profile.name}</p>
                     <p><strong>Age:</strong> {profile.age}</p>
-                    <p><strong>Lobby:</strong> {profile.lobbyId}</p>
+                    <p><strong>Lobby:</strong> {profile.lobbyId ? profile.lobbyId : "Nenhum"}</p>
                     <p><strong>Credit:</strong> {profile.credit}</p>
                     <p><strong>Win count:</strong> {profile.winCounter}</p>
                 </div>

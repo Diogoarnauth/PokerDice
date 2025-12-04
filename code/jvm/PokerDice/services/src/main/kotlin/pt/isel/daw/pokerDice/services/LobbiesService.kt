@@ -94,6 +94,10 @@ class LobbiesService(
                 usersRepo.getUserById(userId)
                     ?: return@run failure(LeaveLobbyError.NotInLobby)
 
+            val lobby =
+                lobbiesRepo.getById(lobbyId)
+                    ?: return@run failure(LeaveLobbyError.LobbyNotFound)
+
             if (userId == lobbiesRepo.getById(lobbyId)?.hostId) {
                 closeLobby(lobbyId, user)
                 return@run success(Unit)
@@ -104,6 +108,23 @@ class LobbiesService(
             }
             // Remove o jogador do lobby (define lobby_id = NULL)
             usersRepo.updateLobbyIdForUser(userId, null)
+
+            eventService.sendToAll(
+                PokerEvent.LobbiesListChanges(
+                    lobbyId = lobbyId,
+                    name = lobby.name,
+                    hostUsername = user.username ?: "unknown",
+                    changeType = "created",
+                ),
+            )
+
+            /*eventService.sendToAll(
+                PokerEvent.PlayerProfLobby(
+                    lobbyId = lobbyId,
+                    username = user.username,
+                    changeType = "joined",
+                ),
+            )*/
 
             success(Unit)
         }
@@ -216,6 +237,14 @@ class LobbiesService(
                     ),
                 )
 
+                /*eventService.sendToAll(
+                    PokerEvent.PlayerProfLobby(
+                        lobbyId = lobbyId,
+                        username = host.username,
+                        changeType = "joined",
+                    ),
+                )*/
+
                 success(lobbyId)
             } else {
                 failure(CreateLobbyError.CouldNotCreateLobby)
@@ -269,6 +298,23 @@ class LobbiesService(
             // Adicionar jogador ao lobby
             usersRepo.updateLobbyIdForUser(userId, lobbyId)
 
+            eventService.sendToAll(
+                PokerEvent.LobbiesListChanges(
+                    lobbyId = lobbyId,
+                    name = lobby.name,
+                    hostUsername = user.username ?: "unknown",
+                    changeType = "created",
+                ),
+            )
+
+            /*eventService.sendToAll(
+                PokerEvent.PlayerProfLobby(
+                    lobbyId = lobbyId,
+                    username = user.username,
+                    changeType = "joined",
+                ),
+            )*/
+
             success(Unit)
         }
 
@@ -303,6 +349,14 @@ class LobbiesService(
                     changeType = "deleted",
                 ),
             )
+
+            /*eventService.sendToAll(
+                PokerEvent.PlayerProfLobby(
+                    lobbyId = lobbyId,
+                    username = user.username,
+                    changeType = "joined",
+                ),
+            )*/
 
             success(Unit)
         }

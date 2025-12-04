@@ -22,6 +22,7 @@ async function validateTokenOnStart() {
     }
 }
 
+
     // chama o safety check e depois renderiza a app
     validateTokenOnStart().finally(() => {
         const root = createRoot(document.getElementById('root') as HTMLElement)

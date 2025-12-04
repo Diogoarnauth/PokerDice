@@ -85,7 +85,7 @@ export default function LobbiesList() {
 
     // Cleanup ao desmontar o componente
     return () => {
-      removeHandler("lobby_created"); // Remover o handler quando o componente for desmontado
+      removeHandler("lobbies_list_changes"); // Remover o handler quando o componente for desmontado
     };
   }, [navigate, updateTopic, addHandler, removeHandler]); // Dependências ajustadas para garantir que o `useEffect` seja re-executado corretamente
 

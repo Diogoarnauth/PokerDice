@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.http
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
@@ -39,6 +40,8 @@ class UserController(
     private val userService: UsersService,
     private val eventService: PokerDiceEventService,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     @PostMapping(Uris.Users.BOOTSTRAP)
     fun bootstrapAdmin(
         @RequestBody input: BootstrapRegisterInputModel,
@@ -208,6 +211,8 @@ class UserController(
         @RequestParam token: String?,
         @RequestParam topic: String,
     ): ResponseEntity<SseEmitter> {
+        logger.info("Received request to listen on topic: $topic with token: $token")
+
         if (token.isNullOrBlank()) {
             throw ResponseStatusException(HttpStatus.UNAUTHORIZED)
         }

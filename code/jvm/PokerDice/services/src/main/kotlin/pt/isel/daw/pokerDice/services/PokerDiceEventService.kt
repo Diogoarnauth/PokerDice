@@ -24,8 +24,10 @@ class PokerDiceEventService {
         private val logger = LoggerFactory.getLogger(PokerDiceEventService::class.java)
     }
 
+    private val logger = LoggerFactory.getLogger(this::class.java)
     private val listeners = mutableListOf<ListenerInfo>()
     private val lock = ReentrantLock()
+    var counter = 0
 
     private val scheduler: ScheduledExecutorService =
         Executors.newScheduledThreadPool(1).also {
@@ -49,8 +51,8 @@ class PokerDiceEventService {
 
         listeners.add(ListenerInfo(listener, userId, topic))
 
-        listener.onCompletion { removeListener(listener) }
-        listener.onError { removeListener(listener) }
+        listener.onCompletion { /*removeListener(listener)*/ }
+        listener.onError { /*removeListener(listener)*/ }
 
         listener
     }
@@ -95,8 +97,12 @@ class PokerDiceEventService {
      */
     fun sendToAll(event: PokerEvent) =
         lock.withLock {
+            logger.info("listeners $listeners")
             listeners.forEach {
                 try {
+                    logger.info("COUNTER $counter")
+                    counter += 1
+
                     it.emitter.emit(event)
                 } catch (_: Exception) {
                 }

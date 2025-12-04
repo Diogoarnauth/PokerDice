@@ -22,7 +22,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-      console.log("Topic atualizado:", topic);
+    console.log("Topic atualizado:", topic);
 
     const token = localStorage.getItem("token");
     if (!token) return;
@@ -32,10 +32,11 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
 
     console.log("Vou me conectar")
 
-        if (eventSourceRef.current) {
-            console.log("Fechando EventSource antigo");
-            eventSourceRef.current.close(); // Fechando a conexão SSE existente, se houver
-        }
+    if (eventSourceRef.current) {
+      console.log("EventSource já existe, mantendo a conexão.");
+      // Não fecha a conexão, mantém o que já existe
+      return;
+    }
 
     const es = new EventSource(url);
     eventSourceRef.current = es;
@@ -55,31 +56,17 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     };
 
     // Eventos nomeados dinâmicos
-    //es.addEventListener("*", (e: any) => {
-      //console.log("RAW EVENT", e);
-    //});
-
-    // Handlers para eventos nomeados
     es.addEventListener("lobbies_list_changes", (e: any) => {
-        console.log("addEventListener lobby_created")
+      console.log("addEventListener lobbies_list_changes");
       const h = handlers.current["lobbies_list_changes"];
-      if (h) h(JSON.parse(e.data));
-    });
-
-    es.addEventListener("player_joined", (e: any) => {
-      const h = handlers.current["player_joined"];
-      if (h) h(JSON.parse(e.data));
-    });
-
-    es.addEventListener("player_left", (e: any) => {
-      const h = handlers.current["player_left"];
       if (h) h(JSON.parse(e.data));
     });
 
     // Cleanup ao desmontar o componente
     return () => {
       console.log("SSE CLOSED");
-      es.close();
+      // Não feche o EventSource, apenas quando o app for desmontado
+      // eventSourceRef.current?.close();
     };
   }, [topic]); // Use o tópico como dependência para refazer a conexão quando o tópico mudar
 

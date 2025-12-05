@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
+import org.slf4j.LoggerFactory
 import pt.isel.daw.pokerDice.domain.games.Dice
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.domain.games.GameDomain
@@ -87,6 +88,8 @@ class GameService(
     private val gameDomain: GameDomain,
     private val lobbiesDomain: LobbiesDomain,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     fun getGameIdByLobby(lobbyId: Int): GetGameByLobby {
         return transactionManager.run { it ->
             val game =
@@ -187,9 +190,13 @@ class GameService(
         keepIndexes: List<Int>,
     ): GameErrorResult =
         transactionManager.run {
+            logger.info("ENTREI NO REROLL SERVICES LOBBYID: $lobbyId")
+
             val game =
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId))
+
+            logger.info("PASSEI O 404")
 
             val round = it.roundRepository.getRoundsByGameId(game.id!!).last()
 

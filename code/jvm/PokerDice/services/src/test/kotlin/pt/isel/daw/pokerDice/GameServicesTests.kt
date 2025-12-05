@@ -24,11 +24,12 @@ import pt.isel.daw.pokerDice.domain.users.UsersDomain
 import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
+import pt.isel.daw.pokerDice.services.GameService
+import pt.isel.daw.pokerDice.services.UsersService
+import pt.isel.daw.pokerDice.services.LobbiesService
+import pt.isel.daw.pokerDice.services.PokerDiceEventService
 import pt.isel.daw.pokerDice.services.GameCreationError
 import pt.isel.daw.pokerDice.services.GameError
-import pt.isel.daw.pokerDice.services.GameService
-import pt.isel.daw.pokerDice.services.LobbiesService
-import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Either
 import kotlin.random.Random
 import kotlin.test.Test
@@ -107,6 +108,7 @@ class GameServicesTests {
                     5,
                     3,
                     50,
+                    java.time.Duration.ofMinutes(1),
                 ),
             ).value
 
@@ -170,7 +172,7 @@ class GameServicesTests {
             assertTrue(left.value is GameCreationError.GameAlreadyRunning)
         }
 
-        @Test
+       @Test
         fun `createGame should fail if not enough players`() { // Failed
             // given - novo lobby com minUsers = 3
             val newLobby =
@@ -182,6 +184,7 @@ class GameServicesTests {
                     5,
                     2,
                     50,
+                    java.time.Duration.ofMinutes(1),
                 )
 
             val lobbyFew = assertIs<Either.Right<Int>>(newLobby).value
@@ -450,6 +453,7 @@ class GameServicesTests {
         }
 
         private fun createLobbiesService(clock: Clock = Clock.System): LobbiesService {
+            val eventService = PokerDiceEventService()
             val lobbiesDomain =
                 LobbiesDomain(
                     LobbiesDomainConfig(
@@ -465,6 +469,7 @@ class GameServicesTests {
                 transactionManager = JdbiTransactionManager(jdbi),
                 lobbiesDomain = lobbiesDomain,
                 clock = clock,
+                eventService = eventService,
             )
         }
 

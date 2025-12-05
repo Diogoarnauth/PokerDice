@@ -76,10 +76,10 @@ export default function Login() {
   useEffect(() => {
     const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
     if (token) {
-      // O usuário já está logado
-      setUsername('');  // Aqui você pode definir o username baseado no seu fluxo
+      alert("Você já está logado!");
+      navigate("/");  // Redireciona para a página principal ou qualquer outra página desejada
     }
-  }, []);
+  }, [navigate]);
 
   // Se o estado for 'redirect', navegue para a página anterior
   if (state.type === 'redirect') {

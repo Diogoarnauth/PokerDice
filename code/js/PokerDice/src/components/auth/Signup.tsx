@@ -74,6 +74,11 @@ export default function Signup() {
 
   // 1. Fazer checkAdmin antes de renderizar o formulário
   useEffect(() => {
+          const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
+          if (token) {
+            alert("Você já está logado!");
+            navigate("/");  // Redireciona para a página principal ou qualquer outra página desejada
+          }
     async function check() {
       const response = await authService.checkAdmin();
       if (isOk(response)) {
@@ -92,11 +97,11 @@ export default function Signup() {
   }
 
   // Função para setar o cookie do token
-  const setCookie = (name: string, value: string, days: number) => {
+  /*const setCookie = (name: string, value: string, days: number) => {
     const expires = new Date();
     expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
     document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;Secure;SameSite=Strict`;
-  };
+  };*/
 
   // 2. Submeter o formulário
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -141,7 +146,7 @@ export default function Signup() {
       setResult("Signup made with success. Redirecting to login...");
 
       // Aqui você deve armazenar o token no cookie após o signup com sucesso
-      setCookie("token", response.value.tokenValue, 1); // Armazenar o token por 1 dia
+     // setCookie("token", response.value.tokenValue, 1); // Armazenar o token por 1 dia
 
       setTimeout(() => {
         navigate("/login");

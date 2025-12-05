@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
-import {gameService} from "../../services/api/Games";
-import {isOk} from "../../services/api/utils";
+import { gameService } from "../../services/api/Games";
+import { isOk } from "../../services/api/utils";
 
 // Tipo para armazenar as informações do Lobby
 type Lobby = {
@@ -55,131 +55,127 @@ export default function LobbyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function loadLobby() {
-      setLoading(true);
-      setError(null);
+  // Função para buscar o token nos cookies
+  function getTokenFromCookies() {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+    return token ? token.split('=')[1] : null;
+  }
 
-      try {
-        // Pega o token do localStorage
-        const token = localStorage.getItem("token");
+  // Função para carregar lobby
+  async function loadLobby() {
+    setLoading(true);
+    setError(null);
 
-        if (token) {
-          // Chama a API para obter os dados do usuário
-          const userResponse = await lobbyDetailsService.getMe(token);
-          console.log("userResponse.value", userResponse)
+    try {
+      // Pega o token dos cookies
+      const token = getTokenFromCookies();
 
-          if (userResponse.success) {
-            setUser(userResponse.value);
+      if (token) {
+        // Chama a API para obter os dados do usuário
+        const userResponse = await lobbyDetailsService.getMe(token);
+        console.log("userResponse.value", userResponse);
 
-          } else {
-            setError("Failed to fetch user data");
-          }
+        if (userResponse.success) {
+          setUser(userResponse.value);
         } else {
-          setError("No token found");
+          setError("Failed to fetch user data");
         }
-
-        // Requisição para obter detalhes do lobby
-        const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
-        if (response.success) {
-          setLobby(response.value);
-
-          const ownerId = response.value.hostId;
-
-            const ownerResponse = await lobbyDetailsService.getOwner(ownerId);
-            if (ownerResponse.success) {
-              setOwner(ownerResponse.value);
-            } else {
-              console.error("Failed to fetch owner", ownerResponse.error);
-            }
-
-        } else {
-          setError("Failed to load lobby details");
-        }
-      } catch (err) {
-        setError("Error fetching data");
+      } else {
+        setError("No token found");
       }
 
+      // Requisição para obter detalhes do lobby
+      const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
+      if (response.success) {
+        setLobby(response.value);
 
-      setLoading(false);
+        const ownerId = response.value.hostId;
+        const ownerResponse = await lobbyDetailsService.getOwner(ownerId);
+        if (ownerResponse.success) {
+          setOwner(ownerResponse.value);
+        } else {
+          console.error("Failed to fetch owner", ownerResponse.error);
+        }
+      } else {
+        setError("Failed to load lobby details");
+      }
+    } catch (err) {
+      setError("Error fetching data");
     }
 
+    setLoading(false);
+  }
+
+  useEffect(() => {
     loadLobby();
   }, [id]);
 
   // Função para quando o usuário clicar em "Join Lobby"
-    async function handleJoinLobby() {
-      console.log("Joining lobby:", id);
-      setJoinLoading(true);
+  async function handleJoinLobby() {
+    console.log("Joining lobby:", id);
+    setJoinLoading(true);
 
-      const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
-      console.log("joinResponse", joinResponse)
+    const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
+    console.log("joinResponse", joinResponse);
 
-      if (!joinResponse.success) {
-        alert("Failed to join lobby: " + joinResponse.error);
-        setJoinLoading(false);
-        return;
-      }
-
-      // 👉 ATUALIZAR O USER NO ESTADO PARA REFLETIR QUE ENTROU NO LOBBY
-      setUser(prev =>
-        prev
-          ? { ...prev, lobbyId: Number(id) }
-          : prev
-      );
-
+    if (!joinResponse.success) {
+      alert("Failed to join lobby: " + joinResponse.error);
       setJoinLoading(false);
+      return;
     }
 
+    // Atualiza o usuário no estado para refletir que entrou no lobby
+    setUser(prev =>
+      prev ? { ...prev, lobbyId: Number(id) } : prev
+    );
+
+    setJoinLoading(false);
+  }
+
   // Função para quando o usuário clicar em "Leave Lobby"
-   async function handleLeaveLobby() {
-     console.log("Leaving lobby:", id);
-     setLeaveLoading(true);
+  async function handleLeaveLobby() {
+    console.log("Leaving lobby:", id);
+    setLeaveLoading(true);
 
-     const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
-     if (!leaveResponse.success) {
-       console.log("leaveResponse")
-       alert("Failed to leave lobby: " + leaveResponse.error);
-       setLeaveLoading(false);
-       return;
-     }
+    const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
+    if (!leaveResponse.success) {
+      alert("Failed to leave lobby: " + leaveResponse.error);
+      setLeaveLoading(false);
+      return;
+    }
 
-     // 👉 ATUALIZAR O USER NO ESTADO PARA REFLETIR QUE SAIU DO LOBBY
-     setUser(prev =>
-       prev
-         ? { ...prev, lobbyId: null }
-         : prev
-     );
+    // Atualiza o usuário no estado para refletir que saiu do lobby
+    setUser(prev =>
+      prev ? { ...prev, lobbyId: null } : prev
+    );
 
-     setLeaveLoading(false);
-     navigate("/lobbies");
-   }
+    setLeaveLoading(false);
+    navigate("/lobbies");
+  }
 
   // Função para quando o host clicar em "Start Game"
   async function handleStartGame() {
-
     if (!id) return;
     setError(undefined);
 
     console.log("Starting game for lobby:", id);
 
-      try {
-        const startResponse = await gameService.startGame(Number(id));
-        console.log("StartGame response:", startResponse);
+    try {
+      const startResponse = await gameService.startGame(Number(id));
+      console.log("StartGame response:", startResponse);
 
       if (startResponse.success) {
         alert("Game started successfully!");
-        // Você pode redirecionar para outra página ou fazer o que for necessário após iniciar o jogo
-          setTimeout(() => {
-              navigate(`/games/lobby/${id}`);
-          }, 1000);
+        // Redireciona para a página do jogo
+        setTimeout(() => {
+          navigate(`/games/lobby/${id}`);
+        }, 1000);
       } else {
-          console.log("startResponse", startResponse.error)
         alert("Failed to start game: " + startResponse.error);
       }
     } catch (err) {
-          alert("Error starting game: " + err);
-      }
+      alert("Error starting game: " + err);
+    }
   }
 
   if (loading) return <p>Loading lobby details...</p>;
@@ -187,7 +183,7 @@ export default function LobbyDetails() {
   if (!lobby) return <p>Lobby not found</p>;
 
   const isUserInLobby = user?.lobbyId === lobby.id;
-  const isUserHost = user?.id === lobby.hostId;  // Verifica se o usuário é o host
+  const isUserHost = user?.id === lobby.hostId; // Verifica se o usuário é o host
 
   return (
     <div>

@@ -21,16 +21,25 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
     setTopic(newTopic);
   };
 
+  // Função para obter o token do cookie
+  function getTokenFromCookies() {
+      console.log("document.cookies",document.cookie)
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+    return token ? token.split('=')[1] : null;
+  }
+
   useEffect(() => {
     console.log("Topic atualizado:", topic);
 
-    const token = localStorage.getItem("token");
+    let token = getTokenFromCookies() + "=";
+    console.log("tokennnn", token)
+    //token = "4PTRIhNYCn9mQN3OTTKOWti71lzKH_Ep8txGCEKLWyw="
     if (!token) return;
 
     // Montar a URL do EventSource com o tópico dinâmico
     const url = `/api/users/listen?token=${encodeURIComponent(token)}&topic=${topic}`;
 
-    console.log("Vou me conectar")
+    console.log("Vou me conectar");
 
     if (eventSourceRef.current) {
       console.log("EventSource já existe, mantendo a conexão.");
@@ -38,7 +47,7 @@ export function SSEProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const es = new EventSource(url);
+    const es = new EventSource(url, { withCredentials: true });
     eventSourceRef.current = es;
 
     es.onopen = () => {

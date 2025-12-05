@@ -3,6 +3,7 @@ package pt.isel.daw.pokerDice.services
 import jakarta.inject.Named
 import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
+import org.slf4j.LoggerFactory
 import pt.isel.daw.pokerDice.domain.invite.InviteDomain
 import pt.isel.daw.pokerDice.domain.users.Token
 import pt.isel.daw.pokerDice.domain.users.User
@@ -103,6 +104,8 @@ class UsersService(
     private val inviteDomain: InviteDomain,
     private val clock: Clock,
 ) {
+    private val logger = LoggerFactory.getLogger(this::class.java)
+
     fun checkAdmin(): Boolean = !hasAnyUser()
 
     fun getPlayersInLobby(lobbyId: Int): GetUsersInLobby =
@@ -279,6 +282,7 @@ class UsersService(
                 }
             }
             val tokenValue = userDomain.generateTokenValue()
+            logger.info("BOLACHAS DE AGUA E SAL $tokenValue")
             val now = clock.now()
             val newToken =
                 Token(

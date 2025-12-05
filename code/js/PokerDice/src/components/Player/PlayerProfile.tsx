@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { playerProfileService } from "../../services/api/PlayerProfile";
 import { PlayerProfilePayload, PlayerProfile } from "../models/PlayerProfile";
-//import { useSSE } from "../../providers/SSEContext";  // Importando o contexto SSE
 
-
-const TOKEN_KEY = "token"; // change here if you use a different key
+const TOKEN_KEY = "token"; // O nome do cookie
 
 export default function PlayerProfileComponent() {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
@@ -14,16 +12,24 @@ export default function PlayerProfileComponent() {
     const [depositLoading, setDepositLoading] = useState<boolean>(false);
     const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
     const [hasToken, setHasToken] = useState<boolean>(false);
-    //const { addHandler, removeHandler } = useSSE();
 
-    const token = localStorage.getItem("token");
+    // Função para verificar o cookie
+    const getCookie = (name: string): string | null => {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+        return null;
+    };
+
+    // Verifica se o token está presente no cookie
+    const token = getCookie(TOKEN_KEY);
     if (!token) {
         return <div className="already-not-logged">Para aceder ao seu perfil tem de efetuar o login</div>;
     }
 
     // Check token on mount
     useEffect(() => {
-        const token = localStorage.getItem(TOKEN_KEY);
+        const token = getCookie(TOKEN_KEY);
         setHasToken(!!token);
     }, []);
 
@@ -44,34 +50,14 @@ export default function PlayerProfileComponent() {
         }
 
         fetchProfile();
-
-                /*// Adiciona o handler para o evento "PlayerProfLobby"
-                       addHandler("player_prof_lobby", (data) => {
-                           if (data.changeType === "joined") {
-                               console.log(`${data.username} entrou no lobby ${data.lobbyId}`);
-                               setProfile(prev => prev ? { ...prev, lobbyId: data.lobbyId } : prev);
-                           } else if (data.changeType === "left") {
-                               console.log(`${data.username} saiu do lobby ${data.lobbyId}`);
-                               setProfile(prev => prev ? { ...prev, lobbyId: null } : prev); // Remove o lobbyId
-                           }
-                       });
-
-                       // Cleanup ao desmontar o componente
-                       return () => {
-                           removeHandler("player_prof_lobby"); // Remove o handler quando o componente for desmontado
-                       };
-                   }, [addHandler, removeHandler]);*/
-                }, []);
+    }, []);
 
     // Logout handler
     function handleLogout() {
-        // remove token and update state
-        localStorage.removeItem(TOKEN_KEY);
+        // Remove token from cookie and update state
+        document.cookie = `${TOKEN_KEY}=; Max-Age=0; path=/`; // Remover cookie
         setHasToken(false);
-        // optional: clear profile or redirect
         setProfile(null);
-        // e.g. redirect:
-        // window.location.href = "/login";
     }
 
     // Handler do formulário de depósito
@@ -88,20 +74,20 @@ export default function PlayerProfileComponent() {
 
         const result = await playerProfileService.deposit({ value: depositAmount });
         if (result.success) {
-                setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
+            setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
 
-                // 👉 Atualizar só o credit no profile existente
-                setProfile(prev =>
-                    prev
-                        ? {
-                            ...prev,
-                            credit: result.value.newBalance
-                        }
-                        : prev
-                );
-            } else {
-                // setError(result?.error ?? "Erro ao realizar depósito");
-            }
+            // 👉 Atualizar só o credit no profile existente
+            setProfile(prev =>
+                prev
+                    ? {
+                        ...prev,
+                        credit: result.value.newBalance
+                    }
+                    : prev
+            );
+        } else {
+            // setError(result?.error ?? "Erro ao realizar depósito");
+        }
 
         setDepositLoading(false);
     }

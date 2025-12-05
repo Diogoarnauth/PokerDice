@@ -140,6 +140,8 @@ class UserController(
         @RequestBody input: UserCreateTokenInputModel,
     ): ResponseEntity<*> {
         val res = userService.createToken(input.username, input.password)
+        logger.info("BOLACHAS DE CHOCOLATE")
+
         return when (res) {
             is Success -> {
                 val token = res.value.tokenValue

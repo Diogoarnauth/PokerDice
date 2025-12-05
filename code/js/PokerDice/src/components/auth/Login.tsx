@@ -1,5 +1,5 @@
 import React, { useReducer, useState, useEffect } from 'react';
-import { Navigate, useLocation, Link, useNavigate } from 'react-router-dom'; // Corrigido: useNavigate
+import { Navigate, useLocation, Link, useNavigate } from 'react-router-dom';
 import { useAuthentication } from '../../providers/authentication';
 import { authService } from '../../services/api/auth';
 import { isOk } from '../../services/api/utils';
@@ -23,27 +23,40 @@ type Action =
 function reduce(state: State, action: Action): State {
   switch (state.type) {
     case 'editing':
-      switch (action.type) {
+      switch(action.type){
         case 'edit':
-          return { ...state, inputs: { ...state.inputs, [action.inputName]: action.inputValue } };
+          return { ...state, inputs: { ...state.inputs, [action.inputName]: action.inputValue } }
         case 'submit':
-          return { type: 'submitting', inputs: action.inputs, showPassword: state.showPassword, error: null, isLoading: true, shouldRedirect: false };
+          return {
+            type: 'submitting',
+            inputs: action.inputs,
+            showPassword: state.showPassword,
+            error: null,
+            isLoading: true,
+            shouldRedirect: false
+          }
         case 'togglePassword':
-          return { ...state, showPassword: !state.showPassword };
+          return { ...state, showPassword: !state.showPassword }
         default:
-          return state;
+          return state
       }
     case 'submitting':
-      switch (action.type) {
+      switch(action.type){
         case 'setError':
-          return { type: 'editing', inputs: { ...state.inputs, password: '' }, showPassword: false, error: action.error, shouldRedirect: false };
+          return {
+            type: 'editing',
+            inputs: { ...state.inputs, password: '' },
+            showPassword: false,
+            error: action.error,
+            shouldRedirect: false
+          }
         case 'setRedirect':
-          return { type: 'redirect' };
+          return { type: 'redirect' }
         default:
-          return state;
+          return state
       }
     default:
-      return state;
+      return state
   }
 }
 
@@ -59,18 +72,19 @@ export default function Login() {
   const location = useLocation(); // Para obter a localização da página anterior
   const navigate = useNavigate(); // Corrigido para usar o hook useNavigate
 
-
+  // Verificando se o token está presente nos cookies
+  useEffect(() => {
+    const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
+    if (token) {
+      // O usuário já está logado
+      setUsername('');  // Aqui você pode definir o username baseado no seu fluxo
+    }
+  }, []);
 
   // Se o estado for 'redirect', navegue para a página anterior
   if (state.type === 'redirect') {
-      console.log("olaaaaaaa")
     return <Navigate to={location.state?.source ?? '/'} replace={true} />;
   }
-
-const token = localStorage.getItem("token");
-if (token) {
-    return <div className="already-logged">Já estás com o login feito</div>;
-}
 
   // Manipula as mudanças nos campos do formulário
   function handleChange(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -85,26 +99,18 @@ if (token) {
       const result = await authService.login(state.inputs);
 
       if (isOk(result)) {
-        // Armazena o token no localStorage
-        if (result.value.token) {
-          localStorage.setItem("token", result.value.token); // Salva o token no localStorage
-        }
-
+        // Não precisamos mais armazenar o token no localStorage, pois ele será armazenado no cookie
         setUsername(state.inputs.username); // Armazena o nome de usuário após login
         dispatch({ type: 'setRedirect' }); // Redireciona o usuário
-
-        // Aguarda e redireciona
-        //setTimeout(() => {
-          //navigate(location.state?.source ?? '/home');
-        //}, 1000);
-
       } else {
         dispatch({ type: 'setError', error: result.error });
       }
     }
   }
 
-  const inputs = state.type === 'editing' || state.type === 'submitting' ? state.inputs : { username: '', password: '' };
+  const inputs = state.type === 'editing' || state.type === 'submitting'
+    ? state.inputs
+    : { username: '', password: '' };
 
   return (
     <div className="container">

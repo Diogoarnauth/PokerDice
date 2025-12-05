@@ -1,17 +1,61 @@
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useReducer, useState, useEffect } from "react";
+import { Navigate, useLocation, Link, useNavigate } from "react-router-dom";
 import { authService } from "../../services/api/auth";
 import { isOk } from "../../services/api/utils";
-import "../../styles/auth.css";
+import "../../styles/login.css";
+
+// Tipos de estado para o formulário
+type State =
+  | { type: 'editing'; inputs: { username: string, password: string }; showPassword: boolean; error: string | null; shouldRedirect: boolean }
+  | { type: 'submitting'; inputs: { username: string, password: string }; showPassword: boolean; error: string | null; isLoading: boolean; shouldRedirect: boolean }
+  | { type: 'redirect' };
+
+type Action =
+  | { type: 'edit'; inputName: string; inputValue: string }
+  | { type: 'submit'; inputs: { username: string, password: string } }
+  | { type: 'togglePassword' }
+  | { type: 'setError'; error: string | null }
+  | { type: 'setLoading'; isLoading: boolean }
+  | { type: 'setRedirect' };
+
+// Função para redução do estado do formulário
+function reduce(state: State, action: Action): State {
+  switch (state.type) {
+    case 'editing':
+      switch(action.type){
+        case 'edit':
+          return { ...state, inputs: { ...state.inputs, [action.inputName]: action.inputValue } }
+        case 'submit':
+          return { type: 'submitting', inputs: action.inputs, showPassword: state.showPassword, error: null, isLoading: true, shouldRedirect: false };
+        case 'togglePassword':
+          return { ...state, showPassword: !state.showPassword }
+        default:
+          return state
+      }
+    case 'submitting':
+      switch(action.type){
+        case 'setError':
+          return { type: 'editing', inputs: { ...state.inputs, password: '' }, showPassword: false, error: action.error, shouldRedirect: false }
+        case 'setRedirect':
+          return { type: 'redirect' }
+        default:
+          return state
+      }
+    default:
+      return state
+  }
+}
 
 export default function Signup() {
 
-    const token = localStorage.getItem("token");
-    if (token) {
-        return <div className="already-logged">Já estás com o signup feito</div>;
-    }
-  // Router
   const navigate = useNavigate();
+  const [state, dispatch] = useReducer(reduce, {
+    type: 'editing',
+    inputs: { username: '', password: '' },
+    showPassword: false,
+    error: null,
+    shouldRedirect: false,
+  });
 
   // Fields
   const [username, setUsername] = useState("");
@@ -46,6 +90,13 @@ export default function Signup() {
   if (loadingCheck) {
     return <p>Loading...</p>;
   }
+
+  // Função para setar o cookie do token
+  const setCookie = (name: string, value: string, days: number) => {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
+    document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;Secure;SameSite=Strict`;
+  };
 
   // 2. Submeter o formulário
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -88,6 +139,9 @@ export default function Signup() {
 
     if (isOk(response)) {
       setResult("Signup made with success. Redirecting to login...");
+
+      // Aqui você deve armazenar o token no cookie após o signup com sucesso
+      setCookie("token", response.value.tokenValue, 1); // Armazenar o token por 1 dia
 
       setTimeout(() => {
         navigate("/login");

@@ -60,8 +60,8 @@ export default function LobbiesList() {
   }
 
   useEffect(() => {
-    // 1) Verificar auth
-    const token = localStorage.getItem("token");
+    // 1) Verificar auth via cookies
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
     if (!token) {
       alert("You are not authenticated");
       navigate("/login"); // ou outra rota

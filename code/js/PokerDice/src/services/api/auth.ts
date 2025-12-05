@@ -23,7 +23,6 @@ interface SignupAdminCredentials {
 
 export const authService = {
     login(credentials: LoginCredentials): Promise<Result<any>> {
-        console.log('Login credentials:', credentials);
         return fetchWrapper(RequestUri.user.login, {
             method: 'POST',
             body: JSON.stringify(credentials)

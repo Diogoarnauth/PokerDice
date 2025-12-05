@@ -17,7 +17,7 @@ export const RequestUri = {
         checkAdmin: `${BASE_API_URL}/checkAdmin`,
         getMe:  `${BASE_API_URL}/users/getMe`,
         getUser: (id: number) => `${BASE_API_URL}/users/${id}`,
-    },
+    }, 
 
     // -----------------------
     // LOBBIES

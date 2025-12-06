@@ -16,7 +16,7 @@ export async function fetchWrapper<T>(
             credentials: 'include',  // Garante que os cookies sejam enviados
             ...options,
         });
-        console.log('fetchWrapperUtils', document.cookie);  // Agora deve exibir os cookies
+       // console.log('fetchWrapperUtils', document.cookie);  // Agora deve exibir os cookies
 
         if (!response.ok) {
             console.log('fetchWrapper', response.status);

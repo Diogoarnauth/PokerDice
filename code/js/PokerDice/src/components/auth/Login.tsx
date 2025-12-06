@@ -77,6 +77,7 @@ export default function Login() {
     const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
     if (token) {
       alert("Você já está logado!");
+      return
       navigate("/");  // Redireciona para a página principal ou qualquer outra página desejada
     }
   }, [navigate]);

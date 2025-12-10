@@ -11,6 +11,11 @@ export type Result<T> =
 
 export const isOk = <T>(result: Result<T>): result is { success: true; value: T } => result.success;
 
+export function getTokenFromCookies(): string | null {
+    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
+    return token ? token.split('=')[1] : null;
+}
+
 export async function fetchWrapper<T>(
     url: string,
     options: RequestInit = {}

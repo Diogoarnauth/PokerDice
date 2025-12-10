@@ -13,7 +13,9 @@ class WebConfig(
 ) : WebMvcConfigurer {
     override fun addInterceptors(registry: InterceptorRegistry) {
         // Limita ao teu API se quiseres: .addInterceptor(...).addPathPatterns("/api/**")
-        registry.addInterceptor(authenticationInterceptor)
+        registry
+            .addInterceptor(authenticationInterceptor)
+            .excludePathPatterns("/error")
     }
 
     override fun addArgumentResolvers(resolvers: MutableList<HandlerMethodArgumentResolver>) {
@@ -22,10 +24,10 @@ class WebConfig(
 
     override fun addCorsMappings(registry: CorsRegistry) {
         registry
-            .addMapping("/api/**")
-            .allowedOrigins("http://localhost:5173") // aceita qualquer origem/porta
-            .allowedMethods("GET", "POST", "OPTIONS", "DELETE")
-            .allowedHeaders("Authorization", "Content-Type")
-            .allowCredentials(true) // permite que as cookies sejam enviadas
+            .addMapping("/**")
+            .allowedOrigins("http://localhost:5173")
+            .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+            .allowedHeaders("*")
+            .allowCredentials(true)
     }
 }

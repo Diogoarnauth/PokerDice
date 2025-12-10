@@ -23,7 +23,7 @@ export default function AppInvite() {
                 setInviteCode(payload.inviteCode ?? null);
                 setSuccess("Convite enviado com sucesso!");
             } else {
-                setError(result.error ?? "Erro ao enviar convite.");
+                setError(result.error.title ?? "Erro ao enviar convite.");
             }
         } catch (err) {
             setError("Erro inesperado ao enviar convite.");

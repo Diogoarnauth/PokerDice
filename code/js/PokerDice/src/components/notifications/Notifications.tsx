@@ -92,7 +92,7 @@ export function Notifications() {
         dispatch({ type: 'start' });
         const result = await notificationsService.joinLobby(notificationId);
         if (! isOk(result)) {
-            dispatch({ type: 'setError', error: result.error });
+            dispatch({ type: 'setError', error: result.error.title });
         }else{
             const newPayload = state.payload.channels.filter(channel => channel.channelId !== notificationId);
             dispatch({ type: 'setLoaded', payload: {channels: newPayload} });
@@ -103,7 +103,7 @@ export function Notifications() {
         dispatch({ type: 'start' });
         const result = await notificationsService.declineLobby(notificationId)
         if (!isOk(result)) {
-            dispatch({ type: 'setError', error: result.error });
+            dispatch({ type: 'setError', error: result.error.title });
         }else{
             const newPayload = state.payload.channels.filter(channel => channel.channelId !== notificationId);
             dispatch({ type: 'setLoaded', payload: {channels: newPayload} });

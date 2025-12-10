@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
 import { gameService } from "../../services/api/Games";
 import { isOk } from "../../services/api/utils";
+import { getTokenFromCookies } from "../../services/api/utils";
 
 // Tipo para armazenar as informações do Lobby
 type Lobby = {
@@ -55,12 +56,6 @@ export default function LobbyDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  // Função para buscar o token nos cookies
-  function getTokenFromCookies() {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-    return token ? token.split('=')[1] : null;
-  }
-
   // Função para carregar lobby
   async function loadLobby() {
     setLoading(true);
@@ -94,7 +89,7 @@ export default function LobbyDetails() {
         if (ownerResponse.success) {
           setOwner(ownerResponse.value);
         } else {
-          console.error("Failed to fetch owner", ownerResponse.error);
+          console.error("Failed to fetch owner", ownerResponse.error.title);
         }
       } else {
         setError("Failed to load lobby details");

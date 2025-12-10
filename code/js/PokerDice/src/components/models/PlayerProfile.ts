@@ -13,10 +13,7 @@ export class PlayerProfile {
     age: number;
     lobbyId: number;
     credit: number;
-    winCounter: number;//
-
-
-
+    winCounter: number;
 
     // Adiciona outros campos se o backend os fornecer
 

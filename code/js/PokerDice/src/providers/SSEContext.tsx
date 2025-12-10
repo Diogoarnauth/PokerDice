@@ -1,104 +1,140 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
-import { RequestUri } from "../services/api/RequestUri";
+import React, {createContext, useContext, useEffect, useRef, useState} from "react";
+import {RequestUri} from "../services/api/RequestUri";
+import {useAuthentication} from "./authentication";
+
+// Não precisas de importar getTokenFromCookies se a definires aqui dentro ou importares do utils
+// Vou usar a lógica que tinhas no teu código antigo:
 
 type SSEContextType = {
-  isConnected: boolean;
-  addHandler: (type: string, handler: (data: any) => void) => void;
-  removeHandler: (type: string) => void;
-  updateTopic: (newTopic: string) => void; // Função para atualizar o tópico
+    isConnected: boolean;
+    addHandler: (type: string, handler: (data: any) => void) => void;
+    removeHandler: (type: string) => void;
+    updateTopic: (newTopic: string) => void;
+    connect: () => Promise<void>;
+    disconnect: () => void;
 };
 
 const SSEContext = createContext<SSEContextType | null>(null);
 
-export function SSEProvider({ children }: { children: React.ReactNode }) {
-  const eventSourceRef = useRef<EventSource | null>(null);
-  const handlers = useRef<Record<string, (data: any) => void>>({});
-  const [isConnected, setConnected] = useState(false);
-  const [topic, setTopic] = useState<string>("lobbies"); // Definindo o tópico inicial
+export function SSEProvider({children}: { children: React.ReactNode }) {
+    const {username, isLoading} = useAuthentication();
 
-  // Função para atualizar o tópico
-  const updateTopic = (newTopic: string) => {
-    setTopic(newTopic);
-  };
+    const eventSourceRef = useRef<EventSource | null>(null);
+    const handlers = useRef<Record<string, (data: any) => void>>({});
+    const [isConnected, setConnected] = useState(false);
+    const [topic, setTopic] = useState<string>("home"); // Começa em home
 
-  // Função para obter o token do cookie
-  function getTokenFromCookies() {
-      console.log("document.cookies",document.cookie)
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-    return token ? token.split('=')[1] : null;
-  }
 
-  useEffect(() => {
-    console.log("Topic atualizado:", topic);
+    const updateTopic = (newTopic: string) => {
+        setTopic(newTopic);
+    };
 
-    let token = getTokenFromCookies() + "=";
-    console.log("tokennnn", token)
-    //token = "4PTRIhNYCn9mQN3OTTKOWti71lzKH_Ep8txGCEKLWyw="
-    if (!token) return;
+    // Função de desconexão manual
+    const disconnect = () => {
+        if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+            eventSourceRef.current = null;
+            setConnected(false);
+        }
+    };
 
-    // Montar a URL do EventSource com o tópico dinâmico
-    const url = `/api/users/listen?token=${encodeURIComponent(token)}&topic=${topic}`;
+    // Função de conexão (agora pode ser chamada manualmente)
+    const connect = async () => {
+        // 1. Obter token (Só funciona se httpOnly=false no backend!)
+        /*const token = getTokenFromCookies();
 
-    console.log("Vou me conectar");
+        if (!token) {
+            console.log("SSE: Sem token, abortar conexão.");
+            return;
+        }*/
 
-    if (eventSourceRef.current) {
-      console.log("EventSource já existe, mantendo a conexão.");
-      // Não fecha a conexão, mantém o que já existe
-      return;
+        if (isLoading || !username) {
+            console.log("SSE: Utilizador não autenticado. Conexão abortada.");
+            return;
+        }
+
+        // Evitar duplicados
+        if (eventSourceRef.current) {
+            if (eventSourceRef.current.readyState !== EventSource.CLOSED) return;
+            eventSourceRef.current.close();
+        }
+
+        const url = `${RequestUri.user.listen}?topic=${topic}`;
+        console.log(`SSE: A conectar a ${url} como ${username}`);
+
+        const es = new EventSource(url, {withCredentials: true});
+        eventSourceRef.current = es;
+
+        es.onopen = () => {
+            console.log("SSE: Conectado!");
+            setConnected(true);
+        };
+
+        es.onerror = (err) => {
+            console.error("SSE: Erro", err);
+            setConnected(false);
+            es.close();
+            eventSourceRef.current = null;
+        };
+
+
+        // Ouvir eventos genéricos (message)
+        es.onmessage = (msg) => {
+            console.log("Evento genérico recebido:", msg.data);
+        };
+
+        es.addEventListener("lobbies_list_changes", (e: any) => {
+            console.log("Evento lobbies_list_changes recebido");
+            const h = handlers.current["lobbies_list_changes"];
+            if (h) h(JSON.parse(e.data));
+        });
+
+        es.addEventListener("game_update", (e: any) => {
+            const h = handlers.current["game_update"];
+            if (h) h(JSON.parse(e.data));
+        });
+
+    };
+
+    useEffect(() => {
+        if (!isLoading && username) {
+            connect();
+        } else {
+            disconnect();
+        }
+
+        return () => disconnect();
+    }, [username, isLoading, topic]);
+
+    // Gestão de handlers
+    function addHandler(type: string, handler: (data: any) => void) {
+        handlers.current[type] = handler;
     }
 
-    const es = new EventSource(url, { withCredentials: true });
-    eventSourceRef.current = es;
+    function removeHandler(type: string) {
+        delete handlers.current[type];
+    }
 
-    es.onopen = () => {
-      console.log("SSE connected");
-      setConnected(true);
-    };
-
-    es.onerror = (err) => {
-      console.error("SSE error", err);
-      setConnected(false);
-    };
-
-    es.onmessage = (msg) => {
-      console.warn("Received unnamed event:", msg.data);
-    };
-
-    // Eventos nomeados dinâmicos
-    es.addEventListener("lobbies_list_changes", (e: any) => {
-      console.log("addEventListener lobbies_list_changes");
-      const h = handlers.current["lobbies_list_changes"];
-      if (h) h(JSON.parse(e.data));
-    });
-
-    // Cleanup ao desmontar o componente
-    return () => {
-      console.log("SSE CLOSED");
-      // Não feche o EventSource, apenas quando o app for desmontado
-      // eventSourceRef.current?.close();
-    };
-  }, [topic]); // Use o tópico como dependência para refazer a conexão quando o tópico mudar
-
-  // Função para adicionar handler
-  function addHandler(type: string, handler: (data: any) => void) {
-    handlers.current[type] = handler;
-  }
-
-  // Função para remover handler
-  function removeHandler(type: string) {
-    delete handlers.current[type];
-  }
-
-  return (
-    <SSEContext.Provider value={{ isConnected, addHandler, removeHandler, updateTopic }}>
-      {children}
-    </SSEContext.Provider>
-  );
+    return (
+        <SSEContext.Provider value={{isConnected, addHandler, removeHandler, updateTopic, connect, disconnect}}>
+            {children}
+        </SSEContext.Provider>
+    );
 }
 
-// Hook para consumir o SSEContext
+// HOOKS
+
 export function useSSE() {
-  const ctx = useContext(SSEContext);
-  if (!ctx) throw new Error("useSSE must be inside SSEProvider");
-  return ctx;
+    const ctx = useContext(SSEContext);
+    if (!ctx) throw new Error("useSSE must be inside SSEProvider");
+    return ctx;
+}
+
+
+export function useSSEEmitter() {
+    const ctx = useContext(SSEContext);
+    if (!ctx) throw new Error("useSSEEmitter must be inside SSEProvider");
+
+    // O RequireAuthentication espera um array [connect, disconnect, status]
+    return [ctx.connect, ctx.disconnect, ctx.isConnected] as const;
 }

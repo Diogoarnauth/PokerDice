@@ -23,22 +23,24 @@ class AuthenticationInterceptor(
         if (handler is HandlerMethod &&
             handler.methodParameters.any {
                 it.parameterType == AuthenticatedUser::class.java
-            } // valida se o endPoint (@get...@post etc, exige algum AuthenticatedUser)
+            }
         ) {
-            // enforce authentication
+            val cookies = request.cookies ?: emptyArray()
+
+            if (request.method == "OPTIONS") return true
 
             val userFromAuthHeader =
                 authorizationHeaderProcessor.processAuthorizationHeaderValue(
                     request.getHeader(NAME_AUTHORIZATION_HEADER),
                 )
-            val userFromCookie = authorizationHeaderProcessor.processCookieToken(request.cookies)
+
+            val userFromCookie = authorizationHeaderProcessor.processCookieToken(cookies)
 
             val user = userFromAuthHeader ?: userFromCookie
 
             if (user == null) {
+                logger.info("Authentication failed for ${request.requestURI}")
                 response.addHeader(NAME_WWW_AUTHENTICATE_HEADER, RequestTokenProcessor.SCHEME)
-
-                // Corpo uniforme com o teu Problem
                 val problem =
                     mapOf(
                         "error" to
@@ -48,21 +50,18 @@ class AuthenticationInterceptor(
                                 "detail" to "Missing or invalid bearer token.",
                             ),
                     )
-
                 ProblemWriter.writeJson(
                     response = response,
                     status = HttpServletResponse.SC_UNAUTHORIZED,
                     body = problem,
                     mapper = objectMapper,
                 )
-
                 return false
             } else {
                 AuthenticatedUserArgumentResolver.addUserTo(user, request)
                 true
             }
         }
-
         return true
     }
 

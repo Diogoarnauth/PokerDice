@@ -5,12 +5,6 @@ import { GamePayload, Game } from "../models/Game";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
 import { useParams } from "react-router-dom";
 
-// Função para obter o token do cookie
-function getTokenFromCookies() {
-  const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
-  return token ? token.split('=')[1] : null;
-}
-
 export default function GamePage() {
     const { lobbyId } = useParams<{ lobbyId: string }>(); // supõe rota /games/lobby/:lobbyId
     const [game, setGame] = useState<Game | null>(null);

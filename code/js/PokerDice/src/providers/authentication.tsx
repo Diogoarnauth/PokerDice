@@ -1,42 +1,60 @@
-import React, {useContext} from 'react'
-import {createContext, useState} from 'react'
+import React, {
+    createContext,
+    useState,
+    useContext,
+    useEffect,
+    ReactNode,
+} from "react";
+import { fetchWrapper, isOk } from "../services/api/utils";
+import { RequestUri } from "../services/api/RequestUri";
 
-const AuthenticationContext = createContext({
-    username: undefined, 
-    setUsername: (_: string) => {
-    },
-    clearUsername: () => {}
-})
+type UserState = string | null;
 
-export function AuthenticationProvider({children}) {
-    const [username, setUsername] = useState<string | undefined>(() =>
-        localStorage.getItem('username') || undefined
-    )
+interface AuthenticationContextType {
+    username: UserState;
+    setUsername: (u: UserState) => void;
+    isLoading: boolean;
+}
 
-    const clearUsername = () => {
-        setUsername(undefined)
-        localStorage.removeItem('username')
-    }
+const AuthenticationContext = createContext<AuthenticationContextType>({
+    username: null,
+    setUsername: () => {},
+    isLoading: true,
+});
 
-    const value = {
-        username: username,
-        setUsername: (newUsername: string) => {
-            localStorage.setItem('username', newUsername)
-            setUsername(newUsername)
-        },
-        clearUsername: clearUsername
-    }
-    return <AuthenticationContext.Provider value={value}>{children}</AuthenticationContext.Provider>
+export function AuthenticationProvider({ children }: { children: ReactNode }) {
+    const [username, setUsername] = useState<UserState>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // restaurar a sessão ao carregar a pag
+    useEffect(() => {
+        async function checkSession() {
+            try {
+                // O browser envia a cookie automaticamente aqui c os dados do pedido
+                const result = await fetchWrapper<any>(RequestUri.user.getMe); // Ajusta para o teu URI correto
+
+                if (isOk(result)) {
+                    setUsername(result.value.username);
+                } else {
+                    setUsername(null);
+                }
+            } catch (error) {
+                setUsername(null);
+            } finally {
+                setIsLoading(false);
+            }
+        }
+
+        checkSession();
+    }, []);
+
+    return (
+        <AuthenticationContext.Provider value={{ username, setUsername, isLoading }}>
+            {children}
+        </AuthenticationContext.Provider>
+    );
 }
 
 export function useAuthentication() {
-    const state = useContext(AuthenticationContext)
-
-    return [
-        state.username,
-        (username: string) => {
-            state.setUsername(username)
-        },
-        state.clearUsername
-    ]
+    return useContext(AuthenticationContext);
 }

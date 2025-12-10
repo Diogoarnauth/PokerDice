@@ -73,7 +73,8 @@ export default function LobbyCreation() {
                 setSuccess("Lobby created successfully!");
                 setForm(defaultState);
             } else {
-                setError(result.error ?? "Error creating lobby.");
+                const problem = result.error;
+                setError(problem.detail || problem.title || "Erro desconhecido ao criar lobby")
             }
         } catch (err) {
             setError("Unexpected error occurred.");

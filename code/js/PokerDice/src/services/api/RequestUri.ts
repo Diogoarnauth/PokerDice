@@ -13,7 +13,7 @@ export const RequestUri = {
         deposit: `${BASE_API_URL}/deposit`,       // POST deposit money
         bootstrap: `${BASE_API_URL}/bootstrap`,   // GET bootstrap info
         getById: (id: number) => `${BASE_API_URL}/users/${id}`,
-        listen: `${BASE_API_URL}/sse`,
+        listen: `${BASE_API_URL}/users/listen`,   // SSE listen user events
         checkAdmin: `${BASE_API_URL}/checkAdmin`,
         getMe:  `${BASE_API_URL}/users/getMe`,
         getUser: (id: number) => `${BASE_API_URL}/users/${id}`,

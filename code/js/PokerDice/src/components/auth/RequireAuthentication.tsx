@@ -1,42 +1,36 @@
-import React, { useEffect } from 'react'
-import { useAuthentication } from '../../providers/authentication'
-import { Navigate} from 'react-router-dom'
-import { useSSEEmitter } from '../../providers/SSEContext'
-import { useLocation } from 'react-router-dom'
-import { messageCounters } from '../../services/storage/counterStorage'
+import React, {JSX, useEffect} from 'react';
+import {useAuthentication} from '../../providers/authentication';
+import {Navigate, useLocation} from 'react-router-dom';
+import {useSSEEmitter} from '../../providers/SSEContext';
+import {messageCounters} from '../../services/storage/counterStorage';
 
-export function RequireAuthentication({ children }) {
-  const [username,setUsername] = useAuthentication()
-  const hasCookie = document.cookie.includes('token')
-  const [connectSSE, disconnectSSE, isSSEConnected] = useSSEEmitter()
-  const location = useLocation()
+export function RequireAuthentication({children}: { children: JSX.Element }) {
+    const {username, setUsername, isLoading} = useAuthentication();
+    const location = useLocation();
 
-  useEffect(() => {
-    const connectIfNeeded = async () => {
-      if (hasCookie && !isSSEConnected ) {
-        try {
-          await connectSSE()
-        } catch (error) {
-          console.error('Failed to connect to SSE:', error)
-        }
-      }
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-50">
+                <div className="flex flex-col items-center gap-4">
+                    {/* Podes usar um spinner SVG aqui se quiseres */}
+                    <div
+                        className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                    <p className="text-gray-500 font-medium animate-pulse">A verificar sessão...</p>
+                </div>
+            </div>
+        );
     }
 
-    connectIfNeeded()
+    if (!username) {
+        // Limpeza de contadores locais (mantendo a lógica do teu projeto)
+        messageCounters.delete();
 
-    return () => {
-      if (!hasCookie && isSSEConnected) {
-        disconnectSSE()
-      }
+        // Redireciona para o Login, guardando a página onde ele tentou ir (source)
+        return <Navigate to="/login" state={{source: location.pathname}} replace={true}/>;
     }
-  }, [hasCookie])
-  
 
-  if (username && hasCookie) {
-    return children
-  } else {
-    messageCounters.delete()
-    setUsername(null)
-    return <Navigate to="/" state={{ source: location.pathname }} replace={true} />
-  }
+    // 3. ESTADO AUTENTICADO
+    // Temos username e não estamos a carregar. Mostra a página protegida.
+    // (O SSEProvider vai ligar-se automaticamente porque o username existe)
+    return <>{children}</>;
 }

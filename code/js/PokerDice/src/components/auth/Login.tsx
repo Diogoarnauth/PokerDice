@@ -3,7 +3,7 @@ import {Navigate, useLocation, Link, useNavigate} from 'react-router-dom';
 import {useAuthentication} from '../../providers/Authentication';
 import {authService} from '../../services/api/auth';
 import {isOk} from '../../services/api/utils';
-import '../../styles/login.css';
+import './Login.css';
 
 // Tipos de estado para o formulário
 type State =
@@ -131,79 +131,75 @@ export default function Login() {
         : {username: '', password: ''};
 
     return (
-        <div className="container">
-            <h1 className="title">Login</h1>
-            <form onSubmit={handleSubmit}>
-                <fieldset disabled={state.type === 'submitting' && state.isLoading}>
-                    <div className="input-container">
-                        <div>
-                            <label htmlFor="username" className="label">
-                                Username
-                            </label>
-                            <input
-                                className="input"
-                                id="username"
-                                type="text"
-                                name="username"
-                                value={inputs.username}
-                                onChange={handleChange}
-                                placeholder="Enter your username"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="password" className="label">
-                                Password
-                            </label>
-                            <div className="password-container">
+        <div className="login-page">
+            <div className="login-card">
+                <h1 className="title">Login</h1>
+                <form onSubmit={handleSubmit}>
+                    <fieldset disabled={state.type === 'submitting' && state.isLoading}>
+                        <div className="input-container">
+                            <div>
+                                <label htmlFor="username" className="label">
+                                    Username
+                                </label>
                                 <input
                                     className="input"
-                                    id="password"
-                                    type={state.showPassword ? 'text' : 'password'}
-                                    name="password"
-                                    value={inputs.password}
+                                    id="username"
+                                    type="text"
+                                    name="username"
+                                    value={inputs.username}
                                     onChange={handleChange}
-                                    placeholder="Enter your password"
+                                    placeholder="Enter your username"
                                     required
                                 />
-                                <button type="button" onClick={() => dispatch({type: 'togglePassword'})}
-                                        className="toggle-password">
-                                    {state.showPassword ? '🙉' : '🙈'}
-                                </button>
                             </div>
+
+                            <div>
+                                <label htmlFor="password" className="label">
+                                    Password
+                                </label>
+                                <div className="password-container">
+                                    <input
+                                        className="input"
+                                        id="password"
+                                        type={state.showPassword ? 'text' : 'password'}
+                                        name="password"
+                                        value={inputs.password}
+                                        onChange={handleChange}
+                                        placeholder="Enter your password"
+                                        required
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => dispatch({type: 'togglePassword'})}
+                                        className="toggle-password"
+                                    >
+                                        {state.showPassword ? '🙉' : '🙈'}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" className="submit-button">
+                                {state.type === 'submitting' && state.isLoading ? 'Loading...' : 'Sign In'}
+                            </button>
                         </div>
+                    </fieldset>
 
-                        <button type="submit" className="submit-button">
-                            {state.type === 'submitting' && state.isLoading ? 'Loading...' : 'Sign In'}
-                        </button>
+                    <div className="signup-container">
+                        <p className="signup-text">
+                            Don't have an account?{' '}
+                            <Link to="/signup" className="signup-link">
+                                Sign Up
+                            </Link>
+                        </p>
                     </div>
-                </fieldset>
 
-                <div className="signup-container">
-                    <p className="signup-text">
-                        Don't have an account?{' '}
-                        <Link to="/signup" className="signup-link">
-                            Sign Up
-                        </Link>
-                    </p>
-                </div>
-
-                {state.error && (
-                    <div className="auth-error" style={{
-                        color: '#721c24',
-                        backgroundColor: '#f8d7da',
-                        borderColor: '#f5c6cb',
-                        padding: '10px',
-                        marginTop: '15px',
-                        borderRadius: '4px',
-                        border: '1px solid',
-                        textAlign: 'center'
-                    }}>
-                        {state.error}
-                    </div>
-                )}
-            </form>
+                    {state.error && (
+                        <div className="auth-error">
+                            {state.error}
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 }

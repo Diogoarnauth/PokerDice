@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useCallback} from "react";
 import {useNavigate} from 'react-router-dom';
+import './Lobbies.css';
 
 import {lobbiesService} from "../../services/api/Lobbies";
 import {playersService} from "../../services/api/Players";
@@ -128,25 +129,38 @@ export default function LobbiesList() {
     if (authLoading || loading && lobbies.length === 0) return <p className="p-8 text-center">Loading lobbies...</p>;
 
     return (
-        <div>
-            <h1 className="text-2xl font-bold mb-4">Lobbies Disponíveis</h1>
+        <div className="lobbies-page">
+            <div className="lobbies-header">
+                <h1 className="lobbies-title">Available Lobbies</h1>
+                <p className="lobbies-subtitle">
+                    Choose your table and join the game.
+                </p>
+            </div>
 
-            {lobbies.length === 0 && <p>There are no rooms available.</p>}
+            {lobbies.length === 0 && (
+                <p className="lobbies-empty">There are no rooms available.</p>
+            )}
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="lobbies-grid">
                 {lobbies.map((lobby) => (
-                    <div key={lobby.id} className="border p-4 rounded shadow bg-white hover:shadow-lg transition">
-                        <h2 className="font-bold text-lg">{lobby.name}</h2>
-                        <p className="text-gray-600 text-sm mb-2">{lobby.description}</p>
-                        <div className="text-sm flex justify-between mt-4">
-                            <span>👥 {lobby.currentPlayers} / {lobby.maxUsers}</span>
-                            <span className="font-bold text-green-600">💰 {lobby.minCreditToParticipate}</span>
+                    <div key={lobby.id} className="lobby-card">
+                        <h2 className="lobby-card-title">{lobby.name}</h2>
+                        <p className="lobby-card-description">{lobby.description}</p>
+
+                        <div className="lobby-card-meta">
+                        <span className="lobby-meta-item">
+                            👥 {lobby.currentPlayers} / {lobby.maxUsers}
+                        </span>
+                            <span className="lobby-meta-item lobby-meta-credit">
+                            💰 {lobby.minCreditToParticipate}
+                        </span>
                         </div>
+
                         <button
                             onClick={() => handleEnterLobby(lobby.id)}
-                            className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                            className="lobby-card-button"
                         >
-                            Entrar
+                            Enter Lobby
                         </button>
                     </div>
                 ))}

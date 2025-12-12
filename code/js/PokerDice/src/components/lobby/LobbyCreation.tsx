@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { lobbyCreationService } from "../../services/api/LobbyCreate";
 import { isOk } from "../../services/api/utils";
 import { useNavigate } from "react-router-dom";
+import "./LobbyCreation.css";
 
 type FormState = {
     name: string;
@@ -66,7 +67,7 @@ export default function LobbyCreation() {
         }
 
         try {
-            const payload = { ...form};
+            const payload = { ...form };
             const result = await lobbyCreationService.createLobby(form);
             console.log("Payload sent:", payload);
             console.log("Lobby creation result:", result);
@@ -77,7 +78,7 @@ export default function LobbyCreation() {
 
             } else {
                 const problem = result.error;
-                setError(problem.detail || problem.title || "Unknown error creating lobby.")
+                setError(problem.detail || problem.title || "Unknown error creating lobby.");
             }
         } catch (err) {
             setError("Unexpected error occurred.");
@@ -87,89 +88,109 @@ export default function LobbyCreation() {
     }
 
     return (
-        <div>
-            <h1>Create New Lobby</h1>
-            <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
-                <div>
-                    <label>Lobby Name</label><br />
-                    <input
-                        type="text"
-                        name="name"
-                        value={form.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Description</label><br />
-                    <textarea
-                        name="description"
-                        value={form.description}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Min Users</label><br />
-                    <input
-                        type="number"
-                        name="minUsers"
-                        min={2}
-                        value={form.minUsers}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Max Users</label><br />
-                    <input
-                        type="number"
-                        name="maxUsers"
-                        min={form.minUsers}
-                        value={form.maxUsers}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Rounds</label><br />
-                    <input
-                        type="number"
-                        name="rounds"
-                        min={1}
-                        value={form.rounds}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Minimum Credit To Participate</label><br />
-                    <input
-                        type="number"
-                        name="minCreditToParticipate"
-                        min={0}
-                        value={form.minCreditToParticipate}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div>
-                    <label>Turn Time (minutes)</label><br />
-                    <input
-                        type="number"
-                        name="turnTime"
-                        min={1}
-                        value={form.turnTime}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <button type="submit" disabled={loading}>
-                    {loading ? "Creating..." : "Create Lobby"}
-                </button>
-                {error && <p style={{ color: "red" }}>{error}</p>}
-                {success && <p style={{ color: "green" }}>{success}</p>}
-            </form>
+        <div className="lobby-page">
+            <div className="lobby-card">
+                <h1 className="lobby-title">Create New Lobby</h1>
+
+                <form onSubmit={handleSubmit} className="lobby-form">
+                    <div className="lobby-field">
+                        <label className="lobby-label">Lobby Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value={form.name}
+                            onChange={handleChange}
+                            required
+                            className="lobby-input"
+                        />
+                    </div>
+
+                    <div className="lobby-field">
+                        <label className="lobby-label">Description</label>
+                        <textarea
+                            name="description"
+                            value={form.description}
+                            onChange={handleChange}
+                            required
+                            className="lobby-textarea"
+                        />
+                    </div>
+
+                    <div className="lobby-grid">
+                        <div className="lobby-field">
+                            <label className="lobby-label">Min Users</label>
+                            <input
+                                type="number"
+                                name="minUsers"
+                                min={2}
+                                value={form.minUsers}
+                                onChange={handleChange}
+                                required
+                                className="lobby-input"
+                            />
+                        </div>
+                        <div className="lobby-field">
+                            <label className="lobby-label">Max Users</label>
+                            <input
+                                type="number"
+                                name="maxUsers"
+                                min={form.minUsers}
+                                value={form.maxUsers}
+                                onChange={handleChange}
+                                required
+                                className="lobby-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="lobby-grid">
+                        <div className="lobby-field">
+                            <label className="lobby-label">Rounds</label>
+                            <input
+                                type="number"
+                                name="rounds"
+                                min={1}
+                                value={form.rounds}
+                                onChange={handleChange}
+                                required
+                                className="lobby-input"
+                            />
+                        </div>
+                        <div className="lobby-field">
+                            <label className="lobby-label">Min Credit To Participate</label>
+                            <input
+                                type="number"
+                                name="minCreditToParticipate"
+                                min={0}
+                                value={form.minCreditToParticipate}
+                                onChange={handleChange}
+                                required
+                                className="lobby-input"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="lobby-field">
+                        <label className="lobby-label">Turn Time (minutes)</label>
+                        <input
+                            type="number"
+                            name="turnTime"
+                            min={1}
+                            value={form.turnTime}
+                            onChange={handleChange}
+                            required
+                            className="lobby-input"
+                        />
+                    </div>
+
+                    {error && <p className="lobby-message error">{error}</p>}
+                    {success && <p className="lobby-message success">{success}</p>}
+
+                    <button type="submit" disabled={loading} className="lobby-button">
+                        {loading ? "Creating..." : "Create Lobby"}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }

@@ -149,7 +149,7 @@ export default function GamePage() {
   // Função para garantir que é a vez do jogador
   function ensureMyTurn(): boolean {
     if (!state.game || !state.currentUser || state.currentUser.username !== state.currentPlayer) {
-      dispatch({ type: "setInfo", info: "Não é a tua vez de jogar" });
+      dispatch({ type: "setInfo", info: "It is not your turn to play" });
       return false;
     }
     dispatch({ type: "setInfo", info: null }); // Limpa a mensagem de erro
@@ -159,7 +159,7 @@ export default function GamePage() {
   useEffect(() => {
     async function fetchGame() {
       if (!token) {
-        dispatch({ type: "setError", error: "Token em falta." });
+        dispatch({ type: "setError", error: "Missing token." });
         dispatch({ type: "setLoading", loading: false });
         return;
       }
@@ -170,7 +170,7 @@ export default function GamePage() {
       if (isOk(meRes)) {
         dispatch({ type: "setError", error: null });
       } else {
-        dispatch({ type: "setError", error: "Não foi possível obter o utilizador autenticado." });
+        dispatch({ type: "setError", error: "It was not possible to retrieve the authenticated user." });
         dispatch({ type: "setLoading", loading: false });
         return;
       }
@@ -184,14 +184,14 @@ export default function GamePage() {
             console.log("meRes.value.username", meRes.value.username)
 
           if (turnRes.value.username === meRes.value.username) {
-              console.log("entrou no startTurn, antes",state)
+              console.log("Entered startTurn, before.",state)
             dispatch({
               type: "startTurn",
               game: payload.game,
               currentUser: meRes.value,
               currentPlayer: turnRes.value.username,
             });
-            console.log("entrou no startTurn, depois",state)
+            console.log("Entered startTurn, before.",state)
 
           } else {
              // console.log("entrou no waitingForTurn, antes",state)
@@ -205,10 +205,10 @@ export default function GamePage() {
 
           }
         } else {
-          dispatch({ type: "setError", error: turnRes.error ?? "Erro ao obter o jogador atual." });
+          dispatch({ type: "setError", error: turnRes.error ?? "Error fetching the current player." });
         }
       } else {
-        dispatch({ type: "setError", error: result.error ?? "Erro ao carregar o jogo." });
+        dispatch({ type: "setError", error: result.error ?? "Error loading the game." });
       }
       dispatch({ type: "setLoading", loading: false });
     }
@@ -229,7 +229,7 @@ export default function GamePage() {
         currentPlayer: state.currentPlayer,
       });
     } else {
-      dispatch({ type: "setError", error: "Erro ao rolar os dados." });
+      dispatch({ type: "setError", error: "Error rolling the dice." });
     }
   }
 

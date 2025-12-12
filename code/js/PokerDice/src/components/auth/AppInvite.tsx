@@ -24,12 +24,12 @@ export default function AppInvite() {
             if (isOk(result)) {
                 const payload = new AppInviteCode(result.value);
                 setInviteCode(payload.inviteCode ?? null);
-                setSuccess("Convite enviado com sucesso!");
+                setSuccess("Invite sent successfully!");
             } else {
-                setError(result.error.title ?? "Erro ao enviar convite.");
+                setError(result.error.title ?? "Error sending invite.");
             }
         } catch (err) {
-            setError("Erro inesperado ao enviar convite.");
+            setError("Unexpected error while sending invite.");
         } finally {
             setLoading(false);
         }
@@ -42,7 +42,7 @@ export default function AppInvite() {
                 setCopyFeedback(true);
                 setTimeout(() => setCopyFeedback(false), 2000);
             } catch (err) {
-                console.error("Falha ao copiar", err);
+                console.error("Failed to copy.", err);
             }
         }
     };
@@ -52,7 +52,7 @@ export default function AppInvite() {
             <h1>App Invite</h1>
             <form onSubmit={handleSubmit} style={{maxWidth: 400}}>
                 <button type="submit" disabled={loading}>
-                    {loading ? "A enviar..." : "Convidar"}
+                    {loading ? "Sending..." : "Invite"}
                 </button>
             </form>
             {error && <p style={{color: "red"}}>{error}</p>}
@@ -78,7 +78,7 @@ export default function AppInvite() {
                         onClick={handleCopy}
                         style={{cursor: "pointer"}}
                     >
-                        {copyFeedback ? "Copiado!" : "Copiar"}
+                        {copyFeedback ? "Copied!" : "Copy"}
                     </button>
                 </div>
             )}

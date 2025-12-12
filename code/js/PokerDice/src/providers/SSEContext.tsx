@@ -39,7 +39,7 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
     const connect = async () => {
 
         if (isLoading || !username) {
-            console.log("SSE: Utilizador não autenticado. Conexão abortada.");
+            console.log("SSE: User not authenticated. Connection aborted.");
             return;
         }
 
@@ -50,18 +50,18 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
         }
 
         const url = `${RequestUri.user.listen}?topic=${topic}`;
-        console.log(`SSE: A conectar a ${url} como ${username}`);
+        console.log(`SSE: Connecting to ${url} as ${username}`);
 
         const es = new EventSource(url, {withCredentials: true});
         eventSourceRef.current = es;
 
         es.onopen = () => {
-            console.log("SSE: Conectado!");
+            console.log("SSE: Conected!");
             setConnected(true);
         };
 
         es.onerror = (err) => {
-            console.error("SSE: Erro", err);
+            console.error("SSE: Error", err);
             setConnected(false);
             es.close();
             eventSourceRef.current = null;
@@ -70,7 +70,7 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
 
         // Ouvir eventos genéricos (message)
         es.onmessage = (msg) => {
-            console.log("Evento genérico recebido:", msg.data);
+            console.log("Generic event received:", msg.data);
         };
 
         es.addEventListener("lobbies_list_changes", (e: any) => {

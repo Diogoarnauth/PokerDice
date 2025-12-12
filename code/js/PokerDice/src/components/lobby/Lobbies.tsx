@@ -68,15 +68,15 @@ export default function LobbiesList() {
                         state: {
                             error: {
                                 status: status || 503,
-                                title: "Serviço Indisponível",
-                                detail: problem.detail || problem.title || "Erro de conexão com o servidor."
+                                title: "Service Unavailable",
+                                detail: problem.detail || problem.title || "Server connection error."
                             }
                         }
                     });
                 } else {
                     // Erro ligeiro -> Alerta flutuante
                     // Garante que passas uma STRING para o showAlert
-                    showAlert(`Erro: ${problem.title || "Falha ao carregar"}`, "error");
+                    showAlert(`Error: ${problem.title || "Failed to load"}`, "error");
                 }
             }
         } catch (error) {
@@ -85,8 +85,8 @@ export default function LobbiesList() {
                 state: {
                     error: {
                         status: 503,
-                        title: "Sem Conexão",
-                        detail: "Não foi possível contactar o servidor."
+                        title: "No Connection",
+                        detail: "Could not contact the server."
                     }
                 }
             });
@@ -125,13 +125,13 @@ export default function LobbiesList() {
         navigate(`/lobbies/${lobbyId}/info`);
     }
 
-    if (authLoading || loading && lobbies.length === 0) return <p className="p-8 text-center">A carregar lobbies...</p>;
+    if (authLoading || loading && lobbies.length === 0) return <p className="p-8 text-center">Loading lobbies...</p>;
 
     return (
         <div>
             <h1 className="text-2xl font-bold mb-4">Lobbies Disponíveis</h1>
 
-            {lobbies.length === 0 && <p>Não há salas disponíveis.</p>}
+            {lobbies.length === 0 && <p>There are no rooms available.</p>}
 
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {lobbies.map((lobby) => (

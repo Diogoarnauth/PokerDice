@@ -15,7 +15,7 @@ export function RequireAuthentication({children}: { children: JSX.Element }) {
                     {/* Podes usar um spinner SVG aqui se quiseres */}
                     <div
                         className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
-                    <p className="text-gray-500 font-medium animate-pulse">A verificar sessão...</p>
+                    <p className="text-gray-500 font-medium animate-pulse">Checking session...</p>
                 </div>
             </div>
         );

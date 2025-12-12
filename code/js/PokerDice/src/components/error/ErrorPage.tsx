@@ -10,8 +10,8 @@ export const ErrorPage = () => {
     const errorState = location.state?.error as Problem | undefined;
 
     const status = errorState?.status || 404;
-    const title = errorState?.title || "Página não encontrada";
-    let detail = "A página que procuras não existe ou ocorreu um erro inesperado.";
+    const title = errorState?.title || "Page not found";
+    let detail = "The page you are looking for does not exist or an unexpected error occurred.";
     if (errorState?.detail) {
         // Se for string usa, se for objeto converte para string
         detail = typeof errorState.detail === 'string'

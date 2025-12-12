@@ -92,17 +92,17 @@ export default function LobbyDetails() {
         if (problem.status === 404) {
           // TODO("404 é not found será que faz sentido generalizar todos aqui ?")
           if (hasLoadedSuccessfully.current) {
-            setError("O host encerrou este lobby.");
+            setError("The host has closed this lobby.");
             setLobby(null);
           } else {
-            setError("Lobby não encontrado.");
+            setError("Lobby not found.");
           }
         } else {
-          setError("Erro ao carregar detalhes do lobby.");
+          setError("Error loading lobby details.");
         }
       }
     } catch (err) {
-      setError("Erro de conexão.");
+      setError("Connection error.");
     } finally {
       setLoading(false);
     }
@@ -119,8 +119,8 @@ export default function LobbyDetails() {
 
       if (data.changeType === 'deleted' && data.lobbyId === lobbyId) {
         setLobby(null);
-        setError("O host encerrou este lobby.");
-        console.log("SSE: Lobby foi deletado, a página reflete isso.");
+        setError("The host has closed this lobby.");
+        console.log("SSE: Lobby was deleted, the page reflects this.");
         return;
       }
 
@@ -148,12 +148,12 @@ export default function LobbyDetails() {
     const res = await lobbyDetailsService.joinLobby(lobbyId);
 
     if (isOk(res)) {
-      showAlert("Entraste no lobby com sucesso!", "success");
+      showAlert("You have joined the lobby successfully!", "success");
       loadData(); // Recarrega para atualizar estado do user e contadores
     } else {
       // Tratamento de Erro Robusto
       const p = res.error;
-      showAlert(p.detail || p.title || "Falha ao entrar no lobby", "error");
+      showAlert(p.detail || p.title || "Failed to join the lobby.", "error");
     }
     setActionLoading(false);
   }
@@ -163,12 +163,12 @@ export default function LobbyDetails() {
     const res = await lobbyDetailsService.leaveLobby(lobbyId);
 
     if (isOk(res)) {
-      showAlert("Saíste do lobby.", "info");
+      showAlert("You have left the lobby.", "info");
       // Se saiu, se calhar quer ir para a lista de lobbies
       navigate("/lobbies");
     } else {
       const p = res.error;
-      showAlert(p.detail || p.title || "Falha ao sair do lobby", "error");
+      showAlert(p.detail || p.title || "Failed to leave the lobby.", "error");
       setActionLoading(false);
     }
   }
@@ -178,7 +178,7 @@ export default function LobbyDetails() {
     const res = await gameService.startGame(lobbyId);
 
     if (isOk(res)) {
-      showAlert("O jogo vai começar!", "success");
+      showAlert("The game is about to start!", "success");
       // O redirecionamento pode ser feito aqui ou via SSE (game_started)
       // Por segurança fazemos aqui também:
       setTimeout(() => {
@@ -187,7 +187,7 @@ export default function LobbyDetails() {
     } else {
       const p = res.error;
       // Exemplo: "Not enough players"
-      showAlert(p.detail || p.title || "Não foi possível iniciar o jogo", "error");
+      showAlert(p.detail || p.title || "Could not start the game.", "error");
     }
     setActionLoading(false);
   }

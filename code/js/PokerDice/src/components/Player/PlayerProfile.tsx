@@ -30,10 +30,10 @@ export default function PlayerProfileComponent() {
                     const payload = new PlayerProfilePayload(result.value);
                     setProfile(payload.profile);
                 } else {
-                    setError(result.error?.title || "Erro ao obter dados do perfil.");
+                    setError(result.error?.title || "Error fetching profile data.");
                 }
             } catch (err) {
-                if (isMounted) setError("Erro de comunicação com o servidor.");
+                if (isMounted) setError("Communication error with the server.");
             } finally {
                 if (isMounted) setLoading(false);
             }
@@ -50,7 +50,7 @@ export default function PlayerProfileComponent() {
         try {
             await playerProfileService.logout();
         } catch (err) {
-            console.error("Erro no logout backend", err);
+            console.error("Error in backend logout.", err);
         } finally {
             setUsername(null);
         }
@@ -63,7 +63,7 @@ export default function PlayerProfileComponent() {
         setError(null);
 
         if (depositAmount <= 0) {
-            setError("O valor do depósito deve ser maior que zero.");
+            setError("The deposit amount must be greater than zero.");
             setDepositLoading(false);
             return;
         }
@@ -72,7 +72,7 @@ export default function PlayerProfileComponent() {
             const result = await playerProfileService.deposit({ value: depositAmount });
 
             if (result.success) {
-                setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
+                setDepositSuccess(`Deposit of ${depositAmount} completed successfully!`);
 
                 setProfile(prev =>
                     prev
@@ -83,10 +83,10 @@ export default function PlayerProfileComponent() {
                         : prev
                 );
             } else {
-                setError(result?.error?.title || "Erro ao realizar depósito");
+                setError(result?.error?.title || "Error while making the deposit.");
             }
         } catch (err) {
-            setError("Erro inesperado ao processar o depósito.");
+            setError("Unexpected error while processing the deposit.");
         } finally {
             setDepositLoading(false);
         }
@@ -119,14 +119,14 @@ export default function PlayerProfileComponent() {
 
             <hr style={{ margin: "20px 0" }} />
 
-            <h2>Depositar dinheiro</h2>
+            <h2>Deposit</h2>
 
             {/* Adicionei a visualização de erros aqui, para não partir o layout se der erro no depósito */}
             {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
 
             <form onSubmit={handleDeposit}>
                 <label>
-                    Valor:
+                    Value:
                     <input
                         type="number"
                         value={depositAmount}
@@ -137,7 +137,7 @@ export default function PlayerProfileComponent() {
                     />
                 </label>
                 <button type="submit" disabled={depositLoading} style={{ marginLeft: 8 }}>
-                    {depositLoading ? "Depositando..." : "Depositar"}
+                    {depositLoading ? "Depositing..." : "Deposit"}
                 </button>
             </form>
             {depositSuccess && <p style={{ color: "green" }}>{depositSuccess}</p>}

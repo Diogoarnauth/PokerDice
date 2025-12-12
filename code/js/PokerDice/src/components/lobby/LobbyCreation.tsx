@@ -58,6 +58,7 @@ export default function LobbyCreation() {
             setLoading(false);
             return;
         }
+
         if (form.maxUsers < form.minUsers) {
             setError("Max users must be greater or equal to min users.");
             setLoading(false);
@@ -67,14 +68,14 @@ export default function LobbyCreation() {
         try {
             const payload = { ...form};
             const result = await lobbyCreationService.createLobby(form);
-            console.log("Payload enviado:", payload);
+            console.log("Payload sent:", payload);
             console.log("Lobby creation result:", result);
             if (isOk(result)) {
                 setSuccess("Lobby created successfully!");
                 setForm(defaultState);
             } else {
                 const problem = result.error;
-                setError(problem.detail || problem.title || "Erro desconhecido ao criar lobby")
+                setError(problem.detail || problem.title || "Unknown error creating lobby.")
             }
         } catch (err) {
             setError("Unexpected error occurred.");

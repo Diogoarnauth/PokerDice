@@ -86,7 +86,7 @@ export default function Signup() {
             if (problem.status && problem.status >= 500) {
                 navigate('/error', {state: {error: problem}});
             } else {
-                setError(problem.detail || problem.title || "Erro ao criar conta");
+                setError(problem.detail || problem.title || "Error creating account.");
             }
         }
         setLoadingSubmit(false);

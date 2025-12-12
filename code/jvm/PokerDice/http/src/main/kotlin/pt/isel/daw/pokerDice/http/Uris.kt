@@ -44,6 +44,7 @@ object Uris {
         const val RESULT = "$ROOT/{gameId}/final-result"
         const val PLAYER_TURN = "$ROOT/{gameId}/player-turn"
         const val GETGAME = "$ROOT/lobby/{id}"
+        const val ALL_TURNS = "$ROOT/{roundId}/turns"
 
         fun byId(gameId: String): URI = URI(UriTemplate(BY_ID).expand(gameId).toString())
 

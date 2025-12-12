@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
+import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
 import pt.isel.daw.pokerDice.services.EndGameError
@@ -179,6 +180,18 @@ class GameController(
         return when (res) {
             is Success -> ResponseEntity.ok(mapOf("username" to res.value))
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
+    @GetMapping(Uris.Games.ALL_TURNS)
+    fun getAllTurnsByRound(
+        @PathVariable roundId: Int,
+    ): ResponseEntity<*> {
+        val turns = gameService.getAllTurnsByRound(roundId) // List<Turn>
+        return if (turns.isEmpty()) {
+            ResponseEntity.noContent().build<Unit>() // 204
+        } else {
+            ResponseEntity.ok(turns)
         }
     }
 }

@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 
 import {lobbiesService} from "../../services/api/Lobbies";
 import {playersService} from "../../services/api/Players";
-import {useAuthentication} from "../../providers/authentication";
+import {useAuthentication} from "../../providers/Authentication";
 
 import {useSSE} from "../../providers/SSEContext";
 import {useAlert} from "../../providers/AlertContexts";

@@ -1,9 +1,6 @@
 import React, {createContext, useContext, useEffect, useRef, useState} from "react";
 import {RequestUri} from "../services/api/RequestUri";
-import {useAuthentication} from "./authentication";
-
-// Não precisas de importar getTokenFromCookies se a definires aqui dentro ou importares do utils
-// Vou usar a lógica que tinhas no teu código antigo:
+import {useAuthentication} from "./Authentication";
 
 type SSEContextType = {
     isConnected: boolean;
@@ -40,13 +37,6 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
 
     // Função de conexão (agora pode ser chamada manualmente)
     const connect = async () => {
-        // 1. Obter token (Só funciona se httpOnly=false no backend!)
-        /*const token = getTokenFromCookies();
-
-        if (!token) {
-            console.log("SSE: Sem token, abortar conexão.");
-            return;
-        }*/
 
         if (isLoading || !username) {
             console.log("SSE: Utilizador não autenticado. Conexão abortada.");

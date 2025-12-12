@@ -1,4 +1,4 @@
-.navbar {
+.navBar {
     padding: 10px;
     background-color: #222;
     color: white;
@@ -7,9 +7,11 @@
     gap: 10px;
 }
 
-.navbar-logo {
+.navBar-logo {
     font-weight: bold;
     margin-right: 20px;
+    text-decoration: none;
+    color: white;
 }
 
 .nav-link {

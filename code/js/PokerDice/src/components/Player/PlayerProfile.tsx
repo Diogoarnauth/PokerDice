@@ -1,70 +1,74 @@
-import React, { useEffect, useState } from "react";
-import { playerProfileService } from "../../services/api/PlayerProfile";
-import { PlayerProfilePayload, PlayerProfile } from "../models/PlayerProfile";
-
-const TOKEN_KEY = "token"; // O nome do cookie
+import React, {useEffect, useState} from "react";
+import {playerProfileService} from "../../services/api/PlayerProfile";
+import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
+import {useAuthentication} from "../../providers/Authentication";
 
 export default function PlayerProfileComponent() {
+    // Aceder ao setter do contexto para fazer logout global
+    const {setUsername} = useAuthentication();
+
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
     const [depositAmount, setDepositAmount] = useState<number>(0);
     const [depositLoading, setDepositLoading] = useState<boolean>(false);
     const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
-    const [hasToken, setHasToken] = useState<boolean>(false);
-
-    // Função para verificar o cookie
-    const getCookie = (name: string): string | null => {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-        return null;
-    };
-
-    // Verifica se o token está presente no cookie
-    const token = getCookie(TOKEN_KEY);
-    if (!token) {
-        return <div className="already-not-logged">Para aceder ao seu perfil tem de efetuar o login</div>;
-    }
-
-    // Check token on mount
-    useEffect(() => {
-        const token = getCookie(TOKEN_KEY);
-        setHasToken(!!token);
-    }, []);
 
     // Fetch profile
     useEffect(() => {
+        let isMounted = true;
+
         async function fetchProfile() {
             setLoading(true);
             setError(null);
 
-            const result = await playerProfileService.getProfile();
-            if (result.success) {
-                const payload = new PlayerProfilePayload(result.value);
-                setProfile(payload.profile);
-            } else {
-                // setError(result.error ?? "Erro ao obter perfil");
+            try {
+                // O cookie HttpOnly vai automaticamente
+                const result = await playerProfileService.getProfile();
+
+                if (!isMounted) return;
+
+                if (result.success) {
+                    const payload = new PlayerProfilePayload(result.value);
+                    setProfile(payload.profile);
+                } else {
+                    // Se falhar o load do perfil, mostramos erro
+                    setError(result.error?.title || "Erro ao obter dados do perfil.");
+                }
+            } catch (err) {
+                if (isMounted) setError("Erro de comunicação com o servidor.");
+            } finally {
+                if (isMounted) setLoading(false);
             }
-            setLoading(false);
         }
 
         fetchProfile();
+
+        return () => {
+            isMounted = false;
+        };
     }, []);
 
-    // Logout handler
-    function handleLogout() {
-        // Remove token from cookie and update state
-        document.cookie = `${TOKEN_KEY}=; Max-Age=0; path=/`; // Remover cookie
-        setHasToken(false);
-        setProfile(null);
+    async function handleLogout() {
+        try {
+            // Tenta avisar o backend para limpar o cookie HttpOnly
+            // (Se ainda não tiveres este endpoint no backend, podes comentar esta linha)
+            await playerProfileService.logout();
+        } catch (err) {
+            console.error("Erro no logout backend", err);
+        } finally {
+            // O mais importante: Limpar o contexto global.
+            // Isto vai fazer o RequireAuthentication redirecionar para o Login automaticamente.
+            setUsername(null);
+        }
     }
 
-    // Handler do formulário de depósito
     async function handleDeposit(e: React.FormEvent) {
         e.preventDefault();
         setDepositLoading(true);
         setDepositSuccess(null);
+        setError(null);
 
         if (depositAmount <= 0) {
             setError("O valor do depósito deve ser maior que zero.");
@@ -72,38 +76,42 @@ export default function PlayerProfileComponent() {
             return;
         }
 
-        const result = await playerProfileService.deposit({ value: depositAmount });
-        if (result.success) {
-            setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
+        try {
+            const result = await playerProfileService.deposit({ value: depositAmount });
 
-            // 👉 Atualizar só o credit no profile existente
-            setProfile(prev =>
-                prev
-                    ? {
-                        ...prev,
-                        credit: result.value.newBalance
-                    }
-                    : prev
-            );
-        } else {
-            // setError(result?.error ?? "Erro ao realizar depósito");
+            if (result.success) {
+                setDepositSuccess(`Depósito de ${depositAmount} realizado com sucesso!`);
+
+                setProfile(prev =>
+                    prev
+                        ? {
+                            ...prev,
+                            credit: result.value.newBalance
+                        }
+                        : prev
+                );
+            } else {
+                setError(result?.error?.title || "Erro ao realizar depósito");
+            }
+        } catch (err) {
+            setError("Erro inesperado ao processar o depósito.");
+        } finally {
+            setDepositLoading(false);
         }
-
-        setDepositLoading(false);
     }
 
     if (loading) return <p>Loading profile...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+
+    if (error && !profile) return <p style={{ color: "red" }}>{error}</p>;
 
     return (
         <div style={{ maxWidth: 400, margin: "auto", padding: 24 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <h1>Player Profile</h1>
-                {hasToken && (
-                    <button onClick={handleLogout}>
-                        Logout
-                    </button>
-                )}
+                {/* Botão de Logout sempre visível aqui, pois estamos autenticados */}
+                <button onClick={handleLogout}>
+                    Logout
+                </button>
             </div>
 
             {profile && (
@@ -120,6 +128,10 @@ export default function PlayerProfileComponent() {
             <hr style={{ margin: "20px 0" }} />
 
             <h2>Depositar dinheiro</h2>
+
+            {/* Adicionei a visualização de erros aqui, para não partir o layout se der erro no depósito */}
+            {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
+
             <form onSubmit={handleDeposit}>
                 <label>
                     Valor:

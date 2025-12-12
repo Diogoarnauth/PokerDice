@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
+import { lobbyDetailsService } from "../../services/api/LobbyDetails";
 import { gameService } from "../../services/api/Games";
 import { isOk } from "../../services/api/utils";
-import { getTokenFromCookies } from "../../services/api/utils";
+import { useAuthentication } from "../../providers/Authentication";
+import { useSSE } from "../../providers/SSEContext";
+import { useAlert } from "../../providers/AlertContexts";
 
-// Tipo para armazenar as informações do Lobby
+// --- TIPOS ---
 type Lobby = {
   id: number;
   name: string;
@@ -16,15 +18,10 @@ type Lobby = {
   rounds: number;
   minCreditToParticipate: number;
   isRunning: boolean;
-  turnTime: string; // Formato de string para representar Duration
+  turnTime: string;
 };
 
-type LobbyApiResponse = {
-  success: boolean;
-  value: Lobby; // Aqui definimos que a resposta terá um campo 'value' que será do tipo 'Lobby'
-  error?: string;
-};
-
+// Se o teu User vem de outro lado, podes importar, mas mantive aqui para facilitar
 export type User = {
   id: number;
   username: string;
@@ -32,184 +29,231 @@ export type User = {
   age: number;
   credit: number;
   winCounter: number;
-  lobbyId: number | null; // Pode ser null ou um número de lobby
+  lobbyId: number | null;
 };
 
+// Helper de formatação
 function formatTurnTime(turnTime: string): string {
   const regex = /^PT(\d+)M$/;
   const match = regex.exec(turnTime);
   if (match) {
-    const minutes = match[1];
-    return `${minutes} min`;
+    return `${match[1]} min`;
   }
-  return "Desconhecido";
+  // Fallback para segundos se necessário ou formato raw
+  return turnTime;
 }
 
 export default function LobbyDetails() {
-  const [lobby, setLobby] = useState<Lobby | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [owner, setOwner] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [joinLoading, setJoinLoading] = useState(false);
-  const [leaveLoading, setLeaveLoading] = useState(false);
+  // --- HOOKS ---
   const { id } = useParams<{ id: string }>();
+  const lobbyId = Number(id);
   const navigate = useNavigate();
 
-  // Função para carregar lobby
-  async function loadLobby() {
-    setLoading(true);
+  const { username: authUsername } = useAuthentication(); // Só para saber se estamos logados
+  const { addHandler, removeHandler, updateTopic } = useSSE();
+  const { showAlert } = useAlert();
+
+  // --- ESTADO ---
+  const [lobby, setLobby] = useState<Lobby | null>(null);
+  const [user, setUser] = useState<User | null>(null); // O utilizador atual
+  const [owner, setOwner] = useState<User | null>(null); // O dono do lobby
+
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(false); // Para botões (Join/Leave/Start)
+  const [error, setError] = useState<string | null>(null);
+
+  // --- CARREGAR DADOS ---
+  const loadData = useCallback(async () => {
+    // Se já tivermos dados, não mostramos o loading full screen (bom para updates SSE)
+    // setLoading(prev => !lobby);
+
     setError(null);
 
     try {
-      // Pega o token dos cookies
-      const token = getTokenFromCookies();
-
-      if (token) {
-        // Chama a API para obter os dados do usuário
-        const userResponse = await lobbyDetailsService.getMe(token);
-        console.log("userResponse.value", userResponse);
-
-        if (userResponse.success) {
-          setUser(userResponse.value);
-        } else {
-          setError("Failed to fetch user data");
-        }
+      // 1. Buscar User Atual (Agora sem passar token manual!)
+      // Nota: lobbyDetailsService.getMe deve chamar /api/users/getMe
+      const userResponse = await lobbyDetailsService.getMe();
+      if (isOk(userResponse)) {
+        setUser(userResponse.value);
       } else {
-        setError("No token found");
+        // Se falhar o getMe, provavelmente a sessão expirou
+        return;
       }
 
-      // Requisição para obter detalhes do lobby
-      const response = await lobbyDetailsService.getLobby(Number(id)) as LobbyApiResponse;
-      if (response.success) {
-        setLobby(response.value);
+      const lobbyResponse = await lobbyDetailsService.getLobby(lobbyId);
+      if (isOk(lobbyResponse)) {
+        const lobbyData = lobbyResponse.value;
+        setLobby(lobbyData);
 
-        const ownerId = response.value.hostId;
-        const ownerResponse = await lobbyDetailsService.getOwner(ownerId);
-        if (ownerResponse.success) {
+        const ownerResponse = await lobbyDetailsService.getOwner(lobbyData.hostId);
+        if (isOk(ownerResponse)) {
           setOwner(ownerResponse.value);
-        } else {
-          console.error("Failed to fetch owner", ownerResponse.error.title);
         }
       } else {
-        setError("Failed to load lobby details");
+        const problem = lobbyResponse.error;
+        if (problem.status === 404) {
+          setError("Lobby não encontrado.");
+        } else {
+          setError("Erro ao carregar detalhes do lobby.");
+        }
       }
     } catch (err) {
-      setError("Error fetching data");
+      setError("Erro de conexão.");
+    } finally {
+      setLoading(false);
     }
+  }, [lobbyId]);
 
-    setLoading(false);
-  }
+  // --- EFEITOS ---
 
+  // 1. Carregar Dados Iniciais e Subscrever SSE
   useEffect(() => {
-    loadLobby();
-  }, [id]);
+    if (!authUsername) return; // Espera ter autenticação
 
-  // Função para quando o usuário clicar em "Join Lobby"
-  async function handleJoinLobby() {
-    console.log("Joining lobby:", id);
-    setJoinLoading(true);
+    loadData();
+    updateTopic("lobbies"); // Escutar eventos de lobbies (ou podes criar um tópico lobby:ID se o backend suportar)
 
-    const joinResponse = await lobbyDetailsService.joinLobby(Number(id));
-    console.log("joinResponse", joinResponse);
+    // Handler para atualizações em tempo real
+    const handleUpdates = (data: any) => {
+      console.log("SSE Update no LobbyDetails:", data);
 
-    if (!joinResponse.success) {
-      alert("Failed to join lobby: " + joinResponse.error);
-      setJoinLoading(false);
-      return;
-    }
-
-    // Atualiza o usuário no estado para refletir que entrou no lobby
-    setUser(prev =>
-      prev ? { ...prev, lobbyId: Number(id) } : prev
-    );
-
-    setJoinLoading(false);
-  }
-
-  // Função para quando o usuário clicar em "Leave Lobby"
-  async function handleLeaveLobby() {
-    console.log("Leaving lobby:", id);
-    setLeaveLoading(true);
-
-    const leaveResponse = await lobbyDetailsService.leaveLobby(Number(id));
-    if (!leaveResponse.success) {
-      alert("Failed to leave lobby: " + leaveResponse.error);
-      setLeaveLoading(false);
-      return;
-    }
-
-    // Atualiza o usuário no estado para refletir que saiu do lobby
-    setUser(prev =>
-      prev ? { ...prev, lobbyId: null } : prev
-    );
-
-    setLeaveLoading(false);
-    navigate("/lobbies");
-  }
-
-  // Função para quando o host clicar em "Start Game"
-  async function handleStartGame() {
-    if (!id) return;
-    setError(undefined);
-
-    console.log("Starting game for lobby:", id);
-
-    try {
-      const startResponse = await gameService.startGame(Number(id));
-      console.log("StartGame response:", startResponse);
-
-      if (startResponse.success) {
-        alert("Game started successfully!");
-        // Redireciona para a página do jogo
-        setTimeout(() => {
-          navigate(`/games/lobby/${id}`);
-        }, 1000);
-      } else {
-        alert("Failed to start game: " + startResponse.error);
+      // Se o lobby foi apagado ou começou o jogo, atualizamos
+      if (data.lobbyId === lobbyId || data.changeType === "updated") {
+        loadData();
       }
-    } catch (err) {
-      alert("Error starting game: " + err);
+
+      // Se o jogo começou, redirecionar
+      if (data.changeType === "game_started" && data.lobbyId === lobbyId) {
+        navigate(`/games/lobby/${lobbyId}`);
+      }
+    };
+
+    addHandler("lobbies_list_changes", handleUpdates);
+
+    return () => {
+      removeHandler("lobbies_list_changes");
+    };
+  }, [authUsername, lobbyId, loadData, updateTopic, addHandler, removeHandler, navigate]);
+
+
+  // --- AÇÕES ---
+
+  async function handleJoinLobby() {
+    setActionLoading(true);
+    const res = await lobbyDetailsService.joinLobby(lobbyId);
+
+    if (isOk(res)) {
+      showAlert("Entraste no lobby com sucesso!", "success");
+      loadData(); // Recarrega para atualizar estado do user e contadores
+    } else {
+      // Tratamento de Erro Robusto
+      const p = res.error;
+      showAlert(p.detail || p.title || "Falha ao entrar no lobby", "error");
+    }
+    setActionLoading(false);
+  }
+
+  async function handleLeaveLobby() {
+    setActionLoading(true);
+    const res = await lobbyDetailsService.leaveLobby(lobbyId);
+
+    if (isOk(res)) {
+      showAlert("Saíste do lobby.", "info");
+      // Se saiu, se calhar quer ir para a lista de lobbies
+      navigate("/lobbies");
+    } else {
+      const p = res.error;
+      showAlert(p.detail || p.title || "Falha ao sair do lobby", "error");
+      setActionLoading(false);
     }
   }
 
-  if (loading) return <p>Loading lobby details...</p>;
-  if (error) return <p style={{ color: "red" }}>{error}</p>;
-  if (!lobby) return <p>Lobby not found</p>;
+  async function handleStartGame() {
+    setActionLoading(true);
+    const res = await gameService.startGame(lobbyId);
 
+    if (isOk(res)) {
+      showAlert("O jogo vai começar!", "success");
+      // O redirecionamento pode ser feito aqui ou via SSE (game_started)
+      // Por segurança fazemos aqui também:
+      setTimeout(() => {
+        navigate(`/games/lobby/${lobbyId}`);
+      }, 500);
+    } else {
+      const p = res.error;
+      // Exemplo: "Not enough players"
+      showAlert(p.detail || p.title || "Não foi possível iniciar o jogo", "error");
+    }
+    setActionLoading(false);
+  }
+
+  // --- RENDER ---
+
+  if (loading) {
+    return (
+        <div className="flex justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+    );
+  }
+
+  if (error || !lobby) {
+    return (
+        <div className="text-center p-8 bg-red-50 text-red-700 rounded-lg border border-red-200">
+          <h2 className="text-xl font-bold mb-2">Erro</h2>
+          <p>{error || "Lobby não encontrado."}</p>
+          <button
+              onClick={() => navigate("/lobbies")}
+              className="mt-4 text-sm underline hover:text-red-900"
+          >
+            Voltar aos Lobbies
+          </button>
+        </div>
+    );
+  }
+
+  // Lógica de Estado do Utilizador
   const isUserInLobby = user?.lobbyId === lobby.id;
-  const isUserHost = user?.id === lobby.hostId; // Verifica se o usuário é o host
+  const isUserHost = user?.id === lobby.hostId;
+  // Se o user já estiver noutro lobby, não pode entrar neste
+  const canJoin = user && user.lobbyId === null;
 
   return (
-    <div>
-      <h1>{lobby.name}</h1>
-      <p><strong>Description:</strong>{lobby.description}</p>
-      <p><strong>Host:</strong> {owner?.username}</p>
-      <p><strong>Min Users:</strong> {lobby.minUsers}</p>
-      <p><strong>Max Users:</strong> {lobby.maxUsers}</p>
-      <p><strong>Rounds:</strong> {lobby.rounds}</p>
-      <p><strong>Min Credit to Participate:</strong> {lobby.minCreditToParticipate}</p>
-      <p><strong>Turn Time:</strong> {formatTurnTime(lobby.turnTime)}</p>
+      <div>
+        <h1>{lobby.name}</h1>
+        <p><strong>Description:</strong> {lobby.description}</p>
+        <p><strong>Host:</strong> {owner?.username || "Unknown"}</p>
 
-      {/* Condicional para mostrar o botão Join ou Leave */}
-      {user && user.lobbyId === null && (
-        <button onClick={handleJoinLobby} disabled={joinLoading}>
-          {joinLoading ? "Joining..." : "Join Lobby"}
-        </button>
-      )}
+        <hr />
 
-      {isUserInLobby && (
-        <button onClick={handleLeaveLobby} disabled={leaveLoading}>
-          {leaveLoading ? "Leaving..." : "Leave Lobby"}
-        </button>
-      )}
+        <p>Players: {lobby.minUsers} - {lobby.maxUsers}</p>
+        <p>Rounds: {lobby.rounds}</p>
+        <p>Entry Cost: {lobby.minCreditToParticipate}</p>
+        <p>Turn Time: {formatTurnTime(lobby.turnTime)}</p>
 
-      {/* Botão de Start Game só visível se o usuário for o host */}
-      {isUserHost && (
-        <button onClick={handleStartGame} disabled={loading}>
-          {loading ? "Starting Game..." : "Start Game"}
-        </button>
-      )}
-    </div>
+        <div style={{ marginTop: '20px' }}>
+          {canJoin && (
+              <button onClick={handleJoinLobby} disabled={actionLoading}>
+                {actionLoading ? "Joining..." : "Join Lobby"}
+              </button>
+          )}
+
+          {isUserInLobby && (
+              <button onClick={handleLeaveLobby} disabled={actionLoading}>
+                {actionLoading ? "Leaving..." : "Leave Lobby"}
+              </button>
+          )}
+
+          {isUserHost && (
+              <button onClick={handleStartGame} disabled={actionLoading} style={{ marginLeft: '10px' }}>
+                {actionLoading ? "Starting..." : "Start Game"}
+              </button>
+          )}
+        </div>
+
+        {!canJoin && !isUserInLobby && (
+            <p style={{ color: 'orange' }}>You are already in another lobby.</p>
+        )}
+      </div>
   );
 }

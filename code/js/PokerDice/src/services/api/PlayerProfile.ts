@@ -1,23 +1,37 @@
 import { fetchWrapper, Result } from "./utils";
 import { RequestUri } from "./RequestUri";
 
+export interface PlayerProfileData {
+    id: number;
+    username: string;
+    name: string;
+    age: number;
+    lobbyId: number | null;
+    credit: number;
+    winCounter: number;
+}
+
+export interface DepositResponse {
+    newBalance: number;
+    message?: string;
+}
+
 export const playerProfileService = {
-    // GET /me → obter detalhes do player autenticado
-    getProfile(): Promise<Result<any>> {
-        return fetchWrapper(
+    // GET /me
+    getProfile(): Promise<Result<PlayerProfileData>> {
+        return fetchWrapper<PlayerProfileData>(
             RequestUri.user.getMe,
             { method: "GET" }
         );
     },
 
-    // POST /me/deposit → endpoint para depositar dinheiro
-    deposit(payload: { value: number }): Promise<Result<any>> {
-        console.log("Deposit payload:", payload); // Log do corpo enviado
-        return fetchWrapper(
+    // POST /deposit
+    deposit(payload: { value: number }): Promise<Result<DepositResponse>> {
+        return fetchWrapper<DepositResponse>(
             RequestUri.user.deposit,
             {
                 method: "POST",
-                body: JSON.stringify(payload), // Aqui você envia o valor dentro de um objeto 'value'
+                body: JSON.stringify(payload),
             }
         );
     }

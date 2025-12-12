@@ -4,6 +4,7 @@ import { isOk } from "../../services/api/utils";
 import { GamePayload, Game } from "../models/Game";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails";
 import { useParams } from "react-router-dom";
+import {User} from "../lobby/LobbyDetails";
 
 // Função para obter o token do cookie
 function getTokenFromCookies() {

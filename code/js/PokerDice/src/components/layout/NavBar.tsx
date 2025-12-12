@@ -1,11 +1,13 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import "./Navbar.css";
+import "./NavBar.css";
 
-export function Navbar() {
+export function NavBar() {
     return (
-        <nav className="navbar">
-            <span className="navbar-logo">PokerDice</span>
+        <nav className="navBar">
+            <NavLink to="/" className="navBar-logo">
+                PokerDice
+            </NavLink>
 
             <NavLink to="/login" className="nav-link">
                 Login

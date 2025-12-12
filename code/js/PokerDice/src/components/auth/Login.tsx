@@ -1,6 +1,6 @@
 import React, {useReducer, useState, useEffect} from 'react';
 import {Navigate, useLocation, Link, useNavigate} from 'react-router-dom';
-import {useAuthentication} from '../../providers/authentication';
+import {useAuthentication} from '../../providers/Authentication';
 import {authService} from '../../services/api/auth';
 import {isOk} from '../../services/api/utils';
 import '../../styles/login.css';
@@ -81,20 +81,17 @@ export default function Login() {
         error: null,
         shouldRedirect: false,
     });
-    const {setUsername} = useAuthentication();
-    const location = useLocation(); // Para obter a localização da página anterior
-    const navigate = useNavigate(); // Corrigido para usar o hook useNavigate
+    const {username, setUsername} = useAuthentication();
+    const location = useLocation();
+    const navigate = useNavigate();
 
-    // Verificando se o token está presente nos cookies
     useEffect(() => {
-        const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
-        if (token) {
-            alert("Você já está logado!");
-            navigate("/");  // Redireciona para a página principal ou qualquer outra página desejada
+        if (username) {
+            const destination = location.state?.source || "/";
+            navigate(destination, {replace: true});
         }
-    }, [navigate]);
+    }, [username, navigate, location]);
 
-    // Se o estado for 'redirect', navegue para a página anterior
     if (state.type === 'redirect') {
         return <Navigate to={location.state?.source ?? '/'} replace={true}/>;
     }
@@ -112,17 +109,19 @@ export default function Login() {
             const result = await authService.login(state.inputs);
 
             if (isOk(result)) {
-                // Não precisamos mais armazenar o token no localStorage, pois ele será armazenado no cookie
-                setUsername(state.inputs.username); // Armazena o nome de usuário após login
-                dispatch({type: 'setRedirect'}); // Redireciona o usuário
-
-                // Aguarda e redireciona
-                //setTimeout(() => {
-                //navigate(location.state?.source ?? '/home');
-                //}, 1000);
+                setUsername(state.inputs.username);
+                dispatch({type: 'setRedirect'});
 
             } else {
-                dispatch({type: 'setError', error: result.error.title});
+                const problem = result.error;
+
+                if (problem.status && problem.status >= 500) {
+                    navigate('/error', {state: {error: problem}});
+                } else {
+
+                    const msg = problem.detail || problem.title || "Erro no login";
+                    dispatch({type: 'setError', error: msg});
+                }
             }
         }
     }
@@ -190,8 +189,20 @@ export default function Login() {
                     </p>
                 </div>
 
-                {state.error && <div className="error">{state.error}</div>}
-                {state.type === 'submitting' && state.isLoading && <div className="loading">Loading...</div>}
+                {state.error && (
+                    <div className="auth-error" style={{
+                        color: '#721c24',
+                        backgroundColor: '#f8d7da',
+                        borderColor: '#f5c6cb',
+                        padding: '10px',
+                        marginTop: '15px',
+                        borderRadius: '4px',
+                        border: '1px solid',
+                        textAlign: 'center'
+                    }}>
+                        {state.error}
+                    </div>
+                )}
             </form>
         </div>
     );

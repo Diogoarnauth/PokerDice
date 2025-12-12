@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Link, Route, Routes, Outlet } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Outlet } from "react-router-dom";
 import Login from "./components/auth/Login";
 import Signup from "./components/auth/Signup";
 import Lobbies from "./components/lobby/Lobbies";
@@ -12,30 +12,22 @@ import GamePage from "./components/game/Game";
 import ErrorPage from "./components/error/ErrorPage";
 import Home from "./components/layout/Home";
 import { RequireAuthentication } from "./components/auth/RequireAuthentication";
+import { NavBar } from "./components/layout/NavBar";
 
 // Providers
 import { AlertProvider } from "./providers/AlertContexts";
 import { SSEProvider } from "./providers/SSEContext";
-import { AuthenticationProvider } from "./providers/authentication";
+import { AuthenticationProvider } from "./providers/Authentication";
 
 function App() {
     return (
         <AlertProvider>
             {/* O AuthenticationProvider envolve a app para gerir o estado do user */}
-            <AuthenticationProvider>
-                <SSEProvider>
+            <AuthenticationProvider> {/* 1º: Carrega a sessão */}
+                <SSEProvider> {/* 2º: Depende da sessão para ligar o socket */}
                     <BrowserRouter>
-                        { /* nav bar (pode ser criado um componentn para isto)*/}
-                        <nav className="flex gap-6 p-4 bg-gray-100 border-b border-gray-300 items-center">
-                            <Link to="/" className="hover:text-purple-600 font-medium">Home</Link>
-                            <Link to="/login" className="hover:text-purple-600 font-medium">Login</Link>
-                            <Link to="/signup" className="hover:text-purple-600 font-medium">Sign Up</Link>
-                            <Link to="/lobbies" className="hover:text-purple-600 font-medium">Lobbies</Link>
-                            <Link to="/lobbies/create" className="hover:text-purple-600 font-medium">Create</Link>
-                            <Link to="/playerProfile" className="hover:text-purple-600 font-medium">Profile</Link>
-                            <Link to="/about" className="hover:text-purple-600 font-medium">About</Link>
-                            <Link to="/appInvite" className="hover:text-purple-600 font-medium">Invite</Link>
-                        </nav>
+
+                        <NavBar />
 
                         <div className="container mx-auto p-6">
                             <Routes>

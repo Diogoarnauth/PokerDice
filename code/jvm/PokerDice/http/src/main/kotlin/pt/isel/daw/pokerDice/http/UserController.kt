@@ -163,7 +163,7 @@ class UserController(
                     }
 
                     else -> {
-                        TODO()
+                        TODO("else -> Problem.response(400, Problem.InvalidData) ?????")
                     }
                 }
             }
@@ -185,7 +185,7 @@ class UserController(
                     ResponseCookie
                         .from("token", token)
                         .path("/")
-                        .httpOnly(false) // <--- MANTÉM FALSE (Para o teu JS ler, igual ao que tinhas)
+                        .httpOnly(true)
                         .secure(false) // False para localhost (True só com HTTPS)
                         .sameSite("Lax") // Lax é mais flexivel do que Strict
                         .maxAge(Duration.ofHours(24))
@@ -239,7 +239,7 @@ class UserController(
             ResponseCookie
                 .from("token", "")
                 .path("/")
-                .httpOnly(false)
+                .httpOnly(true)
                 .maxAge(0)
                 .build()
 

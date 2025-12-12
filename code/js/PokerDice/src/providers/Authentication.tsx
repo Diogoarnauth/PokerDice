@@ -5,8 +5,8 @@ import React, {
     useEffect,
     ReactNode,
 } from "react";
-import { fetchWrapper, isOk } from "../services/api/utils";
-import { RequestUri } from "../services/api/RequestUri";
+import {fetchWrapper, isOk} from "../services/api/utils";
+import {RequestUri} from "../services/api/RequestUri";
 
 type UserState = string | null;
 
@@ -18,11 +18,14 @@ interface AuthenticationContextType {
 
 const AuthenticationContext = createContext<AuthenticationContextType>({
     username: null,
-    setUsername: () => {},
+    setUsername: () => {
+    },
     isLoading: true,
 });
 
-export function AuthenticationProvider({ children }: { children: ReactNode }) {
+export function AuthenticationProvider({children}: { children: ReactNode }) {
+    let isMounted = true;
+
     const [username, setUsername] = useState<UserState>(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -32,6 +35,8 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
             try {
                 // O browser envia a cookie automaticamente aqui c os dados do pedido
                 const result = await fetchWrapper<any>(RequestUri.user.getMe); // Ajusta para o teu URI correto
+
+                if (!isMounted) return;
 
                 if (isOk(result)) {
                     setUsername(result.value.username);
@@ -46,10 +51,15 @@ export function AuthenticationProvider({ children }: { children: ReactNode }) {
         }
 
         checkSession();
+
+        return () => {
+            isMounted = false;
+        };
+
     }, []);
 
     return (
-        <AuthenticationContext.Provider value={{ username, setUsername, isLoading }}>
+        <AuthenticationContext.Provider value={{username, setUsername, isLoading}}>
             {children}
         </AuthenticationContext.Provider>
     );

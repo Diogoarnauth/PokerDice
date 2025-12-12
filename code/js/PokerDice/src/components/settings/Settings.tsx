@@ -5,7 +5,7 @@ import { AppInviteCode } from '../models/AppInviteCode'
 import { useSSEEmitter } from '../../providers/SSEContext'
 import { settingsService } from '../../services/api/settings'
 import { isOk } from '../../services/api/utils'
-import { useAuthentication } from '../../providers/authentication'
+import { useAuthentication } from '../../providers/Authentication'
 import { messageCounters } from '../../services/storage/counterStorage'
 import { useMessageNotifications } from '../../hooks/messageAlertDispatch'
 

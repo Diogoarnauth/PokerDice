@@ -1,22 +1,24 @@
 import React, {useEffect, useReducer, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {authService} from "../../services/api/auth";
-import {getTokenFromCookies, isOk} from "../../services/api/utils";
-import "../../styles/auth.css";
+import {isOk} from "../../services/api/utils";
+import "../../styles/login.css";
+import {useAuthentication} from "../../providers/Authentication";
 
 export default function Signup() {
 
-  const navigate = useNavigate();
+    const navigate = useNavigate();
+
+    const {username} = useAuthentication();
 
     useEffect(() => {
-        const token = getTokenFromCookies();
-        if (token) {
+        if (username) {
             navigate("/");
         }
-    }, [navigate]);
+    }, [username, navigate]);
 
     // Fields
-    const [username, setUsername] = useState("");
+    const [usernameInput, setUsernameInput] = useState("");
     const [name, setName] = useState("");
     const [age, setAge] = useState("");
     const [password, setPassword] = useState("");
@@ -42,6 +44,7 @@ export default function Signup() {
             }
             setLoadingCheck(false);
         }
+
         check();
     }, []);
 
@@ -49,7 +52,6 @@ export default function Signup() {
         return <p>Loading...</p>;
     }
 
-    // 2. Submeter o formulário
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setError(null);
@@ -61,13 +63,13 @@ export default function Signup() {
         }
 
         const parsedAge = Number(age);
-        if (isNaN(parsedAge) || parsedAge < 18) {
+        if (isNaN(parsedAge)) {
             setError("Age must be a positive integer");
             return;
         }
 
         setLoadingSubmit(true);
-        const payload = {username, name, age: parsedAge, password, inviteCode};
+        const payload = {username: usernameInput, name, age: parsedAge, password, inviteCode};
 
         const response = isFirstUser
             ? await authService.signupAdmin(payload)
@@ -75,12 +77,8 @@ export default function Signup() {
 
         if (isOk(response)) {
             setResultMsg("Signup made with success. Redirecting to login...");
-            // Aqui você deve armazenar o token no cookie após o signup com sucesso
-            // setCookie("token", response.value.tokenValue, 1); // Armazenar o token por 1 dia
-
             setTimeout(() => {
                 navigate("/login");
-                console.log( "Redirecionando para login..." );
             }, 1500);
         } else {
             const problem = response.error;
@@ -88,7 +86,7 @@ export default function Signup() {
             if (problem.status && problem.status >= 500) {
                 navigate('/error', {state: {error: problem}});
             } else {
-                setError(problem.title || "Erro ao criar conta");
+                setError(problem.detail || problem.title || "Erro ao criar conta");
             }
         }
         setLoadingSubmit(false);
@@ -118,8 +116,8 @@ export default function Signup() {
                                 className="auth-input"
                                 type="text"
                                 id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
+                                value={usernameInput}
+                                onChange={(e) => setUsernameInput(e.target.value)}
                                 placeholder="Enter your username"
                                 required
                             />
@@ -207,11 +205,27 @@ export default function Signup() {
                     </div>
                 </fieldset>
 
-                {/* Mensagem de Erro */}
-                {error && <div className="auth-error" style={{color: 'red', marginTop: '10px'}}>{error}</div>}
+                {/* Mensagem de Erro Genérica (Vem do Backend) */}
+                {error && (
+                    <div className="auth-error" style={{
+                        color: '#721c24',
+                        backgroundColor: '#f8d7da',
+                        borderColor: '#f5c6cb',
+                        padding: '10px',
+                        marginTop: '15px',
+                        borderRadius: '4px',
+                        border: '1px solid'
+                    }}>
+                        {error}
+                    </div>
+                )}
 
                 {/* Mensagem de Sucesso */}
-                {resultMsg && <p className="auth-info" style={{color: 'green', marginTop: '10px'}}>{resultMsg}</p>}
+                {resultMsg && (
+                    <div className="auth-info" style={{color: 'green', marginTop: '10px', fontWeight: 'bold'}}>
+                        {resultMsg}
+                    </div>
+                )}
             </form>
         </div>
     );

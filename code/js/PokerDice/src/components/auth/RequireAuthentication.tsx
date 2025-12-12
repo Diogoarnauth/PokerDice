@@ -1,5 +1,5 @@
 import React, {JSX, useEffect} from 'react';
-import {useAuthentication} from '../../providers/authentication';
+import {useAuthentication} from '../../providers/Authentication';
 import {Navigate, useLocation} from 'react-router-dom';
 import {useSSEEmitter} from '../../providers/SSEContext';
 import {messageCounters} from '../../services/storage/counterStorage';

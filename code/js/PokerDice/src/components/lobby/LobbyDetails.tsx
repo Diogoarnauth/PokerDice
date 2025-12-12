@@ -145,11 +145,31 @@ export default function LobbyDetails() {
 
   async function handleJoinLobby() {
     setActionLoading(true);
+
+
+
     const res = await lobbyDetailsService.joinLobby(lobbyId);
 
     if (isOk(res)) {
       showAlert("You have joined the lobby successfully!", "success");
       loadData(); // Recarrega para atualizar estado do user e contadores
+
+      updateTopic("lobbies");
+
+      const handleGameStarted = (data: any) => {
+              console.log("epa entrei finalmente");
+
+              console.log("SSE Update (gameStarted):", data);
+              console.log("data.gameId", data.gameId);
+
+              if (data.changeType === "started") {
+                  console.log("oaloaaallalaa");
+                  navigate(`/games/lobby/${data.gameId}`); // Redireciona para a página do jogo
+              }
+          };
+        console.log("antes de criar o addHandler")
+      addHandler("gameStarted", handleGameStarted); // Certifique-se de que o handler é registrado
+
     } else {
       // Tratamento de Erro Robusto
       const p = res.error;

@@ -79,11 +79,18 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
             if (h) h(JSON.parse(e.data));
         });
 
+        es.addEventListener("gameStarted", (e: any) => {
+            console.log("Evento gameStarted recebido");
+            const h = handlers.current["gameStarted"];
+            console.log("hhhhhhhhhhhhhhhh", h)
+            if (h) h(JSON.parse(e.data));
+        });
+/*
         es.addEventListener("game_update", (e: any) => {
             const h = handlers.current["game_update"];
             if (h) h(JSON.parse(e.data));
         });
-
+*/
     };
 
     useEffect(() => {

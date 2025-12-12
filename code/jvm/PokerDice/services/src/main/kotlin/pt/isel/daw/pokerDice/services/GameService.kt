@@ -2,6 +2,7 @@ package pt.isel.daw.pokerDice.services
 
 import jakarta.inject.Named
 import org.slf4j.LoggerFactory
+import pt.isel.daw.pokerDice.domain.PokerEvent
 import pt.isel.daw.pokerDice.domain.games.Dice
 import pt.isel.daw.pokerDice.domain.games.Game
 import pt.isel.daw.pokerDice.domain.games.GameDomain
@@ -87,6 +88,7 @@ class GameService(
     private val transactionManager: TransactionManager,
     private val gameDomain: GameDomain,
     private val lobbiesDomain: LobbiesDomain,
+    private val eventService: PokerDiceEventService,
 ) {
     private val logger = LoggerFactory.getLogger(this::class.java)
 
@@ -107,6 +109,10 @@ class GameService(
 
             val existingGame = it.gamesRepository.getGameByLobbyId(lobbyId)
             val allUsersInLobby = it.usersRepository.getAllUsersInLobby(lobbyId)
+
+            val user =
+                it.usersRepository.getUserById(userId)
+                    ?: return@run failure(GameCreationError.NotTheHost)
 
             val lobby =
                 it.lobbiesRepository.getById(lobbyId)
@@ -140,6 +146,19 @@ class GameService(
 
             // Criar a primeira ronda
             startNewRound(null, gameId, lobby)
+
+            val gameStartedEvent =
+                PokerEvent.GameStarted(
+                    lobbyId = lobbyId,
+                    gameId = gameId,
+                    name = lobby.name,
+                    hostUsername = user.username ?: "unknown",
+                    changeType = "started",
+                )
+
+            eventService.sendToAll(
+                gameStartedEvent,
+            )
 
             success(gameId)
         }

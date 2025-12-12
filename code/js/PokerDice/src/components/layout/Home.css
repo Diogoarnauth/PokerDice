@@ -1,0 +1,51 @@
+/* src/components/layout/Home.css */
+.home-page {
+    /* ocupa a largura disponível do .app-root */
+    width: 100%;
+    max-width: 960px;
+    margin: 0 auto;
+
+    /* centra o conteúdo dentro da área da página */
+    display: flex;
+    flex-direction: column;
+    align-items: center;     /* centra horizontalmente */
+    justify-content: center; /* centra verticalmente dentro da altura disponível */
+    text-align: center;
+    gap: 12px;
+
+    /* garante altura mínima razoável abaixo da navbar */
+    min-height: calc(100vh - 64px - 40px); /* 64 navbar + algum padding */
+}
+
+.home-page h1 {
+    font-size: 32px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.home-page p {
+    font-size: 16px;
+    margin: 0;
+    color: #cfd8dc;
+}
+
+.app-root {
+    min-height: calc(100vh - 64px); /* 64px ~ altura da navbar */
+    padding: 24px 16px 32px;
+    box-sizing: border-box;
+
+    /* fundo tipo mesa de poker + casino escuro */
+    background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.08), transparent 55%),
+            radial-gradient(circle at bottom right, rgba(0,0,0,0.9), #000);
+    background-color: #420b0b; /* feltro verde base */
+}
+
+/* se quiseres que todo o body herde o tema escuro */
+body {
+    margin: 0;
+    background: radial-gradient(circle at center, #290c0c 0%, #020506 70%);
+    color: #f5f5f5;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}

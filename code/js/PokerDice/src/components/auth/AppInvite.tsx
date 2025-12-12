@@ -1,14 +1,14 @@
-import React, {useState} from "react";
-import {appInviteService} from "../../services/api/AppInvite";
-import {isOk} from "../../services/api/utils";
-import {AppInviteCode} from "../models/AppInviteCode";
+import React, { useState } from "react";
+import { appInviteService } from "../../services/api/AppInvite";
+import { isOk } from "../../services/api/utils";
+import { AppInviteCode } from "../models/AppInviteCode";
+import "./AppInvite.css";
 
 export default function AppInvite() {
     const [error, setError] = useState<string | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
     const [success, setSuccess] = useState<string | null>(null);
     const [inviteCode, setInviteCode] = useState<string | null>(null);
-
     const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
 
     async function handleSubmit(e: React.FormEvent) {
@@ -48,40 +48,37 @@ export default function AppInvite() {
     };
 
     return (
-        <div>
-            <h1>App Invite</h1>
-            <form onSubmit={handleSubmit} style={{maxWidth: 400}}>
-                <button type="submit" disabled={loading}>
-                    {loading ? "Sending..." : "Invite"}
-                </button>
-            </form>
-            {error && <p style={{color: "red"}}>{error}</p>}
-            {success && (
-                <p style={{color: "green"}}>{success}</p>
-            )}
-            {inviteCode && (
-                <div style={{
-                    marginTop: "15px",
-                    padding: "10px",
-                    border: "1px solid #ccc",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "10px",
-                    borderRadius: "5px"
-                }}>
-                    <span style={{fontFamily: "monospace", fontSize: "1.2em", fontWeight: "bold"}}>
-                        {inviteCode}
-                    </span>
+        <div className="invite-page">
+            <div className="invite-card">
+                <h1 className="invite-title">App Invite</h1>
 
+                <form onSubmit={handleSubmit} className="invite-form">
                     <button
-                        type="button"
-                        onClick={handleCopy}
-                        style={{cursor: "pointer"}}
+                        type="submit"
+                        disabled={loading}
+                        className="invite-button"
                     >
-                        {copyFeedback ? "Copied!" : "Copy"}
+                        {loading ? "Sending..." : "Generate Invite"}
                     </button>
-                </div>
-            )}
+                </form>
+
+                {error && <p className="invite-message error">{error}</p>}
+                {success && <p className="invite-message success">{success}</p>}
+
+                {inviteCode && (
+                    <div className="invite-code-box">
+                        <span className="invite-code">{inviteCode}</span>
+
+                        <button
+                            type="button"
+                            onClick={handleCopy}
+                            className="invite-copy-button"
+                        >
+                            {copyFeedback ? "Copied!" : "Copy"}
+                        </button>
+                    </div>
+                )}
+            </div>
         </div>
     );
 }

@@ -1,0 +1,15 @@
+/* texto informativo (ex: admin info no signup) */
+.signup-text {
+    font-size: 13px;
+    color: #b0bec5;
+    text-align: center;
+}
+
+/* mensagem de sucesso no signup */
+.auth-info {
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #a5d6a7;
+    text-align: center;
+}

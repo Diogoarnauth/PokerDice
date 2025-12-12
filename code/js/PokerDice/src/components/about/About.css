@@ -1,0 +1,112 @@
+.about-page {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+    background:
+            radial-gradient(circle at top left, rgba(255,255,255,0.1), transparent 55%),
+            radial-gradient(circle at bottom right, rgba(0,0,0,0.8), #000);
+    background-color: #052a16; /* consistente com profile/deposit */
+    box-sizing: border-box;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #f5f5f5;
+}
+
+/* dourado metálico mais suave */
+:root {
+    --gold: #D4AF37; /* metallic gold */
+}
+
+.about-card {
+    width: 100%;
+    max-width: 640px;
+    background: rgba(20, 0, 10, 0.9); /* vinho muito escuro para combinar com navbar */
+    border-radius: 18px;
+    border: 1px solid rgba(212, 175, 55, 0.45); /* dourado suave */
+    box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.9),
+            0 18px 50px rgba(0, 0, 0, 0.85);
+    padding: 28px 28px 32px;
+    backdrop-filter: blur(8px);
+    animation: aboutFadeIn 0.4s ease-out;
+}
+
+/* títulos */
+.about-title {
+    margin: 0 0 18px;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.about-section-title {
+    margin-top: 20px;
+    margin-bottom: 8px;
+    font-size: 18px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--gold);
+}
+
+/* texto */
+.about-text {
+    margin: 8px 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #eceff1;
+}
+
+.about-text strong {
+    color: var(--gold);
+}
+
+/* lista de criadores */
+.about-list {
+    margin: 6px 0 0 18px;
+    padding: 0;
+    list-style: none;
+    font-size: 15px;
+}
+
+.about-list li {
+    position: relative;
+    padding-left: 18px;
+    margin: 4px 0;
+}
+
+/* marcador tipo naipe */
+.about-list li::before {
+    content: "♦";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #b71c1c; /* vermelho naipe mais profundo */
+    font-size: 14px;
+}
+
+/* link de email com dourado */
+.about-link {
+    color: var(--gold);
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(212, 175, 55, 0.6);
+    transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.about-link:hover {
+    color: #fdf5e6; /* marfim/champagne claro */
+    border-color: rgba(253, 245, 230, 0.9);
+}
+
+/* animação */
+@keyframes aboutFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

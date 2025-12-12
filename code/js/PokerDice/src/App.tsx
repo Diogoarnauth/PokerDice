@@ -18,6 +18,8 @@ import { NavBar } from "./components/layout/NavBar";
 import { AlertProvider } from "./providers/AlertContexts";
 import { SSEProvider } from "./providers/SSEContext";
 import { AuthenticationProvider } from "./providers/Authentication";
+import DepositPage from "./components/deposit/Deposit";
+import PlayerProfileComponent from "./components/Player/PlayerProfile";
 
 function App() {
     return (
@@ -37,6 +39,9 @@ function App() {
                                 <Route path="/signup" element={<Signup />} />
                                 <Route path="/about" element={<About />} />
                                 <Route path="/error" element={<ErrorPage />} />
+                                <Route path="/profile" element={<PlayerProfileComponent />} />
+                                <Route path="/deposit" element={<DepositPage />} />
+
 
                                 {/* Rotas c/ login */}
                                 {/* Usamos um Route wrapper para proteger todas as rotas filhas de uma vez */}

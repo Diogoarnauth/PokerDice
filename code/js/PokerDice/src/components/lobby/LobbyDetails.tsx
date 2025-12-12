@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails";
 import { gameService } from "../../services/api/Games";
@@ -62,28 +62,26 @@ export default function LobbyDetails() {
   const [actionLoading, setActionLoading] = useState(false); // Para botões (Join/Leave/Start)
   const [error, setError] = useState<string | null>(null);
 
+  const hasLoadedSuccessfully = useRef(false);
+
   // --- CARREGAR DADOS ---
   const loadData = useCallback(async () => {
-    // Se já tivermos dados, não mostramos o loading full screen (bom para updates SSE)
-    // setLoading(prev => !lobby);
-
-    setError(null);
-
     try {
-      // 1. Buscar User Atual (Agora sem passar token manual!)
-      // Nota: lobbyDetailsService.getMe deve chamar /api/users/getMe
       const userResponse = await lobbyDetailsService.getMe();
       if (isOk(userResponse)) {
         setUser(userResponse.value);
       } else {
-        // Se falhar o getMe, provavelmente a sessão expirou
         return;
       }
 
       const lobbyResponse = await lobbyDetailsService.getLobby(lobbyId);
+
       if (isOk(lobbyResponse)) {
         const lobbyData = lobbyResponse.value;
         setLobby(lobbyData);
+
+        hasLoadedSuccessfully.current = true;
+        setError(null);
 
         const ownerResponse = await lobbyDetailsService.getOwner(lobbyData.hostId);
         if (isOk(ownerResponse)) {
@@ -92,7 +90,13 @@ export default function LobbyDetails() {
       } else {
         const problem = lobbyResponse.error;
         if (problem.status === 404) {
-          setError("Lobby não encontrado.");
+          // TODO("404 é not found será que faz sentido generalizar todos aqui ?")
+          if (hasLoadedSuccessfully.current) {
+            setError("O host encerrou este lobby.");
+            setLobby(null);
+          } else {
+            setError("Lobby não encontrado.");
+          }
         } else {
           setError("Erro ao carregar detalhes do lobby.");
         }
@@ -104,25 +108,26 @@ export default function LobbyDetails() {
     }
   }, [lobbyId]);
 
-  // --- EFEITOS ---
-
-  // 1. Carregar Dados Iniciais e Subscrever SSE
   useEffect(() => {
     if (!authUsername) return; // Espera ter autenticação
 
     loadData();
-    updateTopic("lobbies"); // Escutar eventos de lobbies (ou podes criar um tópico lobby:ID se o backend suportar)
+    updateTopic("lobbies");
 
-    // Handler para atualizações em tempo real
     const handleUpdates = (data: any) => {
       console.log("SSE Update no LobbyDetails:", data);
 
-      // Se o lobby foi apagado ou começou o jogo, atualizamos
+      if (data.changeType === 'deleted' && data.lobbyId === lobbyId) {
+        setLobby(null);
+        setError("O host encerrou este lobby.");
+        console.log("SSE: Lobby foi deletado, a página reflete isso.");
+        return;
+      }
+
       if (data.lobbyId === lobbyId || data.changeType === "updated") {
         loadData();
       }
 
-      // Se o jogo começou, redirecionar
       if (data.changeType === "game_started" && data.lobbyId === lobbyId) {
         navigate(`/games/lobby/${lobbyId}`);
       }

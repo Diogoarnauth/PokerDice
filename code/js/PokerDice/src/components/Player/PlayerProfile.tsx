@@ -4,7 +4,6 @@ import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
 import {useAuthentication} from "../../providers/Authentication";
 
 export default function PlayerProfileComponent() {
-    // Aceder ao setter do contexto para fazer logout global
     const {setUsername} = useAuthentication();
 
     const [profile, setProfile] = useState<PlayerProfile | null>(null);
@@ -15,7 +14,6 @@ export default function PlayerProfileComponent() {
     const [depositLoading, setDepositLoading] = useState<boolean>(false);
     const [depositSuccess, setDepositSuccess] = useState<string | null>(null);
 
-    // Fetch profile
     useEffect(() => {
         let isMounted = true;
 
@@ -24,7 +22,6 @@ export default function PlayerProfileComponent() {
             setError(null);
 
             try {
-                // O cookie HttpOnly vai automaticamente
                 const result = await playerProfileService.getProfile();
 
                 if (!isMounted) return;
@@ -33,7 +30,6 @@ export default function PlayerProfileComponent() {
                     const payload = new PlayerProfilePayload(result.value);
                     setProfile(payload.profile);
                 } else {
-                    // Se falhar o load do perfil, mostramos erro
                     setError(result.error?.title || "Erro ao obter dados do perfil.");
                 }
             } catch (err) {
@@ -52,14 +48,10 @@ export default function PlayerProfileComponent() {
 
     async function handleLogout() {
         try {
-            // Tenta avisar o backend para limpar o cookie HttpOnly
-            // (Se ainda não tiveres este endpoint no backend, podes comentar esta linha)
             await playerProfileService.logout();
         } catch (err) {
             console.error("Erro no logout backend", err);
         } finally {
-            // O mais importante: Limpar o contexto global.
-            // Isto vai fazer o RequireAuthentication redirecionar para o Login automaticamente.
             setUsername(null);
         }
     }

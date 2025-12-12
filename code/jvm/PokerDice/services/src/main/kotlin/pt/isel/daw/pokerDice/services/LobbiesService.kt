@@ -345,7 +345,7 @@ class LobbiesService(
                 PokerEvent.LobbiesListChanges(
                     lobbyId = lobbyId,
                     name = null,
-                    hostUsername = user.username ?: "unknown",
+                    hostUsername = null,
                     changeType = "deleted",
                 ),
             )

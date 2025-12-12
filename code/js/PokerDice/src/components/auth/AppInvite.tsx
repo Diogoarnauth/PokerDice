@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { appInviteService } from "../../services/api/AppInvite";
-import { isOk } from "../../services/api/utils";
-import { AppInviteCode } from "../models/AppInviteCode";
+import React, {useState} from "react";
+import {appInviteService} from "../../services/api/AppInvite";
+import {isOk} from "../../services/api/utils";
+import {AppInviteCode} from "../models/AppInviteCode";
 
 export default function AppInvite() {
     const [error, setError] = useState<string | null>(null);
@@ -9,12 +9,15 @@ export default function AppInvite() {
     const [success, setSuccess] = useState<string | null>(null);
     const [inviteCode, setInviteCode] = useState<string | null>(null);
 
+    const [copyFeedback, setCopyFeedback] = useState<boolean>(false);
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setLoading(true);
         setError(null);
         setSuccess(null);
         setInviteCode(null);
+        setCopyFeedback(false);
 
         try {
             const result = await appInviteService.invite({});
@@ -32,22 +35,52 @@ export default function AppInvite() {
         }
     }
 
+    const handleCopy = async () => {
+        if (inviteCode) {
+            try {
+                await navigator.clipboard.writeText(inviteCode);
+                setCopyFeedback(true);
+                setTimeout(() => setCopyFeedback(false), 2000);
+            } catch (err) {
+                console.error("Falha ao copiar", err);
+            }
+        }
+    };
+
     return (
         <div>
             <h1>App Invite</h1>
-            <form onSubmit={handleSubmit} style={{ maxWidth: 400 }}>
+            <form onSubmit={handleSubmit} style={{maxWidth: 400}}>
                 <button type="submit" disabled={loading}>
                     {loading ? "A enviar..." : "Convidar"}
                 </button>
             </form>
-            {error && <p style={{ color: "red" }}>{error}</p>}
+            {error && <p style={{color: "red"}}>{error}</p>}
             {success && (
-                <p style={{ color: "green" }}>{success}</p>
+                <p style={{color: "green"}}>{success}</p>
             )}
             {inviteCode && (
-                <p style={{ color: "blue" }}>
-                    {"Invite Code: " + inviteCode}
-                </p>
+                <div style={{
+                    marginTop: "15px",
+                    padding: "10px",
+                    border: "1px solid #ccc",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    borderRadius: "5px"
+                }}>
+                    <span style={{fontFamily: "monospace", fontSize: "1.2em", fontWeight: "bold"}}>
+                        {inviteCode}
+                    </span>
+
+                    <button
+                        type="button"
+                        onClick={handleCopy}
+                        style={{cursor: "pointer"}}
+                    >
+                        {copyFeedback ? "Copiado!" : "Copiar"}
+                    </button>
+                </div>
             )}
         </div>
     );

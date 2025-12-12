@@ -1,21 +1,29 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "./NavBar.css";
+import { useAuthentication } from "../../providers/Authentication";
 
 export function NavBar() {
+    const { username } = useAuthentication();
+    const isAuthenticated = !!username;
+
     return (
         <nav className="navBar">
             <NavLink to="/" className="navBar-logo">
                 PokerDice
             </NavLink>
 
-            <NavLink to="/login" className="nav-link">
-                Login
-            </NavLink>
+            {!isAuthenticated && (
+                <>
+                    <NavLink to="/login" className="nav-link">
+                        Login
+                    </NavLink>
 
-            <NavLink to="/signup" className="nav-link">
-                Sign Up
-            </NavLink>
+                    <NavLink to="/signup" className="nav-link">
+                        Sign Up
+                    </NavLink>
+                </>
+            )}
 
             <NavLink to="/lobbies" className="nav-link">
                 Lobbies

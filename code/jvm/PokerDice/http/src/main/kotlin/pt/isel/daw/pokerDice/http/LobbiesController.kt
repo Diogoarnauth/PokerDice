@@ -155,31 +155,4 @@ class LobbiesController(
                 }
         }
     }
-
-/*
-    // DELETE /lobbies/{id} → o host encerra o lobby completamente
-    @DeleteMapping(LobbyUris.Lobbies.CLOSE)
-    fun closeLobby(
-        @AuthenticationPrincipal authenticatedUser: AuthenticatedUser,
-        @PathVariable id: String,
-    ): ResponseEntity<*> {
-        val lobbyId =
-            id.toIntOrNull()
-                ?: return Problem.response(400, Problem.invalidRequestContent)
-
-        val res = lobbiesServices.closeLobby(lobbyId, authenticatedUser.user.id)
-
-        return when (res) {
-            is Success -> ResponseEntity.ok(mapOf("message" to "Lobby $lobbyId closed"))
-            is Failure ->
-                when (res.value) {
-                    CloseLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
-                    CloseLobbyError.NotHost -> Problem.response(403, Problem.onlyHostCanCloseLobby)
-                }
-
-            else -> {
-                TODO()
-            }
-        }
-    }*/
 }

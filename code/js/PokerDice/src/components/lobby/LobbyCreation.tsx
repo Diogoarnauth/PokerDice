@@ -73,6 +73,8 @@ export default function LobbyCreation() {
             if (isOk(result)) {
                 setSuccess("Lobby created successfully!");
                 setForm(defaultState);
+                navigate(`/lobbies/`); // Redireciona para a página do jogo
+
             } else {
                 const problem = result.error;
                 setError(problem.detail || problem.title || "Unknown error creating lobby.")

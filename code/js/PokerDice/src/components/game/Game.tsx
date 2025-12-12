@@ -4,9 +4,8 @@ import { isOk } from "../../services/api/utils";
 import { GamePayload, Game } from "../models/Game";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
 import {playerProfileService} from "../../services/api/PlayerProfile";
-
-
-import { useParams } from "react-router-dom";
+import { useSSE } from "../../providers/SSEContext";
+import { useParams, useNavigate } from "react-router-dom";
 
 // Função para obter o token do cookie
 /*function getTokenFromCookies() {
@@ -24,6 +23,11 @@ export default function GamePage() {
     const [rerollInput, setRerollInput] = useState<string>("");
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
+    const { addHandler, removeHandler, updateTopic } = useSSE();
+    const [players, setPlayers] = useState<{ username: string; credit: number }[]>([]);
+
+
+    const navigate = useNavigate();
 
     // Obter o token diretamente dos cookies
 
@@ -42,6 +46,7 @@ export default function GamePage() {
             setInfo(null);
 
 
+            //TODO aqui vai carregar todos os players em vez de carregar so um...
             const meRes = await playerProfileService.getProfile();
             console.log("getMe:", meRes);
             if (isOk(meRes)) {
@@ -52,21 +57,52 @@ export default function GamePage() {
                 return;
             }
 
+
+            console.log("lobbyId", lobbyId)
             const result = await gameService.getGameByLobbyId(Number(lobbyId));
             console.log("Fetching game:", result);
 
             if (isOk(result)) {
-                const payload = new GamePayload(result.value);
-                console.log("payload", payload)
-                setGame(payload.game);
-                setGameId(payload.game.id);
+
+                const currentTurnResult = await gameService.getCompleteCurrentTurn(Number(result.value.id))
+                const payload = new GamePayload(currentTurnResult.value);
+
+                const initialDiceArray = currentTurnResult.value.diceFaces
+                    ? currentTurnResult.value.diceFaces.split(",")
+                    : [];
+
+                let boolean
+               if(currentTurnResult.value.rollCount == 0){
+                    boolean = true
+                    }
+                else {
+                    boolean = false
+                    }
+
+                 setGame(payload.game);
+                 setGame({
+                      ...game,
+                      dice: initialDiceArray,
+                      id: result.value.id,
+                      isFirstRoll: boolean,
+                  });
+
+                 setGameId(result.value.id);
+
+                 updateTopic("lobbies");
+
+                      const handleGameUpdated = (data: any) => {
+                              if (data.changeType === "ended" && data.lobbyId == lobbyId) {
+                                  navigate(`/lobbies`); // Redireciona para a página do jogo
+                              }
+                          };
+                      addHandler("gameUpdated", handleGameUpdated); // Certifique-se de que o handler é registrado
+
 
                 // Buscar jogador atual via endpoint /games/{gameId}/player-turn
                 try {
-                    const gameIdFromPayload = payload.game.id;
-                    console.log("Fetching player turn do game:", gameIdFromPayload);
-
-                    const turnRes = await gameService.getPlayerTurn(gameIdFromPayload);
+                    console.log("gameIdgameIdgameIdgameIdgameId",gameId)
+                    const turnRes = await gameService.getPlayerTurn(result.value.id);
                     console.log("Fetching player turn:", turnRes);
 
                     if (isOk(turnRes)) {
@@ -74,6 +110,7 @@ export default function GamePage() {
                     } else {
                         setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
                     }
+
                 } catch {
                     setInfo("Erro ao obter o jogador atual.");
                 }
@@ -86,17 +123,12 @@ export default function GamePage() {
         fetchGame();
     }, [lobbyId]);
 
-   function ensureMyTurn(): boolean {
-       console.log("game", game)
-       console.log("currentUser", currentUser)
-       console.log("currentPlayer", currentPlayer)
 
+   function ensureMyTurn(): boolean {
        if (!game || !currentUser || currentUser.username != currentPlayer) {
            alert("Não é a tua vez de jogar");
            return false;
        }
-       console.log("game", game)
-
        setInfo(null);
        return true;
    }
@@ -104,7 +136,6 @@ export default function GamePage() {
     async function handleRoll() {
         if (!gameId || !ensureMyTurn()) return;
 
-        console.log("lobbyId", lobbyId)
         const result = await gameService.roll(Number(lobbyId));
         console.log("Rolling game:", result);
 
@@ -113,6 +144,7 @@ export default function GamePage() {
 
             if (!game) return;
 
+            //TODO perceber se o useState game quando é atualizado se perde o valor ou não
             console.log("gameee", game)
             setGame({
                 ...game,
@@ -123,7 +155,7 @@ export default function GamePage() {
 
             setInfo("Dados rolados!");
         } else {
-            setError(result.error ?? "Erro ao rolar dados.");
+            alert("Só podes dar roll uma vez, experimenta Reroll")
         }
     }
 
@@ -153,10 +185,14 @@ export default function GamePage() {
         console.log("resultado", result)
 
         if (isOk(result)) {
-            const payload = new GamePayload(result.value); //aqui substituir apenas o campo dices e nao tudo.
-            console.log("payload", payload)
-            setGame(payload.game);
-            setInfo("Reroll efetuado!");
+
+            setGame({
+                ...game,
+                dice: result.value.dice,
+                isFirstRoll: false,
+            });
+        console.log("game no reroll",game)
+        setInfo("Reroll efetuado!");
         } else {
             setError(result.error ?? "Erro ao fazer reroll.");
         }
@@ -166,17 +202,32 @@ export default function GamePage() {
         if (!gameId || !ensureMyTurn()) return;
 
         const result = await gameService.endTurn(Number(gameId));
-        console.log("result", result.value.winners)
+        console.log("result", result.value)
 
         if (isOk(result)) {
             if(result.value.winners){
-                console.log("ahhhhhhhhhhhhhhhhhhhhhhhhhhhh")
                 const winnersString = result.value.winners.join(", ");
                 alert(result.value.message + " winner: " + winnersString)
             }
 
-            const payload = new GamePayload(result.value);
-            setGame(payload.game);
+            //TODO implementar isto de forma a que nao gere um novo objeto game...
+            //console.log("<Estudo> result.value", result.value)
+            //const payload = new GamePayload(result.value);
+            //console.log("payloaddddd", payload)
+            console.log("game.id", game.id)
+            const turnRes = await gameService.getPlayerTurn(game.id);
+                                            console.log("Fetching player turn minions:", turnRes);
+
+             if (isOk(turnRes)) {
+                setCurrentPlayer(turnRes.value.username); // string com username
+             } else {
+                setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
+             }
+            setGame({
+                ...game,
+                dice: [],
+                isFirstRoll: true,
+            });
             setInfo("Jogada terminada, próximo jogador.");
         } else {
             setError(result.error ?? "Erro ao terminar jogada.");
@@ -188,6 +239,11 @@ export default function GamePage() {
     if (error) return <p style={{ color: "red" }}>{error}</p>;
     if (!game) return <p>Jogo não encontrado.</p>;
 
+    const safeDice = Array.isArray(game.dice) ? game.dice : [game.dice || ""]; // Garante que seja sempre um array de strings
+    console.log("info:", info);
+
+
+
     return (
         <div style={{ padding: 24 }}>
             <h1>Game #{game.id}</h1>
@@ -196,15 +252,23 @@ export default function GamePage() {
                 Jogador atual: <strong>{currentPlayer}</strong>
             </p>
 
-            {info && <p style={{ color: "blue" }}>{info}</p>}
+          {info && (
+            <p style={{ color: "blue" }}>
+              {typeof info === "object"
+                ? `${info.title}: ${info.detail}`
+                : info}
+            </p>
+          )}
+
 
             <div style={{ margin: "16px 0" }}>
                 <h3>Dados</h3>
-                {game.dice.length === 0 ? (
-                    <p>Ainda não há dados rolados.</p>
+                {safeDice && safeDice.length > 0 ? (
+                    <p>{safeDice.join(" - ")}</p>
                 ) : (
-                    <p>{game.dice.join(" - ")}</p>
+                    <p>Ainda não há dados rolados.</p>
                 )}
+
                 {!game.isFirstRoll && (
                     <div style={{ marginTop: 8 }}>
                         <label>

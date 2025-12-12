@@ -162,9 +162,9 @@ export default function LobbyDetails() {
               console.log("SSE Update (gameStarted):", data);
               console.log("data.gameId", data.gameId);
 
-              if (data.changeType === "started") {
+              if (data.changeType === "started" && data.lobbyId == lobbyId) {
                   console.log("oaloaaallalaa");
-                  navigate(`/games/lobby/${data.gameId}`); // Redireciona para a página do jogo
+                  navigate(`/games/lobby/${lobbyId}`); // Redireciona para a página do jogo
               }
           };
         console.log("antes de criar o addHandler")
@@ -181,7 +181,7 @@ export default function LobbyDetails() {
   async function handleLeaveLobby() {
     setActionLoading(true);
     const res = await lobbyDetailsService.leaveLobby(lobbyId);
-
+    console.log("res",res)
     if (isOk(res)) {
       showAlert("You have left the lobby.", "info");
       // Se saiu, se calhar quer ir para a lista de lobbies

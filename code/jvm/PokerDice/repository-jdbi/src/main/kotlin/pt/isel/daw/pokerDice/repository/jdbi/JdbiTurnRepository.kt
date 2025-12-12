@@ -172,4 +172,25 @@ class JdbiTurnRepository(
             ).bind("roundId", roundId)
             .mapTo<User>()
             .first() // or .findOne().orElse(null) if you want nullability
+
+    override fun getCurrentTurn(roundId: Int): Turn =
+        handle
+            .createQuery(
+                """
+                SELECT t.id AS turn_id,
+                       t.round_id,
+                       t.player_id,
+                       t.roll_count,
+                       t.dice_faces,
+                       t.value_of_combination,
+                       t.is_done
+                FROM dbo.turn t
+                WHERE t.round_id = :roundId
+                  AND t.is_done = false
+                ORDER BY t.id
+                LIMIT 1
+                """.trimIndent(),
+            ).bind("roundId", roundId)
+            .mapTo<Turn>()
+            .first()
 }

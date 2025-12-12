@@ -17,6 +17,8 @@ interface TurnsRepository {
         isDone: Boolean,
     )
 
+    fun getCurrentTurn(roundId: Int): Turn
+
     fun getTurnsByRoundId(roundId: Int): Turn
 
     fun getAllTurnsByRoundId(roundId: Int): Int

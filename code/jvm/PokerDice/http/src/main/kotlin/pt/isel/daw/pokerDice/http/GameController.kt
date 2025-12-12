@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.http
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -179,6 +180,32 @@ class GameController(
         return when (res) {
             is Success -> ResponseEntity.ok(mapOf("username" to res.value))
             is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
+    @GetMapping(Uris.Games.GETCURRENTTURN)
+    fun getCurrentTurn(
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val logger = LoggerFactory.getLogger(this::class.java)
+        logger.info("CONTROLERRRRR")
+
+        val res = gameService.getCurrentTurn(gameId)
+        logger.info("CONTROLEERRRRRRR OUTRA VEZZZ")
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok(
+                    mapOf(
+                        "turnId" to res.value.id,
+                        "roundId" to res.value.roundId,
+                        "playerId" to res.value.playerId,
+                        "rollCount" to res.value.rollCount,
+                        "diceFaces" to res.value.diceFaces,
+                        "valueOfCombination" to res.value.value_of_combination,
+                        "isDone" to res.value.isDone,
+                    ),
+                )
+            is Failure -> Problem.response(404, Problem.noActiveTurn)
         }
     }
 }

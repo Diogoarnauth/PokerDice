@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {playerProfileService} from "../../services/api/PlayerProfile";
 import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
-import {useAuthentication} from "../../providers/Authentication";
+import "./PlayerProfile.css";
 
 export default function PlayerProfileComponent() {
     const [profile, setProfile] = useState<PlayerProfile | null>(null);

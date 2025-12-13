@@ -27,7 +27,7 @@ class LobbiesController(
     // GET /lobbies → lista lobbies visíveis (ainda não cheios)
     @GetMapping(Uris.Lobbies.LIST)
     fun list(): ResponseEntity<*> {
-        val lista = lobbiesServices.getVisibleLobbies()
+        val lista = lobbiesServices.getAllLobbies()
         return ResponseEntity.ok(lista)
     }
 
@@ -103,7 +103,9 @@ class LobbiesController(
                 )
             }
 
-            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+            is Failure -> {
+                Problem.response(404, Problem.lobbyNotFound)
+            }
         }
     }
 
@@ -120,16 +122,25 @@ class LobbiesController(
         val res = lobbiesServices.joinLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
-            is Success -> ResponseEntity.ok(mapOf("message" to "Joined lobby $lobbyId"))
+            is Success -> {
+                ResponseEntity.ok(mapOf("message" to "Joined lobby $lobbyId"))
+            }
 
-            is Failure ->
+            is Failure -> {
                 when (res.value) {
-                    JoinLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound) //
+                    JoinLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
+
+                    //
                     JoinLobbyError.LobbyFull -> Problem.response(409, Problem.lobbyFull)
+
                     JoinLobbyError.AlreadyInLobby -> Problem.response(409, Problem.alreadyInLobby)
-                    JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit) //
+
+                    JoinLobbyError.InsufficientCredits -> Problem.response(403, Problem.NotEnoughCredit)
+
+                    //
                     JoinLobbyError.LobbyAlreadyRunning -> Problem.response(409, Problem.LobbyAlreadyRunning) //
                 }
+            }
         }
     }
 
@@ -146,13 +157,16 @@ class LobbiesController(
         val res = lobbiesServices.leaveLobby(lobbyId, authenticatedUser.user.id)
 
         return when (res) {
-            is Success -> ResponseEntity.ok(mapOf("message" to "Left lobby $lobbyId"))
+            is Success -> {
+                ResponseEntity.ok(mapOf("message" to "Left lobby $lobbyId"))
+            }
 
-            is Failure ->
+            is Failure -> {
                 when (res.value) {
                     LeaveLobbyError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
                     LeaveLobbyError.NotInLobby -> Problem.response(409, Problem.notInLobby)
                 }
+            }
         }
     }
 }

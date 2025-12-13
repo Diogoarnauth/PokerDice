@@ -75,7 +75,7 @@ class LobbiesService(
     private val eventService: PokerDiceEventService,
 ) {
     /** Lista todos os lobbies visíveis (ainda não cheios) */
-    fun getVisibleLobbies(): List<Lobby> =
+    fun getAllLobbies(): List<Lobby> =
         transactionManager.run {
             val lobbyRepository = it.lobbiesRepository
             return@run lobbyRepository.getLobbiesNotFull()

@@ -106,7 +106,7 @@ class JdbiLobbyRepository(
                 l.rounds,
                 l.min_credit_to_participate,
                 l.turn_time
-            HAVING COUNT(p.id) < l.maxPlayers
+            HAVING COUNT(p.id) <= l.maxPlayers
             """,
             ).map { rs, _ ->
                 Lobby(

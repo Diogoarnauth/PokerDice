@@ -213,11 +213,10 @@ class GameController(
     fun getAllTurnsByRound(
         @PathVariable roundId: Int,
     ): ResponseEntity<*> {
-        val turns = gameService.getAllTurnsByRound(roundId) // List<Turn>
-        return if (turns.isEmpty()) {
-            ResponseEntity.noContent().build<Unit>() // 204
-        } else {
-            ResponseEntity.ok(turns)
+        val res = gameService.getAllTurnsByRound(roundId)
+        return when (res) {
+            is Failure -> ResponseEntity.noContent().build<Unit>()
+            is Success -> ResponseEntity.ok(res)
         }
     }
 }

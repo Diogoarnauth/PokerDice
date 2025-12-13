@@ -208,4 +208,16 @@ class GameController(
             is Failure -> Problem.response(404, Problem.noActiveTurn)
         }
     }
+
+    @GetMapping(Uris.Games.ALL_TURNS)
+    fun getAllTurnsByRound(
+        @PathVariable roundId: Int,
+    ): ResponseEntity<*> {
+        val turns = gameService.getAllTurnsByRound(roundId) // List<Turn>
+        return if (turns.isEmpty()) {
+            ResponseEntity.noContent().build<Unit>() // 204
+        } else {
+            ResponseEntity.ok(turns)
+        }
+    }
 }

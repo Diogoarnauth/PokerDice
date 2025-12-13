@@ -8,8 +8,5 @@ interface Transaction {
     val roundRepository: RoundRepository
     val turnsRepository: TurnsRepository
 
-    // val gamesRepository: GamesRepository
-
-    // other repository types
     fun rollback()
 }

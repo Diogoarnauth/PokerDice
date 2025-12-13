@@ -1,7 +1,6 @@
-// src/components/player/PlayerProfileComponent.tsx
-import React, { useEffect, useState } from "react";
-import { playerProfileService } from "../../services/api/PlayerProfile";
-import { PlayerProfilePayload, PlayerProfile } from "../models/PlayerProfile";
+import React, {useEffect, useState} from "react";
+import {playerProfileService} from "../../services/api/PlayerProfile";
+import {PlayerProfilePayload, PlayerProfile} from "../models/PlayerProfile";
 import "./PlayerProfile.css";
 
 export default function PlayerProfileComponent() {

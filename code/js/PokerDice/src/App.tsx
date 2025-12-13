@@ -42,7 +42,6 @@ function App() {
                                 <Route path="/profile" element={<PlayerProfileComponent />} />
                                 <Route path="/deposit" element={<DepositPage />} />
 
-
                                 {/* Rotas c/ login */}
                                 {/* Usamos um Route wrapper para proteger todas as rotas filhas de uma vez */}
                                 <Route element={

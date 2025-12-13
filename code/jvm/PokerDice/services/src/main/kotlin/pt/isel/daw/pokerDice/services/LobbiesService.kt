@@ -106,7 +106,7 @@ class LobbiesService(
             if (user.lobbyId != lobbyId) {
                 return@run failure(LeaveLobbyError.NotInLobby)
             }
-            // Remove o jogador do lobby (define lobby_id = NULL)
+
             usersRepo.updateLobbyIdForUser(userId, null)
 
             eventService.sendToAll(
@@ -117,14 +117,6 @@ class LobbiesService(
                     changeType = "created",
                 ),
             )
-
-            /*eventService.sendToAll(
-                PokerEvent.PlayerProfLobby(
-                    lobbyId = lobbyId,
-                    username = user.username,
-                    changeType = "joined",
-                ),
-            )*/
 
             success(Unit)
         }
@@ -349,14 +341,16 @@ class LobbiesService(
                     changeType = "deleted",
                 ),
             )
-
-            /*eventService.sendToAll(
-                PokerEvent.PlayerProfLobby(
+// game.id!!
+            val gameEndedEvent =
+                PokerEvent.GameUpdated(
                     lobbyId = lobbyId,
-                    username = user.username,
-                    changeType = "joined",
-                ),
-            )*/
+                    changeType = "ended",
+                )
+
+            eventService.sendToAll(
+                gameEndedEvent,
+            )
 
             success(Unit)
         }

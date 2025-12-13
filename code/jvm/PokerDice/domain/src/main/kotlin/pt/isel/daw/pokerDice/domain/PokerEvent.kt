@@ -24,6 +24,13 @@ sealed interface PokerEvent {
         override val type = "gameStarted"
     }
 
+    data class GameUpdated(
+        val lobbyId: Int,
+        val changeType: String?,
+    ) : PokerEvent {
+        override val type = "gameUpdated"
+    }
+
     data class PlayerJoined(
         val lobbyId: Int,
         val username: String,
@@ -36,12 +43,6 @@ sealed interface PokerEvent {
         val username: String,
     ) : PokerEvent {
         override val type = "player_left"
-    }
-
-    data class GameUpdated(
-        val gameId: Int,
-    ) : PokerEvent {
-        override val type = "game_updated"
     }
 
     data class RoundEnded(

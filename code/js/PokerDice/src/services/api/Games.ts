@@ -68,6 +68,12 @@ export const gameService = {
         });
     },
 
+    getCompleteCurrentTurn(gameId: number): Promise<Result<{Any}>> {
+        return fetchWrapper(RequestUri.games.completeCurrentTurn(gameId), {
+            method: "GET",
+        });
+    },
+
     // POST /games/{gameId}/leave
     leave(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.leave(gameId), {

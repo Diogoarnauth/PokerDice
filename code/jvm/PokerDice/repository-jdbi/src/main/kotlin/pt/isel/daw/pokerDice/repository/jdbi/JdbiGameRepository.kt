@@ -143,7 +143,6 @@ data class GameDbModel(
     val state: String,
     val roundsCounter: Int,
     val nrUsers: Int,
-    val currentRoundId: Int? = null,
 ) {
     fun toDomain(): Game =
         Game(
@@ -152,6 +151,5 @@ data class GameDbModel(
             state = Game.GameStatus.valueOf(state),
             roundCounter = roundsCounter,
             nrUsers = nrUsers,
-            // currentRoundId = currentRoundId,
         )
 }

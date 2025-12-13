@@ -1,5 +1,6 @@
 package pt.isel.daw.pokerDice.http
 
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.web.bind.annotation.GetMapping
@@ -7,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
-import pt.isel.daw.pokerDice.domain.games.Turn
 import pt.isel.daw.pokerDice.domain.users.AuthenticatedUser
 import pt.isel.daw.pokerDice.http.model.Problem
 import pt.isel.daw.pokerDice.services.EndGameError
@@ -183,15 +183,29 @@ class GameController(
         }
     }
 
-    @GetMapping(Uris.Games.ALL_TURNS)
-    fun getAllTurnsByRound(
-        @PathVariable roundId: Int,
+    @GetMapping(Uris.Games.GETCURRENTTURN)
+    fun getCurrentTurn(
+        @PathVariable gameId: Int,
     ): ResponseEntity<*> {
-        val turns = gameService.getAllTurnsByRound(roundId) // List<Turn>
-        return if (turns.isEmpty()) {
-            ResponseEntity.noContent().build<Unit>() // 204
-        } else {
-            ResponseEntity.ok(turns)
+        val logger = LoggerFactory.getLogger(this::class.java)
+        logger.info("CONTROLERRRRR")
+
+        val res = gameService.getCurrentTurn(gameId)
+        logger.info("CONTROLEERRRRRRR OUTRA VEZZZ")
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok(
+                    mapOf(
+                        "turnId" to res.value.id,
+                        "roundId" to res.value.roundId,
+                        "playerId" to res.value.playerId,
+                        "rollCount" to res.value.rollCount,
+                        "diceFaces" to res.value.diceFaces,
+                        "valueOfCombination" to res.value.value_of_combination,
+                        "isDone" to res.value.isDone,
+                    ),
+                )
+            is Failure -> Problem.response(404, Problem.noActiveTurn)
         }
     }
 }

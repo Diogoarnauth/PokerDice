@@ -47,7 +47,9 @@ sealed class GameGetByIdError {
 }
 
 // Mudando o tipo para retornar o jogo completo
-typealias GetGameByLobby = Either<GameError, Game?> // Agora vai retornar o objeto Game completo
+typealias GetGameByLobby = Either<GameError, Game?>
+
+typealias GetCurrentTurn = Either<GameError, Turn> // Agora vai retornar o objeto Game completo
 
 typealias GameErrorResult = Either<GameError, String>
 
@@ -97,7 +99,7 @@ class GameService(
             val game =
                 it.gamesRepository.getGameByLobbyId(lobbyId)
                     ?: return@run failure(GameError.GameNotFound(lobbyId)) // Retorna erro se não encontrar o jogo
-            success(game) // Retorna o jogo completo, não apenas o ID
+            success(game)
         }
     }
 
@@ -348,6 +350,16 @@ class GameService(
                     """{"message": "Game ended"}"""
                 }
 
+            val gameEndedEvent =
+                PokerEvent.GameUpdated(
+                    lobbyId = game.lobbyId,
+                    changeType = "ended",
+                )
+
+            eventService.sendToAll(
+                gameEndedEvent,
+            )
+
             success(json)
         }
 
@@ -573,6 +585,27 @@ class GameService(
             // return the player's ID (you might want to return player info, but ID suffices)
 
             success(currentPlayer.username)
+        }
+
+    fun getCurrentTurn(gameId: Int): GetCurrentTurn =
+        transactionManager.run {
+            logger.info("entrei no services")
+
+            // get the current round that is not over
+            val currentRound =
+                it.roundRepository
+                    .getRoundsByGameId(gameId)
+                    .firstOrNull { round -> !round.roundOver }
+                    ?: return@run failure(GameError.NoActiveRound(gameId))
+            logger.info("EXISTE ROUND")
+
+            // Get the User who should be rolling (whose turn is not done)
+            val currentTurn =
+                it.turnsRepository.getCurrentTurn(currentRound.id!!)
+                    ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
+            logger.info("TURN QUE PROCURO $currentTurn")
+
+            success(currentTurn)
         }
 
     fun attributeWinnersCredits(

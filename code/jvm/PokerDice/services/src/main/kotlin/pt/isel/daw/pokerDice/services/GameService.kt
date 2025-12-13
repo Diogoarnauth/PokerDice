@@ -204,6 +204,16 @@ class GameService(
                 isDone = false,
             )
 
+            val rollEvent =
+                PokerEvent.GameUpdated(
+                    lobbyId = curGame.lobbyId,
+                    changeType = "roll_dice",
+                )
+
+            eventService.sendToAll(
+                rollEvent,
+            )
+
             success(rolledDice)
         }
 
@@ -261,6 +271,16 @@ class GameService(
                     postfix = "\"]",
                 )
             }}"""
+
+            val reRollEvent =
+                PokerEvent.GameUpdated(
+                    lobbyId = game.lobbyId,
+                    changeType = "reroll_dice",
+                )
+
+            eventService.sendToAll(
+                reRollEvent,
+            )
 
             success(jsonString)
         }
@@ -371,6 +391,17 @@ class GameService(
                 gameEndedEvent,
             )
 
+            val roundWinnersEvent =
+                PokerEvent.WinnerAlert(
+                    lobbyId = game.lobbyId,
+                    winners = winnersJson,
+                    changeType = "gameWinners",
+                )
+
+            eventService.sendToAll(
+                roundWinnersEvent,
+            )
+
             success(json)
         }
 
@@ -449,6 +480,17 @@ class GameService(
                     endRound(game, lobby, currentRound)
                 }
                 val jsonString = """{"message": "Turno terminado com sucesso."}"""
+
+                val turnEndedEvent =
+                    PokerEvent.GameUpdated(
+                        lobbyId = game.lobbyId,
+                        changeType = "turn_ended",
+                    )
+
+                eventService.sendToAll(
+                    turnEndedEvent,
+                )
+
                 success(jsonString)
             }
         }
@@ -482,7 +524,6 @@ class GameService(
                         // 👉 aqui usamos diretamente o JSON vindo do endGame
                         endGameResp.value
                     } else {
-                        // 👉 fallback se algo correr mal dentro do endGame
                         """{"message": "Game Finished."}"""
                     }
 
@@ -504,6 +545,17 @@ class GameService(
 
                 val messageSuccess =
                     """{"message": "Round ended", "winners": $winnersJson}"""
+
+                val roundWinnersEvent =
+                    PokerEvent.WinnerAlert(
+                        lobbyId = game.lobbyId,
+                        winners = winnersJson,
+                        changeType = "roundWinners",
+                    )
+
+                eventService.sendToAll(
+                    roundWinnersEvent,
+                )
 
                 success(messageSuccess)
             }

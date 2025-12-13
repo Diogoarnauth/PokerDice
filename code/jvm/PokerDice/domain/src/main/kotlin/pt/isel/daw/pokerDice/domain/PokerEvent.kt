@@ -31,6 +31,14 @@ sealed interface PokerEvent {
         override val type = "gameUpdated"
     }
 
+    data class WinnerAlert(
+        val lobbyId: Int,
+        val winners: String?,
+        val changeType: String?,
+    ) : PokerEvent {
+        override val type = "winnerAlert"
+    }
+
     data class PlayerJoined(
         val lobbyId: Int,
         val username: String,

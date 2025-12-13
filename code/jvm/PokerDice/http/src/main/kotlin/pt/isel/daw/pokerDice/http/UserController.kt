@@ -374,6 +374,21 @@ class UserController(
         }
     }
 
+    @GetMapping(Uris.Users.GETOBJPLAYERSONLOBBY)
+    fun getObjPlayersOnLobby(
+        @PathVariable id: Int,
+    ): ResponseEntity<*> {
+        val res = userService.getObjPlayersOnLobby(id)
+
+        return when (res) {
+            is Success -> {
+                ResponseEntity.ok(res.value)
+            }
+
+            is Failure -> Problem.response(404, Problem.lobbyNotFound)
+        }
+    }
+
     @GetMapping(Uris.Users.GETPLAYERSONLOBBY)
     fun getPlayersOnLobby(
         @PathVariable id: Int,

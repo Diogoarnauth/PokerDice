@@ -150,6 +150,22 @@ class JdbiTurnRepository(
             .one()
     }
 
+    override fun getAllTurnsObjectByRoundId(roundId: Int): List<Turn> {
+        val sql =
+            """
+            SELECT id, round_id, player_id, turn_order
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            ORDER BY turn_order
+            """.trimIndent()
+
+        return handle
+            .createQuery(sql)
+            .bind("roundId", roundId)
+            .mapTo<Turn>()
+            .list()
+    }
+
     override fun getWhichPlayerTurnByRoundId(roundId: Int): User =
         handle
             .createQuery(
@@ -193,4 +209,27 @@ class JdbiTurnRepository(
             ).bind("roundId", roundId)
             .mapTo<Turn>()
             .first()
+
+    override fun getAllTurnsCompleteObjectByRoundId(roundId: Int): List<Turn> {
+        val sql =
+            """
+            SELECT
+                id,
+                round_id,
+                player_id,
+                roll_count,
+                dice_faces,
+                value_of_combination,
+                is_done
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            ORDER BY id
+            """.trimIndent()
+
+        return handle
+            .createQuery(sql)
+            .bind("roundId", roundId)
+            .mapTo<Turn>()
+            .list()
+    }
 }

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { gameService } from "../../services/api/Games";
+import { playersService } from "../../services/api/Players";
+
 import { isOk } from "../../services/api/utils";
 import { GamePayload, Game } from "../models/Game";
 import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
@@ -26,10 +28,7 @@ export default function GamePage() {
     const { addHandler, removeHandler, updateTopic } = useSSE();
     const [players, setPlayers] = useState<{ username: string; credit: number }[]>([]);
 
-
     const navigate = useNavigate();
-
-    // Obter o token diretamente dos cookies
 
     useEffect(() => {
         console.log("Fetching lobby:", lobbyId);
@@ -56,6 +55,22 @@ export default function GamePage() {
                 setLoading(false);
                 return;
             }
+
+
+            const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
+
+            if (isOk(playerListOnLobby)) {
+              const mappedPlayers = playerListOnLobby.value.map((u: any) => ({
+                username: u.username,
+                credit: u.credit,
+              }));
+
+              setPlayers(mappedPlayers);
+            } else {
+              console.log("Erro ao buscar jogadores:", playerListOnLobby.error);
+            }
+
+            console.log("playerListOnLobby.value",playerListOnLobby.value)
 
 
             console.log("lobbyId", lobbyId)
@@ -244,57 +259,71 @@ export default function GamePage() {
 
 
 
-    return (
-        <div style={{ padding: 24 }}>
-            <h1>Game #{game.id}</h1>
+  return (
+    <div className="game-container">
 
-            <p>
-                Jogador atual: <strong>{currentPlayer}</strong>
-            </p>
+      {/* COLUNA ESQUERDA */}
+      <div className="game-left">
+        <h1 className="game-title">Game #{game.id}</h1>
 
-          {info && (
-            <p style={{ color: "blue" }}>
-              {typeof info === "object"
-                ? `${info.title}: ${info.detail}`
-                : info}
-            </p>
+        <p className="current-player">
+          Jogador atual: <strong>{currentPlayer}</strong>
+        </p>
+
+        {info && (
+          <div className="info-box">
+            {typeof info === "object" ? `${info.title}: ${info.detail}` : info}
+          </div>
+        )}
+
+        <div className="dice-section">
+          <h3>Dados</h3>
+
+          {safeDice && safeDice.length > 0 ? (
+            <div className="dice-display">
+              {safeDice.join(" - ")}
+            </div>
+          ) : (
+            <p className="no-dice">Ainda não há dados rolados.</p>
           )}
 
-
-            <div style={{ margin: "16px 0" }}>
-                <h3>Dados</h3>
-                {safeDice && safeDice.length > 0 ? (
-                    <p>{safeDice.join(" - ")}</p>
-                ) : (
-                    <p>Ainda não há dados rolados.</p>
-                )}
-
-                {!game.isFirstRoll && (
-                    <div style={{ marginTop: 8 }}>
-                        <label>
-                            Índices para reroll (ex: 0,2,4):
-                            <input
-                                type="text"
-                                value={rerollInput}
-                                onChange={e => setRerollInput(e.target.value)}
-                                style={{ marginLeft: 8 }}
-                            />
-                        </label>
-                    </div>
-                )}
+          {!game.isFirstRoll && (
+            <div className="reroll-input">
+              <label>
+                Índices para reroll:
+                <input
+                  type="text"
+                  value={rerollInput}
+                  onChange={e => setRerollInput(e.target.value)}
+                />
+              </label>
             </div>
-
-            <div style={{ display: "flex", gap: 8 }}>
-                <button onClick={handleRoll} disabled={loading}>
-                    Roll (primeira jogada)
-                </button>
-                <button onClick={handleReroll} disabled={loading}>
-                    Reroll
-                </button>
-                <button onClick={handleEndTurn} disabled={loading}>
-                    Terminar jogada
-                </button>
-            </div>
+          )}
         </div>
-    );
+
+        <div className="actions">
+          <button onClick={handleRoll}>🎲 Roll</button>
+          <button onClick={handleReroll}>🔁 Reroll</button>
+          <button onClick={handleEndTurn}>⏭️ Terminar</button>
+        </div>
+      </div>
+
+      {/* SIDEBAR DIREITA */}
+      <div className="players-sidebar">
+        <h3 className="players-title">Jogadores no Lobby</h3>
+
+        {players.length === 0 ? (
+          <p className="no-players">Nenhum jogador encontrado.</p>
+        ) : (
+          players.map((p, idx) => (
+            <div key={idx} className="player-card">
+              <span className="player-name">{p.username}</span>
+              <span className="player-credit">💰 {p.credit}</span>
+            </div>
+          ))
+        )}
+      </div>
+
+    </div>
+  );
 }

@@ -629,4 +629,14 @@ class GameService(
             it.usersRepository.updateUserCredit(winner, userWinner!!.credit + valueToAttribute)
         }
     }
+
+    fun getAllTurnsByRound(roundId: Int) =
+        transactionManager.run {
+            val turns = it.turnsRepository.getAllTurnsCompleteObjectByRoundId(roundId)
+            if (turns.isEmpty()) {
+                return@run failure(GameError.NoActiveTurn(roundId))
+            }
+
+            success(turns)
+        }
 }

@@ -18,6 +18,7 @@ object Uris {
         const val BOOTSTRAP = "$PREFIX/bootstrap"
         const val CHECK_ADMIN = "$PREFIX/checkAdmin"
         const val GETPLAYERSONLOBBY = "$PREFIX/users/lobby/{id}"
+        const val GETOBJPLAYERSONLOBBY = "$PREFIX/users/obj/lobby/{id}"
         const val GETME = "$PREFIX/users/getMe"
         const val LISTEN = "$PREFIX/users/listen"
 
@@ -45,6 +46,7 @@ object Uris {
         const val PLAYER_TURN = "$ROOT/{gameId}/player-turn"
         const val GETGAME = "$ROOT/lobby/{id}"
         const val GETCURRENTTURN = "$ROOT/{gameId}/getCurrentTurn"
+        const val ALL_TURNS = "$PREFIX/users/round/{id}/allTurns"
 
         fun byId(gameId: String): URI = URI(UriTemplate(BY_ID).expand(gameId).toString())
 

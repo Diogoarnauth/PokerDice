@@ -2,8 +2,9 @@ import React, {useEffect, useReducer, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {authService} from "../../services/api/auth";
 import {isOk} from "../../services/api/utils";
-import "../../styles/login.css";
+import '../../styles/Signup.css';
 import {useAuthentication} from "../../providers/Authentication";
+
 
 export default function Signup() {
 
@@ -32,7 +33,7 @@ export default function Signup() {
     const [error, setError] = useState<string | null>(null);
     const [resultMsg, setResultMsg] = useState<string | null>(null);
 
-    // 1. Fazer checkAdmin antes de renderizar o formulário
+    // 1. Fazer checkAdmin antes de renderizar o formulÃ¡rio
     useEffect(() => {
 
         async function check() {
@@ -93,140 +94,131 @@ export default function Signup() {
     }
 
     return (
-        <div className="auth-container">
-            <h1 className="auth-title">
-                {isFirstUser ? "Create Admin Account" : "Sign Up"}
-            </h1>
+        <div className="login-page">
+            <div className="login-card">
+                <h1 className="title">
+                    {isFirstUser ? "Create Admin Account" : "Sign Up"}
+                </h1>
 
-            {isFirstUser && (
-                <p className="auth-text" style={{marginBottom: "10px"}}>
-                    This will create the first user as <strong>admin</strong>.
-                </p>
-            )}
+                {isFirstUser && (
+                    <p className="signup-text" style={{ marginBottom: "10px" }}>
+                        This will create the first user as <strong>admin</strong>.
+                    </p>
+                )}
 
-            <form onSubmit={handleSubmit}>
-                {/* Desativa tudo enquanto está a submeter */}
-                <fieldset disabled={loadingSubmit}>
-                    <div className="auth-form-group">
-                        <div>
-                            <label htmlFor="username" className="auth-label">
-                                Username
-                            </label>
-                            <input
-                                className="auth-input"
-                                type="text"
-                                id="username"
-                                value={usernameInput}
-                                onChange={(e) => setUsernameInput(e.target.value)}
-                                placeholder="Enter your username"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="name" className="auth-label">Name</label>
-                            <input
-                                className="auth-input"
-                                type="text"
-                                id="name"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder="Enter your name"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="age" className="auth-label">Age</label>
-                            <input
-                                className="auth-input"
-                                type="number"
-                                id="age"
-                                value={age}
-                                onChange={(e) => setAge(e.target.value)}
-                                min={1}
-                                placeholder="Enter your age"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="password" className="auth-label">Password</label>
-                            <input
-                                className="auth-input"
-                                type="password"
-                                id="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label htmlFor="confirmPassword" className="auth-label">Confirm Password</label>
-                            <input
-                                className="auth-input"
-                                type="password"
-                                id="confirmPassword"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm your password"
-                                required
-                            />
-                        </div>
-
-                        {!isFirstUser && (
+                <form onSubmit={handleSubmit}>
+                    <fieldset disabled={loadingSubmit}>
+                        <div className="input-container">
                             <div>
-                                <label htmlFor="inviteCode" className="auth-label">Invite Code</label>
+                                <label htmlFor="username" className="label">
+                                    Username
+                                </label>
                                 <input
-                                    className="auth-input"
+                                    className="input"
                                     type="text"
-                                    id="inviteCode"
-                                    value={inviteCode}
-                                    onChange={(e) => setInviteCode(e.target.value)}
-                                    placeholder="Enter your invite code"
+                                    id="username"
+                                    value={usernameInput}
+                                    onChange={(e) => setUsernameInput(e.target.value)}
+                                    placeholder="Enter your username"
                                     required
                                 />
                             </div>
-                        )}
 
-                        <button
-                            type="submit"
-                            className="auth-submit"
-                            disabled={loadingSubmit}
-                        >
-                            {loadingSubmit
-                                ? "Submitting..."
-                                : isFirstUser
-                                    ? "Create Admin"
-                                    : "Sign Up"}
-                        </button>
-                    </div>
-                </fieldset>
+                            <div>
+                                <label htmlFor="name" className="label">Name</label>
+                                <input
+                                    className="input"
+                                    type="text"
+                                    id="name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                    placeholder="Enter your name"
+                                    required
+                                />
+                            </div>
 
-                {/* Mensagem de Erro Genérica (Vem do Backend) */}
-                {error && (
-                    <div className="auth-error" style={{
-                        color: '#721c24',
-                        backgroundColor: '#f8d7da',
-                        borderColor: '#f5c6cb',
-                        padding: '10px',
-                        marginTop: '15px',
-                        borderRadius: '4px',
-                        border: '1px solid'
-                    }}>
-                        {error}
-                    </div>
-                )}
+                            <div>
+                                <label htmlFor="age" className="label">Age</label>
+                                <input
+                                    className="input"
+                                    type="number"
+                                    id="age"
+                                    value={age}
+                                    onChange={(e) => setAge(e.target.value)}
+                                    min={1}
+                                    placeholder="Enter your age"
+                                    required
+                                />
+                            </div>
 
-                {/* Mensagem de Sucesso */}
-                {resultMsg && (
-                    <div className="auth-info" style={{color: 'green', marginTop: '10px', fontWeight: 'bold'}}>
-                        {resultMsg}
-                    </div>
-                )}
-            </form>
+                            <div>
+                                <label htmlFor="password" className="label">Password</label>
+                                <input
+                                    className="input"
+                                    type="password"
+                                    id="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    placeholder="Enter your password"
+                                    required
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="confirmPassword" className="label">Confirm Password</label>
+                                <input
+                                    className="input"
+                                    type="password"
+                                    id="confirmPassword"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    placeholder="Confirm your password"
+                                    required
+                                />
+                            </div>
+
+                            {!isFirstUser && (
+                                <div>
+                                    <label htmlFor="inviteCode" className="label">Invite Code</label>
+                                    <input
+                                        className="input"
+                                        type="text"
+                                        id="inviteCode"
+                                        value={inviteCode}
+                                        onChange={(e) => setInviteCode(e.target.value)}
+                                        placeholder="Enter your invite code"
+                                        required
+                                    />
+                                </div>
+                            )}
+
+                            <button
+                                type="submit"
+                                className="submit-button"
+                                disabled={loadingSubmit}
+                            >
+                                {loadingSubmit
+                                    ? "Submitting..."
+                                    : isFirstUser
+                                        ? "Create Admin"
+                                        : "Sign Up"}
+                            </button>
+                        </div>
+                    </fieldset>
+
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
+                    )}
+
+                    {resultMsg && (
+                        <div className="auth-info">
+                            {resultMsg}
+                        </div>
+                    )}
+                </form>
+            </div>
         </div>
     );
 }

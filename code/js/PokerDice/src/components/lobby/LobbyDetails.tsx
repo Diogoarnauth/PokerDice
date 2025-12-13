@@ -6,6 +6,7 @@ import {isOk} from "../../services/api/utils";
 import {useAuthentication} from "../../providers/Authentication";
 import {useSSE} from "../../providers/SSEContext";
 import {useAlert} from "../../providers/AlertContexts";
+import "../../styles/LobbyDetails.css";
 
 // --- TIPOS ---
 type Lobby = {
@@ -149,7 +150,6 @@ export default function LobbyDetails() {
         };
     }, [authUsername, lobbyId, loadData, updateTopic, addHandler, removeHandler, navigate]);
 
-
     // --- AÇÕES ---
 
     async function handleJoinLobby() {
@@ -223,20 +223,20 @@ export default function LobbyDetails() {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="lobbyDetails-loading">
+                <div className="lobbyDetails-spinner" />
             </div>
         );
     }
 
     if (error || !lobby) {
         return (
-            <div className="text-center p-8 bg-red-50 text-red-700 rounded-lg border border-red-200">
-                <h2 className="text-xl font-bold mb-2">Erro</h2>
-                <p>{error || "Lobby não encontrado."}</p>
+            <div className="lobbyDetails-error-card">
+                <h2>Erro</h2>
+                <p>{error || "Lobby not Found."}</p>
                 <button
                     onClick={() => navigate("/lobbies")}
-                    className="mt-4 text-sm underline hover:text-red-900"
+                    className="lobbyDetails-back-button"
                 >
                     Voltar aos Lobbies
                 </button>
@@ -251,41 +251,61 @@ export default function LobbyDetails() {
     const canJoin = user && user.lobbyId === null;
 
     return (
-        <div>
-            <h1>{lobby.name}</h1>
-            <p><strong>Description:</strong> {lobby.description}</p>
-            <p><strong>Host:</strong> {owner?.username || "Unknown"}</p>
+        <div className="lobbyDetails-page">
+                   <div className="lobbyDetails-card">
+                       <h1 className="lobbyDetails-title">{lobby.name}</h1>
+                       <p className="lobbyDetails-description">{lobby.description}</p>
 
-            <hr/>
+                       <div className="lobbyDetails-info">
+                           <p><span>Host</span><strong>{owner?.username || "Unknown"}</strong></p>
+                           <p><span>Players</span><strong>{lobby.minUsers} - {lobby.maxUsers}</strong></p>
+                           <p><span>Rounds</span><strong>{lobby.rounds}</strong></p>
+                           <p><span>Entry Cost</span><strong>{lobby.minCreditToParticipate}</strong></p>
+                           <p><span>Turn Time</span><strong>{formatTurnTime(lobby.turnTime)}</strong></p>
+                       </div>
 
-            <p>Players: {lobby.minUsers} - {lobby.maxUsers}</p>
-            <p>Rounds: {lobby.rounds}</p>
-            <p>Entry Cost: {lobby.minCreditToParticipate}</p>
-            <p>Turn Time: {formatTurnTime(lobby.turnTime)}</p>
+                       <div className="lobbyDetails-actions">
+                           {canJoin && (
+                               <button
+                                   onClick={handleJoinLobby}
+                                   disabled={actionLoading}
+                                   className="lobbyDetails-button primary"
+                               >
+                                   {actionLoading ? "Joining..." : "Join Lobby"}
+                               </button>
+                           )}
 
-            <div style={{marginTop: '20px'}}>
-                {canJoin && (
-                    <button onClick={handleJoinLobby} disabled={actionLoading}>
-                        {actionLoading ? "Joining..." : "Join Lobby"}
-                    </button>
-                )}
+                           {isUserInLobby && (
+                               <button
+                                   onClick={handleLeaveLobby}
+                                   disabled={actionLoading}
+                                   className="lobbyDetails-button secondary"
+                               >
+                                   {actionLoading ? "Leaving..." : "Leave Lobby"}
+                               </button>
+                           )}
 
-                {isUserInLobby && (
-                    <button onClick={handleLeaveLobby} disabled={actionLoading}>
-                        {actionLoading ? "Leaving..." : "Leave Lobby"}
-                    </button>
-                )}
+                           {isUserHost && (
+                               <button
+                                   onClick={handleStartGame}
+                                   disabled={actionLoading}
+                                   className="lobbyDetails-button accent"
+                               >
+                                   {actionLoading ? "Starting..." : "Start Game"}
+                               </button>
+                           )}
+                       </div>
 
-                {isUserHost && (
-                    <button onClick={handleStartGame} disabled={actionLoading} style={{marginLeft: '10px'}}>
-                        {actionLoading ? "Starting..." : "Start Game"}
-                    </button>
-                )}
-            </div>
+                       {!canJoin && !isUserInLobby && (
+                           <p className="lobbyDetails-warning">
+                               You are already in another lobby.
+                           </p>
+                       )}
+                   </div>
 
-            {!canJoin && !isUserInLobby && (
-                <p style={{color: 'orange'}}>You are already in another lobby.</p>
-            )}
-        </div>
-    );
-}
+
+
+
+               </div>
+           );
+       }

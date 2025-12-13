@@ -68,6 +68,7 @@ export default function LobbyDetails() {
     // --- CARREGAR DADOS ---
     const loadData = useCallback(async () => {
         try {
+            console.log("chega a entrar aqui ??")
             const userResponse = await lobbyDetailsService.getMe();
             if (isOk(userResponse)) {
                 setUser(userResponse.value);
@@ -81,15 +82,17 @@ export default function LobbyDetails() {
                 const lobbyData = lobbyResponse.value;
                 setLobby(lobbyData);
 /*
-                const gameCheck = await gameService.getGameByLobbyId(lobbyId);
+              //  const gameCheck = await gameService.getGameByLobbyId(lobby.id);
+                //console.log("gameCheck",gameCheck)
 
                 // TODO("AVALIAR SE PERDEU SSE AQUI??")
 
-                if (isOk(gameCheck)) {
-                    navigate(`/games/lobby/${lobbyId}`);
-                    return;
-                }
-*/
+                /*if (isOk(gameCheck)) {
+                    console.log("checkar apenas")
+                    navigate(`/games/lobby/${lobby.id}`);
+                   return;
+                }*/
+
                 hasLoadedSuccessfully.current = true;
                 setError(null);
 
@@ -123,6 +126,23 @@ export default function LobbyDetails() {
 
         loadData();
         updateTopic("lobbies");
+
+            console.log("ABRI O LOBBYDETAILS",user)
+            console.log("ABRI O LOBBYDETAILS",lobby)
+
+
+//TODO()
+           /* if(user.lobbyId == lobby.id){
+                 const handleGameStarted = (data: any) => {
+
+                                if (data.changeType === "started" && data.lobbyId == lobbyId) {
+                                    navigate(`/games/lobby/${lobbyId}`); // Redireciona para a página do jogo
+                                }
+                            };
+                            console.log("antes de criar o addHandler")
+                            addHandler("gameStarted", handleGameStarted); // Certifique-se de que o handler é registrado
+
+                }*/
 
         const handleUpdates = (data: any) => {
             console.log("SSE Update no LobbyDetails:", data);

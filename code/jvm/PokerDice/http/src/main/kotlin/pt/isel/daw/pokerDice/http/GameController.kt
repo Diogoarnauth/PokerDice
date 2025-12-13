@@ -183,6 +183,28 @@ class GameController(
         }
     }
 
+    @GetMapping(Uris.Games.GETCURRENTROUND)
+    fun getCurrentRound(
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val res = gameService.getCurrentRound(gameId)
+
+        return when (res) {
+            is Success ->
+                ResponseEntity.ok(
+                    mapOf(
+                        "roundId" to res.value.id,
+                        "gameId" to res.value.gameId,
+                        "roundNumber" to res.value.roundNumber,
+                        "bet" to res.value.bet,
+                        "roundOver" to res.value.roundOver,
+                    ),
+                )
+
+            is Failure -> Problem.response(404, Problem.noActiveRound)
+        }
+    }
+
     @GetMapping(Uris.Games.GETCURRENTTURN)
     fun getCurrentTurn(
         @PathVariable gameId: Int,
@@ -213,7 +235,10 @@ class GameController(
     fun getAllTurnsByRound(
         @PathVariable roundId: Int,
     ): ResponseEntity<*> {
+        val logger = LoggerFactory.getLogger(this::class.java)
+
         val res = gameService.getAllTurnsByRound(roundId)
+        logger.info("respostadoida $res")
         return when (res) {
             is Failure -> ResponseEntity.noContent().build<Unit>()
             is Success -> ResponseEntity.ok(res)

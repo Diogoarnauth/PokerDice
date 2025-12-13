@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { lobbyCreationService } from "../../services/api/LobbyCreate";
 import { isOk } from "../../services/api/utils";
 import { useNavigate } from "react-router-dom";
-import "./LobbyCreation.css";
+import "../../styles/LobbyCreation.css";
 
 type FormState = {
     name: string;

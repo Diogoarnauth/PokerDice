@@ -74,6 +74,17 @@ export const gameService = {
         });
     },
 
+    getAllTurnsByRound(roundId: number): Promise<Result<any[]>>{
+        return fetchWrapper(RequestUri.games.getAllTurnsByRound(roundId),{
+            method: "GET",
+            });
+        },
+
+    getCurrentRound(gameId: number): Promise<Result<{Any}>>{
+        return fetchWrapper(RequestUri.games.getCurrentRound(gameId),{
+            method: "GET",
+            });
+        },
 
     // POST /games/{gameId}/leave
     leave(gameId: number): Promise<Result<any>> {

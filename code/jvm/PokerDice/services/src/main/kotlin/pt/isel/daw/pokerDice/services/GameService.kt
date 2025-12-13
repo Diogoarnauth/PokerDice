@@ -51,6 +51,8 @@ typealias GetGameByLobby = Either<GameError, Game?>
 
 typealias GetCurrentTurn = Either<GameError, Turn> // Agora vai retornar o objeto Game completo
 
+typealias GetCurrentRound = Either<GameError, Round> // Agora vai retornar o objeto Game completo
+
 typealias GameErrorResult = Either<GameError, String>
 
 sealed class GameError {
@@ -252,11 +254,13 @@ class GameService(
                 getNextPlayerInRound(round.id!!, lobbyId, curTurn.playerId)
             }
 
-            val jsonString = """{"dice": ${updatedDice.split(",").joinToString(
-                prefix = "[\"",
-                separator = "\",\"",
-                postfix = "\"]",
-            )}}"""
+            val jsonString = """{"dice": ${
+                updatedDice.split(",").joinToString(
+                    prefix = "[\"",
+                    separator = "\",\"",
+                    postfix = "\"]",
+                )
+            }}"""
 
             success(jsonString)
         }
@@ -314,7 +318,12 @@ class GameService(
                 for (round in allRounds) {
                     if (!round.roundOver) {
                         val allUser = it.usersRepository.getAllUsersInLobby(lobby.id)
-                        allUser.forEach { user -> it.usersRepository.updateUserCredit(user.id, user.credit + lobby.minCreditToParticipate) }
+                        allUser.forEach { user ->
+                            it.usersRepository.updateUserCredit(
+                                user.id,
+                                user.credit + lobby.minCreditToParticipate,
+                            )
+                        }
                         round.id?.let { roundId -> it.roundRepository.markRoundAsOver(roundId) }
                         break
                     }
@@ -587,6 +596,20 @@ class GameService(
             // return the player's ID (you might want to return player info, but ID suffices)
 
             success(currentPlayer.username)
+        }
+
+    fun getCurrentRound(gameId: Int): GetCurrentRound =
+        transactionManager.run {
+            logger.info("entrei no services")
+
+            // get the current round that is not over
+            val currentRound =
+                it.roundRepository
+                    .getRoundsByGameId(gameId)
+                    .firstOrNull { round -> !round.roundOver }
+                    ?: return@run failure(GameError.NoActiveRound(gameId))
+
+            success(currentRound)
         }
 
     fun getCurrentTurn(gameId: Int): GetCurrentTurn =

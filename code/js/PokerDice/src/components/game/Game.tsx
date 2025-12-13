@@ -26,7 +26,16 @@ export default function GamePage() {
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
     const { addHandler, removeHandler, updateTopic } = useSSE();
-    const [players, setPlayers] = useState<{ username: string; credit: number }[]>([]);
+
+    type PlayerInGame = {
+      playerId: number;
+      username: string;
+      credit: number;
+      dices: string[];
+      valueOfCombination: number;
+    };
+
+    const [players, setPlayers] = useState<PlayerInGame[]>([]);
 
     const navigate = useNavigate();
 
@@ -56,19 +65,22 @@ export default function GamePage() {
                 return;
             }
 
-
             const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
 
             if (isOk(playerListOnLobby)) {
-              const mappedPlayers = playerListOnLobby.value.map((u: any) => ({
+              const mappedPlayers: PlayerInGame[] = playerListOnLobby.value.map((u: any) => ({
+                playerId: u.id,
                 username: u.username,
                 credit: u.credit,
+                dices: [],              // ainda não tens dados -> array vazio
+                valueOfCombination: 0,  // ainda não tens dados -> 0
               }));
 
               setPlayers(mappedPlayers);
-            } else {
-              console.log("Erro ao buscar jogadores:", playerListOnLobby.error);
-            }
+
+              console.log("players", players)
+
+
 
             console.log("playerListOnLobby.value",playerListOnLobby.value)
 
@@ -78,6 +90,7 @@ export default function GamePage() {
             console.log("Fetching game:", result);
 
             if (isOk(result)) {
+                console.log("resultado", result)
 
                 const currentTurnResult = await gameService.getCompleteCurrentTurn(Number(result.value.id))
                 const payload = new GamePayload(currentTurnResult.value);
@@ -112,6 +125,48 @@ export default function GamePage() {
                               }
                           };
                       addHandler("gameUpdated", handleGameUpdated); // Certifique-se de que o handler é registrado
+
+
+                   const currentRoundRes = await gameService.getCurrentRound(result.value.id)
+                   console.log("AHHHHHHHHHHHHHHHHHHHHHHHHH currentRoundRes", currentRoundRes)
+
+                       if (isOk(currentRoundRes)) {
+                           const roundId = currentRoundRes.value.roundId ?? currentRoundRes.value.id
+                           console.log("roundId:", roundId)
+
+                           const turnsRes = await gameService.getAllTurnsByRound(roundId)
+
+                           if (isOk(turnsRes)) {
+                             const turns = turnsRes.value;
+
+                             const updatedPlayers = mappedPlayers.map(player => {
+                                 console.log("turnszitooooo",turns)
+                               const turn = turns.value.find((t: any) => t.playerId === player.playerId);
+
+                               if (!turn) return player; // se o jogador ainda não tem turn, mantém como está
+
+                               return {
+                                 ...player,
+                                 dices: turn.diceFaces ? turn.diceFaces.split(",") : [],
+                                 valueOfCombination: turn.value_of_combination ?? 0,
+                               };
+                             });
+
+                             setPlayers(updatedPlayers);
+                             console.log("Players atualizados:", updatedPlayers);
+
+                           } else {
+                             console.log("Erro ao buscar turns:", turnsRes.error);
+                           }
+
+
+                       } else {
+                           console.log("Erro ao buscar currentRound:", currentRoundRes.error)
+                       }
+            } else {
+              console.log("Erro ao buscar jogadores:", playerListOnLobby.error);
+            }
+
 
 
                 // Buscar jogador atual via endpoint /games/{gameId}/player-turn
@@ -225,10 +280,6 @@ export default function GamePage() {
                 alert(result.value.message + " winner: " + winnersString)
             }
 
-            //TODO implementar isto de forma a que nao gere um novo objeto game...
-            //console.log("<Estudo> result.value", result.value)
-            //const payload = new GamePayload(result.value);
-            //console.log("payloaddddd", payload)
             console.log("game.id", game.id)
             const turnRes = await gameService.getPlayerTurn(game.id);
                                             console.log("Fetching player turn minions:", turnRes);
@@ -319,6 +370,18 @@ export default function GamePage() {
             <div key={idx} className="player-card">
               <span className="player-name">{p.username}</span>
               <span className="player-credit">💰 {p.credit}</span>
+
+              {/* Dados do jogador */}
+              <div className="player-dice">
+                <span>🎲 Dados: </span>
+                {p.dices.length > 0 ? p.dices.join(" - ") : "—"}
+              </div>
+
+              {/* Valor da combinação */}
+              <div className="player-combination">
+                <span>✨ Combinação: </span>
+                <strong>{p.valueOfCombination}</strong>
+              </div>
             </div>
           ))
         )}

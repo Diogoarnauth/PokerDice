@@ -630,8 +630,7 @@ class GameService(
 
     fun getAllTurnsByRound(roundId: Int) =
         transactionManager.run {
-            val turns = it.turnsRepository.getAllTurnsObjectByRoundId(roundId)
-// alterações
+            val turns = it.turnsRepository.getAllTurnsCompleteObjectByRoundId(roundId)
             if (turns.isEmpty()) {
                 return@run failure(GameError.NoActiveTurn(roundId))
             }

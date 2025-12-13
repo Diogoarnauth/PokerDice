@@ -1,5 +1,4 @@
 package pt.isel.daw.pokerDice
-
 /*
 import kotlinx.datetime.Clock
 import org.jdbi.v3.core.Handle
@@ -24,12 +23,12 @@ import pt.isel.daw.pokerDice.domain.users.UsersDomain
 import pt.isel.daw.pokerDice.domain.users.UsersDomainConfig
 import pt.isel.daw.pokerDice.repository.jdbi.JdbiTransactionManager
 import pt.isel.daw.pokerDice.repository.jdbi.configureWithAppRequirements
-import pt.isel.daw.pokerDice.services.GameService
-import pt.isel.daw.pokerDice.services.UsersService
-import pt.isel.daw.pokerDice.services.LobbiesService
-import pt.isel.daw.pokerDice.services.PokerDiceEventService
 import pt.isel.daw.pokerDice.services.GameCreationError
 import pt.isel.daw.pokerDice.services.GameError
+import pt.isel.daw.pokerDice.services.GameService
+import pt.isel.daw.pokerDice.services.LobbiesService
+import pt.isel.daw.pokerDice.services.PokerDiceEventService
+import pt.isel.daw.pokerDice.services.UsersService
 import pt.isel.daw.pokerDice.utils.Either
 import kotlin.random.Random
 import kotlin.test.Test
@@ -39,6 +38,7 @@ import kotlin.test.assertIs
 import kotlin.test.assertNotNull
 import kotlin.time.Duration
 */
+
 class GameServicesTests {
     /*
     private lateinit var gameService: GameService
@@ -172,7 +172,7 @@ class GameServicesTests {
             assertTrue(left.value is GameCreationError.GameAlreadyRunning)
         }
 
-       @Test
+        @Test
         fun `createGame should fail if not enough players`() { // Failed
             // given - novo lobby com minUsers = 3
             val newLobby =
@@ -420,6 +420,52 @@ class GameServicesTests {
         }
     }
 
+    @Nested
+    inner class GetAllTurnsByRoundTests {
+        @Test
+        fun `getAllTurnsByRound should return turns for existing round`() {
+            // given: criar jogo e jogar uma ronda completa
+            val createResult = gameService.createGame(adminId, lobbyId)
+            val gameId = assertIs<Either.Right<Int?>>(createResult).value!!
+
+            // turno do admin
+            val roll1 = gameService.rollDice(lobbyId, adminId)
+            assertIs<Either.Right<*>>(roll1)
+            val end1 = gameService.endTurn(gameId, adminId)
+            assertIs<Either.Right<*>>(end1)
+
+            // turno do segundo jogador
+            val roll2 = gameService.rollDice(lobbyId, userId)
+            assertIs<Either.Right<*>>(roll2)
+            val end2 = gameService.endTurn(gameId, userId)
+            assertIs<Either.Right<*>>(end2)
+
+            val roundId = 1
+
+            // when
+            val result = gameService.getAllTurnsByRound(roundId)
+
+            // then
+            val right = assertIs<Either.Right<List<*>>>(result)
+            val turns = right.value
+            assertTrue(turns.size >= 2, "Deve haver pelo menos 2 turns na ronda")
+        }
+
+        @Test
+        fun `getAllTurnsByRound should fail with NoActiveTurn when round has no turns`() {
+            // given: um roundId que certamente não existe ou não tem turns
+            val nonExistingRoundId = 999_999
+
+            // when
+            val result = gameService.getAllTurnsByRound(nonExistingRoundId)
+
+            // then
+            val left = assertIs<Either.Left<GameError>>(result)
+            assertEquals(GameError.NoActiveTurn::class, left.value::class)
+            assertEquals(nonExistingRoundId, (left.value as GameError.NoActiveTurn).roundId)
+        }
+    }
+
     // -------------------------------------------------------------------------
     // Funções auxiliares
     // -------------------------------------------------------------------------
@@ -449,6 +495,7 @@ class GameServicesTests {
                 transactionManager = JdbiTransactionManager(jdbi),
                 gameDomain = gameDomain,
                 lobbiesDomain = lobbiesDomain,
+                eventService = PokerDiceEventService(),
             )
         }
 
@@ -516,6 +563,5 @@ class GameServicesTests {
 
         private fun newUsername() = "user-${Random.nextInt(1_000_000)}"
     }
-
      */
 }

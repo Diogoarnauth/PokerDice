@@ -209,4 +209,27 @@ class JdbiTurnRepository(
             ).bind("roundId", roundId)
             .mapTo<Turn>()
             .first()
+
+    override fun getAllTurnsCompleteObjectByRoundId(roundId: Int): List<Turn> {
+        val sql =
+            """
+            SELECT
+                id,
+                round_id,
+                player_id,
+                roll_count,
+                dice_faces,
+                value_of_combination,
+                is_done
+            FROM dbo.turn
+            WHERE round_id = :roundId
+            ORDER BY id
+            """.trimIndent()
+
+        return handle
+            .createQuery(sql)
+            .bind("roundId", roundId)
+            .mapTo<Turn>()
+            .list()
+    }
 }

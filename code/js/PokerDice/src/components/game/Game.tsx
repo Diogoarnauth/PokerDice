@@ -1,62 +1,58 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+
 import { gameService } from "../../services/api/Games";
 import { playersService } from "../../services/api/Players";
+import { lobbyDetailsService } from "../../services/api/LobbyDetails";
+import { playerProfileService } from "../../services/api/PlayerProfile";
+import { useSSE } from "../../providers/SSEContext";
 
 import { isOk } from "../../services/api/utils";
 import { GamePayload, Game } from "../models/Game";
-import { lobbyDetailsService } from "../../services/api/LobbyDetails"; // Importa o serviço para a API
-import {playerProfileService} from "../../services/api/PlayerProfile";
-import { useSSE } from "../../providers/SSEContext";
-import { useParams, useNavigate } from "react-router-dom";
+import { User } from "../lobby/LobbyDetails";
 
-// Função para obter o token do cookie
-/*function getTokenFromCookies() {
-  const token = document.cookie.split(';').find(cookie => cookie.trim().startsWith('token='));
-  return token ? token.split('=')[1] : null;
-}*/
+type PlayerInGame = {
+    playerId: number;
+    username: string;
+    credit: number;
+    dices: string[];
+    valueOfCombination: number;
+};
 
 export default function GamePage() {
-    const { lobbyId } = useParams<{ lobbyId: string }>(); // supõe rota /games/lobby/:lobbyId
+    const { lobbyId } = useParams<{ lobbyId: string }>();
+    const navigate = useNavigate();
+    const { addHandler, removeHandler, updateTopic } = useSSE();
+
     const [game, setGame] = useState<Game | null>(null);
     const [gameId, setGameId] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [info, setInfo] = useState<string | null>(null);
     const [rerollInput, setRerollInput] = useState<string>("");
+
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
-    const { addHandler, removeHandler, updateTopic } = useSSE();
-
-    type PlayerInGame = {
-      playerId: number;
-      username: string;
-      credit: number;
-      dices: string[];
-      valueOfCombination: number;
-    };
-
     const [players, setPlayers] = useState<PlayerInGame[]>([]);
 
-    const navigate = useNavigate();
-
     useEffect(() => {
-        console.log("Fetching lobby:", lobbyId);
-
         if (!lobbyId) {
             setError("Lobby id em falta.");
             setLoading(false);
             return;
         }
 
+        let mounted = true;
+
         async function fetchGame() {
             setLoading(true);
             setError(null);
             setInfo(null);
 
-
-            //TODO aqui vai carregar todos os players em vez de carregar so um...
+            // utilizador autenticado
             const meRes = await playerProfileService.getProfile();
-            console.log("getMe:", meRes);
+            if (!mounted) return;
+
             if (isOk(meRes)) {
                 setCurrentUser(meRes.value);
             } else {
@@ -65,168 +61,176 @@ export default function GamePage() {
                 return;
             }
 
-            const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
+            // jogadores no lobby (sem passwordValidation)
+            const playerListOnLobby = await playersService.getObjPlayersOnLobby(
+                Number(lobbyId)
+            );
+            if (!mounted) return;
 
             if (isOk(playerListOnLobby)) {
-              const mappedPlayers: PlayerInGame[] = playerListOnLobby.value.map((u: any) => ({
-                playerId: u.id,
-                username: u.username,
-                credit: u.credit,
-                dices: [],              // ainda não tens dados -> array vazio
-                valueOfCombination: 0,  // ainda não tens dados -> 0
-              }));
+                const mappedPlayers: PlayerInGame[] =
+                    playerListOnLobby.value.players.map((u: any) => ({
+                        playerId: u.id,
+                        username: u.username,
+                        credit: u.credit,
+                        dices: [],
+                        valueOfCombination: 0,
+                    }));
 
-              setPlayers(mappedPlayers);
+                setPlayers(mappedPlayers);
 
-              console.log("players", players)
+                // jogo pelo lobby
+                const result = await gameService.getGameByLobbyId(Number(lobbyId));
+                if (!mounted) return;
 
+                if (isOk(result)) {
+                    const currentTurnResult = await gameService.getCompleteCurrentTurn(
+                        Number(result.value.id)
+                    );
+                    if (!mounted) return;
 
-
-            console.log("playerListOnLobby.value",playerListOnLobby.value)
-
-
-            console.log("lobbyId", lobbyId)
-            const result = await gameService.getGameByLobbyId(Number(lobbyId));
-            console.log("Fetching game:", result);
-
-            if (isOk(result)) {
-                console.log("resultado", result)
-
-                const currentTurnResult = await gameService.getCompleteCurrentTurn(Number(result.value.id))
-                const payload = new GamePayload(currentTurnResult.value);
-
-                const initialDiceArray = currentTurnResult.value.diceFaces
-                    ? currentTurnResult.value.diceFaces.split(",")
-                    : [];
-
-                let boolean
-               if(currentTurnResult.value.rollCount == 0){
-                    boolean = true
-                    }
-                else {
-                    boolean = false
+                    if (!isOk(currentTurnResult)) {
+                        setError(currentTurnResult.error ?? "Erro ao obter o turno atual.");
+                        setLoading(false);
+                        return;
                     }
 
-                 setGame(payload.game);
-                 setGame({
-                      ...game,
-                      dice: initialDiceArray,
-                      id: result.value.id,
-                      isFirstRoll: boolean,
-                  });
+                    const payload = new GamePayload(currentTurnResult.value);
 
-                 setGameId(result.value.id);
+                    const initialDiceArray = currentTurnResult.value.diceFaces
+                        ? currentTurnResult.value.diceFaces.split(",")
+                        : [];
 
-                 updateTopic("lobbies");
+                    const isFirst =
+                        currentTurnResult.value.rollCount === 0 ? true : false;
 
-                      const handleGameUpdated = (data: any) => {
-                              if (data.changeType === "ended" && data.lobbyId == lobbyId) {
-                                  navigate(`/lobbies`); // Redireciona para a página do jogo
-                              }
-                          };
-                      addHandler("gameUpdated", handleGameUpdated); // Certifique-se de que o handler é registrado
+                    setGame({
+                        ...payload.game,
+                        dice: initialDiceArray,
+                        id: result.value.id,
+                        isFirstRoll: isFirst,
+                    });
 
+                    setGameId(result.value.id);
 
-                   const currentRoundRes = await gameService.getCurrentRound(result.value.id)
-                   console.log("AHHHHHHHHHHHHHHHHHHHHHHHHH currentRoundRes", currentRoundRes)
+                    updateTopic("lobbies");
 
-                       if (isOk(currentRoundRes)) {
-                           const roundId = currentRoundRes.value.roundId ?? currentRoundRes.value.id
-                           console.log("roundId:", roundId)
+                    const handleGameUpdated = (data: any) => {
+                        if (data.changeType === "ended" && data.lobbyId == lobbyId) {
+                            navigate("/lobbies");
+                        }
+                    };
 
-                           const turnsRes = await gameService.getAllTurnsByRound(roundId)
+                    addHandler("gameUpdated", handleGameUpdated);
 
-                           if (isOk(turnsRes)) {
-                             const turns = turnsRes.value;
+                    // ronda atual
+                    const currentRoundRes = await gameService.getCurrentRound(
+                        result.value.id
+                    );
+                    if (!mounted) return;
 
-                             const updatedPlayers = mappedPlayers.map(player => {
-                                 console.log("turnszitooooo",turns)
-                               const turn = turns.value.find((t: any) => t.playerId === player.playerId);
+                    if (isOk(currentRoundRes)) {
+                        const roundId =
+                            currentRoundRes.value.roundId ?? currentRoundRes.value.id;
 
-                               if (!turn) return player; // se o jogador ainda não tem turn, mantém como está
+                        const turnsRes = await gameService.getAllTurnsByRound(roundId);
+                        if (!mounted) return;
 
-                               return {
-                                 ...player,
-                                 dices: turn.diceFaces ? turn.diceFaces.split(",") : [],
-                                 valueOfCombination: turn.value_of_combination ?? 0,
-                               };
-                             });
+                        if (isOk(turnsRes)) {
+                            // exemplo 1: resposta é { value: [...] }
+                            const turns = Array.isArray(turnsRes.value.value)
+                                ? turnsRes.value.value
+                                : Array.isArray(turnsRes.value.turns)
+                                    ? turnsRes.value.turns
+                                    : [];
 
-                             setPlayers(updatedPlayers);
-                             console.log("Players atualizados:", updatedPlayers);
+                            const updatedPlayers = mappedPlayers.map((player) => {
+                                const turn = turns.find(
+                                    (t: any) => t.playerId === player.playerId
+                                );
+                                if (!turn) return player;
 
-                           } else {
-                             console.log("Erro ao buscar turns:", turnsRes.error);
-                           }
+                                return {
+                                    ...player,
+                                    dices: turn.diceFaces ? String(turn.diceFaces).split(",") : [],
+                                    valueOfCombination: turn.value_of_combination ?? 0,
+                                };
+                            });
 
-
-                       } else {
-                           console.log("Erro ao buscar currentRound:", currentRoundRes.error)
-                       }
-            } else {
-              console.log("Erro ao buscar jogadores:", playerListOnLobby.error);
-            }
-
-
-
-                // Buscar jogador atual via endpoint /games/{gameId}/player-turn
-                try {
-                    console.log("gameIdgameIdgameIdgameIdgameId",gameId)
-                    const turnRes = await gameService.getPlayerTurn(result.value.id);
-                    console.log("Fetching player turn:", turnRes);
-
-                    if (isOk(turnRes)) {
-                        setCurrentPlayer(turnRes.value.username); // string com username
+                            setPlayers(updatedPlayers);
+                        } else {
+                            console.log("Erro ao buscar turns:", turnsRes.error);
+                        }
                     } else {
-                        setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
+                        console.log(
+                            "Erro ao buscar currentRound:",
+                            currentRoundRes.error
+                        );
                     }
 
-                } catch {
-                    setInfo("Erro ao obter o jogador atual.");
+                    // jogador do turno atual
+                    try {
+                        const turnRes = await gameService.getPlayerTurn(result.value.id);
+                        if (!mounted) return;
+
+                        if (isOk(turnRes)) {
+                            setCurrentPlayer(turnRes.value.username);
+                        } else {
+                            setInfo(
+                                turnRes.error ?? "Não foi possível obter o jogador atual."
+                            );
+                        }
+                    } catch {
+                        if (!mounted) return;
+                        setInfo("Erro ao obter o jogador atual.");
+                    }
+                } else {
+                    setError(result.error ?? "Erro a carregar o jogo.");
                 }
             } else {
-                setError(result.error ?? "Erro a carregar o jogo.");
+                setError(playerListOnLobby.error ?? "Erro ao buscar jogadores.");
             }
-            setLoading(false);
+
+            if (mounted) setLoading(false);
         }
 
         fetchGame();
-    }, [lobbyId]);
 
+        return () => {
+            mounted = false;
+            // removeHandler("gameUpdated", handleGameUpdated); // se tiveres referência guardada
+        };
+    }, [lobbyId, addHandler, navigate, updateTopic]);
 
-   function ensureMyTurn(): boolean {
-       if (!game || !currentUser || currentUser.username != currentPlayer) {
-           alert("Não é a tua vez de jogar");
-           return false;
-       }
-       setInfo(null);
-       return true;
-   }
+    function ensureMyTurn(): boolean {
+        if (!game || !currentUser || currentUser.username !== currentPlayer) {
+            alert("Não é a tua vez de jogar");
+            return false;
+        }
+        setInfo(null);
+        return true;
+    }
 
     async function handleRoll() {
         if (!gameId || !ensureMyTurn()) return;
 
         const result = await gameService.roll(Number(lobbyId));
-        console.log("Rolling game:", result);
-
-        if (isOk(result)) {
-            const diceArray = result.value.dice.split(",");
-
-            if (!game) return;
-
-            //TODO perceber se o useState game quando é atualizado se perde o valor ou não
-            console.log("gameee", game)
-            setGame({
-                ...game,
-                dice: diceArray,
-                isFirstRoll: false,
-            });
-            console.log("game testezinho maroto", game)
-
-            setInfo("Dados rolados!");
-        } else {
-            alert("Só podes dar roll uma vez, experimenta Reroll")
+        if (!isOk(result)) {
+            alert("Só podes dar roll uma vez, experimenta Reroll");
+            return;
         }
+
+        if (!game) return;
+
+        const diceArray = result.value.dice.split(",");
+
+        setGame({
+            ...game,
+            dice: diceArray,
+            isFirstRoll: false,
+        });
+
+        setInfo("Dados rolados!");
     }
 
     async function handleReroll() {
@@ -239,12 +243,10 @@ export default function GamePage() {
 
         const diceMask = rerollInput
             .split(",")
-            .map(s => s.trim())
-            .filter(s => s !== "")
+            .map((s) => s.trim())
+            .filter((s) => s !== "")
             .map(Number)
-            .filter(n => !Number.isNaN(n));
-
-        console.log("diceMask", diceMask)
+            .filter((n) => !Number.isNaN(n));
 
         if (diceMask.length === 0) {
             setInfo("Indica pelo menos um índice de dado para reroll (ex: 0,2,4).");
@@ -252,141 +254,129 @@ export default function GamePage() {
         }
 
         const result = await gameService.reroll(Number(lobbyId), diceMask);
-        console.log("resultado", result)
-
-        if (isOk(result)) {
-
-            setGame({
-                ...game,
-                dice: result.value.dice,
-                isFirstRoll: false,
-            });
-        console.log("game no reroll",game)
-        setInfo("Reroll efetuado!");
-        } else {
+        if (!isOk(result) || !game) {
             setError(result.error ?? "Erro ao fazer reroll.");
+            return;
         }
+
+        setGame({
+            ...game,
+            dice: result.value.dice,
+            isFirstRoll: false,
+        });
+
+        setInfo("Reroll efetuado!");
     }
 
     async function handleEndTurn() {
         if (!gameId || !ensureMyTurn()) return;
 
         const result = await gameService.endTurn(Number(gameId));
-        console.log("result", result.value)
-
-        if (isOk(result)) {
-            if(result.value.winners){
-                const winnersString = result.value.winners.join(", ");
-                alert(result.value.message + " winner: " + winnersString)
-            }
-
-            console.log("game.id", game.id)
-            const turnRes = await gameService.getPlayerTurn(game.id);
-                                            console.log("Fetching player turn minions:", turnRes);
-
-             if (isOk(turnRes)) {
-                setCurrentPlayer(turnRes.value.username); // string com username
-             } else {
-                setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
-             }
-            setGame({
-                ...game,
-                dice: [],
-                isFirstRoll: true,
-            });
-            setInfo("Jogada terminada, próximo jogador.");
-        } else {
+        if (!isOk(result) || !game) {
             setError(result.error ?? "Erro ao terminar jogada.");
+            return;
         }
 
+        if (result.value.winners) {
+            const winnersString = result.value.winners.join(", ");
+            alert(result.value.message + " winner: " + winnersString);
+        }
+
+        const turnRes = await gameService.getPlayerTurn(game.id);
+        if (isOk(turnRes)) {
+            setCurrentPlayer(turnRes.value.username);
+        } else {
+            setInfo(turnRes.error ?? "Não foi possível obter o jogador atual.");
+        }
+
+        setGame({
+            ...game,
+            dice: [],
+            isFirstRoll: true,
+        });
+
+        setInfo("Jogada terminada, próximo jogador.");
     }
 
     if (loading) return <p>Loading game...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;
     if (!game) return <p>Jogo não encontrado.</p>;
 
-    const safeDice = Array.isArray(game.dice) ? game.dice : [game.dice || ""]; // Garante que seja sempre um array de strings
-    console.log("info:", info);
+    const safeDice = Array.isArray(game.dice) ? game.dice : [game.dice || ""];
 
+    return (
+        <div className="game-container">
+            {/* COLUNA ESQUERDA */}
+            <div className="game-left">
+                <h1 className="game-title">Game #{game.id}</h1>
 
+                <p className="current-player">
+                    Jogador atual: <strong>{currentPlayer}</strong>
+                </p>
 
-  return (
-    <div className="game-container">
+                {info && (
+                    <div className="info-box">
+                        {typeof info === "object"
+                            ? `${(info as any).title}: ${(info as any).detail}`
+                            : info}
+                    </div>
+                )}
 
-      {/* COLUNA ESQUERDA */}
-      <div className="game-left">
-        <h1 className="game-title">Game #{game.id}</h1>
+                <div className="dice-section">
+                    <h3>Dados</h3>
 
-        <p className="current-player">
-          Jogador atual: <strong>{currentPlayer}</strong>
-        </p>
+                    {safeDice && safeDice.length > 0 ? (
+                        <div className="dice-display">{safeDice.join(" - ")}</div>
+                    ) : (
+                        <p className="no-dice">Ainda não há dados rolados.</p>
+                    )}
 
-        {info && (
-          <div className="info-box">
-            {typeof info === "object" ? `${info.title}: ${info.detail}` : info}
-          </div>
-        )}
+                    {!game.isFirstRoll && (
+                        <div className="reroll-input">
+                            <label>
+                                Índices para reroll:
+                                <input
+                                    type="text"
+                                    value={rerollInput}
+                                    onChange={(e) => setRerollInput(e.target.value)}
+                                />
+                            </label>
+                        </div>
+                    )}
+                </div>
 
-        <div className="dice-section">
-          <h3>Dados</h3>
-
-          {safeDice && safeDice.length > 0 ? (
-            <div className="dice-display">
-              {safeDice.join(" - ")}
+                <div className="actions">
+                    <button onClick={handleRoll}>🎲 Roll</button>
+                    <button onClick={handleReroll}>🔁 Reroll</button>
+                    <button onClick={handleEndTurn}>⏭️ Terminar</button>
+                </div>
             </div>
-          ) : (
-            <p className="no-dice">Ainda não há dados rolados.</p>
-          )}
 
-          {!game.isFirstRoll && (
-            <div className="reroll-input">
-              <label>
-                Índices para reroll:
-                <input
-                  type="text"
-                  value={rerollInput}
-                  onChange={e => setRerollInput(e.target.value)}
-                />
-              </label>
+            {/* SIDEBAR DIREITA */}
+            <div className="players-sidebar">
+                <h3 className="players-title">Jogadores no Lobby</h3>
+
+                {players.length === 0 ? (
+                    <p className="no-players">Nenhum jogador encontrado.</p>
+                ) : (
+                    players.map((p, idx) => (
+                        <div key={idx} className="player-card">
+                            <span className="player-name">{p.username}</span>
+                            <span className="player-credit">💰 {p.credit}</span>
+
+                            <div className="player-dice">
+                                <span>🎲 Dados: </span>
+                                {p.dices.length > 0 ? p.dices.join(" - ") : "—"}
+                            </div>
+
+                            <div className="player-combination">
+                                <span>✨ Combinação: </span>
+                                <strong>{p.valueOfCombination}</strong>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
-          )}
         </div>
-
-        <div className="actions">
-          <button onClick={handleRoll}>🎲 Roll</button>
-          <button onClick={handleReroll}>🔁 Reroll</button>
-          <button onClick={handleEndTurn}>⏭️ Terminar</button>
-        </div>
-      </div>
-
-      {/* SIDEBAR DIREITA */}
-      <div className="players-sidebar">
-        <h3 className="players-title">Jogadores no Lobby</h3>
-
-        {players.length === 0 ? (
-          <p className="no-players">Nenhum jogador encontrado.</p>
-        ) : (
-          players.map((p, idx) => (
-            <div key={idx} className="player-card">
-              <span className="player-name">{p.username}</span>
-              <span className="player-credit">💰 {p.credit}</span>
-
-              {/* Dados do jogador */}
-              <div className="player-dice">
-                <span>🎲 Dados: </span>
-                {p.dices.length > 0 ? p.dices.join(" - ") : "—"}
-              </div>
-
-              {/* Valor da combinação */}
-              <div className="player-combination">
-                <span>✨ Combinação: </span>
-                <strong>{p.valueOfCombination}</strong>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-
-    </div>
-  );
+    );
 }

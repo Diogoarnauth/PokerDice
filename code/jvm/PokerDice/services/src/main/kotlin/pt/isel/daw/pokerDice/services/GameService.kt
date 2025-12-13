@@ -627,4 +627,9 @@ class GameService(
             it.usersRepository.updateUserCredit(winner, userWinner!!.credit + valueToAttribute)
         }
     }
+
+    fun getAllTurnsByRound(roundId: Int) =
+        transactionManager.run {
+            it.turnsRepository.getAllTurnsObjectByRoundId(roundId)
+        }
 }

@@ -382,7 +382,26 @@ class UserController(
 
         return when (res) {
             is Success -> {
-                ResponseEntity.ok(res.value)
+                val users =
+                    res.value.map { user ->
+                        mapOf(
+                            "id" to user.id,
+                            "username" to user.username,
+                            "name" to user.name,
+                            "age" to user.age,
+                            "credit" to user.credit,
+                            "winCounter" to user.winCounter,
+                            "lobbyId" to user.lobbyId,
+                        )
+                    }
+
+                ResponseEntity.ok(
+                    mapOf(
+                        "lobbyId" to id,
+                        "count" to users.size,
+                        "players" to users,
+                    ),
+                )
             }
 
             is Failure -> Problem.response(404, Problem.lobbyNotFound)

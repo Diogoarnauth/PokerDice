@@ -74,6 +74,7 @@ export const gameService = {
         });
     },
 
+
     // POST /games/{gameId}/leave
     leave(gameId: number): Promise<Result<any>> {
         return fetchWrapper(RequestUri.games.leave(gameId), {

@@ -3,7 +3,7 @@ import {Navigate, useLocation, Link, useNavigate} from 'react-router-dom';
 import {useAuthentication} from '../../providers/Authentication';
 import {authService} from '../../services/api/auth';
 import {isOk} from '../../services/api/utils';
-import './Login.css';
+import '../../styles/Login.css';
 
 // Tipos de estado para o formulário
 type State =

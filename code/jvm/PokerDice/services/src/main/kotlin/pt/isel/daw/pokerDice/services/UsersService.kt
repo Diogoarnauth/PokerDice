@@ -92,6 +92,8 @@ typealias CreatingAppInviteResult = Either<CreatingAppInviteError, String>
 
 typealias GetUsersInLobby = Either<GetUsersInLobbyError, Int>
 
+typealias GetObjPlayersOnLobby = Either<GetUsersInLobbyError, List<User>>
+
 sealed class GetUsersInLobbyError {
     data object LobbyDontExist : GetUsersInLobbyError()
 }
@@ -118,6 +120,20 @@ class UsersService(
 
             val usersRepo = it.usersRepository
             val currentPlayers = usersRepo.countUsersInLobby(lobbyId)
+
+            return@run success(currentPlayers)
+        }
+
+    fun getObjPlayersOnLobby(lobbyId: Int): GetObjPlayersOnLobby =
+        transactionManager.run {
+            val lobbiesRepo = it.lobbiesRepository
+
+            if (lobbiesRepo.getById(lobbyId) == null) {
+                return@run failure(GetUsersInLobbyError.LobbyDontExist)
+            }
+
+            val usersRepo = it.usersRepository
+            val currentPlayers = usersRepo.getAllUsersInLobby(lobbyId)
 
             return@run success(currentPlayers)
         }

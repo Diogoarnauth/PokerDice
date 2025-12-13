@@ -205,6 +205,13 @@ class JdbiUsersRepository(
             .execute()
     }
 
+    override fun incrementUserWinCounter(userId: Int) {
+        handle
+            .createUpdate("UPDATE dbo.Users SET winCounter = winCounter + 1 WHERE id = :userId")
+            .bind("userId", userId)
+            .execute()
+    }
+
     override fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int =
         handle
             .createUpdate(

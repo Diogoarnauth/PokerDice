@@ -61,6 +61,8 @@ interface UsersRepository {
         lobbyId: Int,
     )
 
+    fun incrementUserWinCounter(userId: Int)
+
     fun clearLobbyForAllUsers(lobbyId: Int)
 
     fun getAllUsersInLobby(lobbyId: Int): List<User>

@@ -79,7 +79,7 @@ export default function LobbyDetails() {
             if (isOk(lobbyResponse)) {
                 const lobbyData = lobbyResponse.value;
                 setLobby(lobbyData);
-
+/*
                 const gameCheck = await gameService.getGameByLobbyId(lobbyId);
 
                 // TODO("AVALIAR SE PERDEU SSE AQUI??")
@@ -88,7 +88,7 @@ export default function LobbyDetails() {
                     navigate(`/games/lobby/${lobbyId}`);
                     return;
                 }
-
+*/
                 hasLoadedSuccessfully.current = true;
                 setError(null);
 

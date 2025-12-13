@@ -329,6 +329,8 @@ class GameService(
                 it.gamesRepository.addGameWinners(game.id!!, winners) // aqui sim grava
             }
 
+            winners.forEach { winner -> it.usersRepository.incrementUserWinCounter(winner) }
+
             it.lobbiesRepository.markLobbyAsAvailable(game.lobbyId)
 
             val winnerNames =

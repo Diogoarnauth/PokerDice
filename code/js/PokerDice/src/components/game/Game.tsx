@@ -7,6 +7,7 @@ import { GamePayload, Game } from "../models/Game";
 import { playerProfileService } from "../../services/api/PlayerProfile";
 import { useSSE } from "../../providers/SSEContext";
 import { useParams, useNavigate } from "react-router-dom";
+import "../../styles/Game.css";
 
 export default function GamePage() {
     const { lobbyId } = useParams<{ lobbyId: string }>();

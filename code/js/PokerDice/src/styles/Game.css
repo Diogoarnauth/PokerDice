@@ -1,0 +1,243 @@
+/* Layout geral da página de jogo */
+.game-container {
+    display: flex;
+    gap: 2rem;
+    padding: 2rem;
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    background: radial-gradient(circle at top, #2c3e50 0%, #000 60%);
+    color: #f8f9fa;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* Coluna esquerda: mesa de jogo */
+.game-left {
+    flex: 2;
+    background: radial-gradient(circle, #145a32 0%, #0b3d1b 60%);
+    border-radius: 18px;
+    padding: 1.8rem 2rem;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+}
+
+/* Título do jogo */
+.game-title {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.8rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ecf0f1;
+}
+
+/* Info da ronda */
+.round-info {
+    display: inline-block;
+    padding: 0.2rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.35);
+    color: #f1c40f;
+    font-size: 0.9rem;
+    margin-bottom: 0.8rem;
+}
+
+/* Jogador atual */
+.current-player {
+    margin: 0.8rem 0 1.5rem;
+    font-size: 1.05rem;
+}
+
+.current-player strong {
+    color: #f39c12;
+}
+
+/* Secção de dados */
+.dice-section {
+    background: rgba(0, 0, 0, 0.25);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.dice-section h3 {
+    margin: 0 0 0.6rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ecf0f1;
+}
+
+.dice-display {
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    padding: 0.6rem 0.8rem;
+    border-radius: 10px;
+    background: rgba(10, 25, 10, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.no-dice {
+    font-style: italic;
+    color: #bdc3c7;
+}
+
+/* Input de reroll */
+.reroll-input {
+    margin-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.reroll-input label {
+    font-size: 0.95rem;
+}
+
+.reroll-input input {
+    margin-top: 0.3rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    background: rgba(0, 0, 0, 0.35);
+    color: #ecf0f1;
+    outline: none;
+}
+
+.reroll-input input:focus {
+    border-color: #f1c40f;
+    box-shadow: 0 0 0 1px rgba(241, 196, 15, 0.6);
+}
+
+/* Botões de ações */
+.actions {
+    display: flex;
+    gap: 0.8rem;
+    margin-top: 1.2rem;
+}
+
+.actions button {
+    flex: 1;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    transition: transform 0.08s ease, box-shadow 0.08s ease, opacity 0.15s;
+}
+
+.actions button:first-child {
+    background: linear-gradient(135deg, #27ae60, #2ecc71);
+    color: #fdfefe;
+}
+
+.actions button:nth-child(2) {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+    color: #fdfefe;
+}
+
+.actions button:last-child {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    color: #fdfefe;
+}
+
+.actions button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.actions button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.actions button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+/* Sidebar de jogadores */
+.players-sidebar {
+    flex: 1.1;
+    background: rgba(0, 0, 0, 0.55);
+    border-radius: 18px;
+    padding: 1.4rem 1.2rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+.players-title {
+    margin: 0 0 0.8rem;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: #ecf0f1;
+}
+
+/* Cartões de jogador */
+.player-card {
+    background: linear-gradient(
+            135deg,
+            rgba(39, 174, 96, 0.12),
+            rgba(22, 160, 133, 0.08)
+    );
+    border-radius: 12px;
+    padding: 0.7rem 0.8rem;
+    margin-bottom: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    grid-template-rows: auto auto;
+    grid-column-gap: 0.5rem;
+    grid-row-gap: 0.25rem;
+    font-size: 0.9rem;
+}
+
+.player-name {
+    font-weight: 600;
+    color: #fdfefe;
+}
+
+.player-credit {
+    text-align: right;
+    color: #f1c40f;
+}
+
+.player-dice,
+.player-combination {
+    grid-column: 1 / span 2;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #ecf0f1;
+}
+
+/* Info / mensagens */
+.info-box {
+    margin-top: 0.6rem;
+    padding: 0.45rem 0.7rem;
+    border-radius: 6px;
+    background: rgba(52, 152, 219, 0.18);
+    border: 1px solid rgba(52, 152, 219, 0.5);
+    font-size: 0.9rem;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+    .game-container {
+        flex-direction: column;
+    }
+
+    .players-sidebar {
+        max-height: none;
+        order: -1;
+    }
+}

@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useCallback} from "react";
 import {useNavigate} from 'react-router-dom';
-import './Lobbies.css';
+import '../../styles/Lobbies.css';
 import {playerProfileService} from "../../services/api/PlayerProfile";
 import {lobbiesService} from "../../services/api/Lobbies";
 import {playersService} from "../../services/api/Players";

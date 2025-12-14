@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { appInviteService } from "../../services/api/AppInvite";
 import { isOk } from "../../services/api/utils";
 import { AppInviteCode } from "../models/AppInviteCode";
-import "./AppInvite.css";
+import "../../styles/AppInvite.css";
 
 export default function AppInvite() {
     const [error, setError] = useState<string | null>(null);

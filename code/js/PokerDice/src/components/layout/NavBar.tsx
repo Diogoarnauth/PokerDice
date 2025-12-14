@@ -1,6 +1,6 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./NavBar.css";
+import "../../styles/NavBar.css";
 import { useAuthentication } from "../../providers/Authentication";
 import { settingsService } from "../../services/api/settings";
 

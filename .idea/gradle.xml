@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
+  <component name="GradleSettings">
+    <option name="linkedExternalProjectsSettings">
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$" />
+            <option value="$PROJECT_DIR$/modules/domain" />
+            <option value="$PROJECT_DIR$/modules/host" />
+            <option value="$PROJECT_DIR$/modules/http" />
+            <option value="$PROJECT_DIR$/modules/repository" />
+            <option value="$PROJECT_DIR$/modules/repository-jdbi" />
+            <option value="$PROJECT_DIR$/modules/services" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+      <GradleProjectSettings>
+        <option name="externalProjectPath" value="$PROJECT_DIR$/code/jvm/PokerDice" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/domain" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/host" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/http" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/repository" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/repository-jdbi" />
+            <option value="$PROJECT_DIR$/code/jvm/PokerDice/services" />
+          </set>
+        </option>
+      </GradleProjectSettings>
+    </option>
+  </component>
+</project>

@@ -639,10 +639,8 @@ class GameService(
                 val playersOnLobby = it.usersRepository.getAllUsersInLobby(lobbyId = lobby.id)
 
                 if (lobby.hostId == player.id) {
-                    // Remover todos os jogadores associados ao lobby
                     it.usersRepository.clearLobbyForAllUsers(lobby.id)
 
-                    // Eliminar o lobby da base de dados
                     it.lobbiesRepository.deleteLobbyById(lobby.id)
 
                     val hostRunnedOutOfCreditsEvent =
@@ -661,12 +659,6 @@ class GameService(
                     endGame(gameId, null, false)
                     return@run success("""{"message": "Game ended: Not enough players."}""")
                 }
-
-                // it.usersRepository.removePlayerFromLobby(player.id)
-
-                // val messageSuccess = """{"Game ended: Not enough players remaining with credits."}"""
-
-                // return@run success(messageSuccess)
             }
         }
 
@@ -674,7 +666,6 @@ class GameService(
 
         val firstPlayer = it.usersRepository.getAllUsersInLobby(lobby.id).first()
 
-        logger.info("PLAYERSSSSSS ${it.usersRepository.getAllUsersInLobby(lobby.id)}")
         val validPlayers = it.usersRepository.getAllUsersInLobby(lobby.id)
         if (validPlayers.isEmpty()) {
             endGame(gameId, null, false)
@@ -698,28 +689,20 @@ class GameService(
 
     fun whichPlayerTurn(gameId: Int): GameErrorResult =
         transactionManager.run {
-            // get the current round that is not over
             val currentRound =
                 it.roundRepository
                     .getRoundsByGameId(gameId)
                     .firstOrNull { round -> !round.roundOver }
                     ?: return@run failure(GameError.NoActiveRound(gameId))
 
-            // Get the User who should be rolling (whose turn is not done)
             val currentPlayer =
                 it.turnsRepository.getWhichPlayerTurnByRoundId(currentRound.id!!)
-                    ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
-
-            // return the player's ID (you might want to return player info, but ID suffices)
 
             success(currentPlayer.username)
         }
 
     fun getCurrentRound(gameId: Int): GetCurrentRound =
         transactionManager.run {
-            logger.info("entrei no services")
-
-            // get the current round that is not over
             val currentRound =
                 it.roundRepository
                     .getRoundsByGameId(gameId)
@@ -731,21 +714,15 @@ class GameService(
 
     fun getCurrentTurn(gameId: Int): GetCurrentTurn =
         transactionManager.run {
-            logger.info("entrei no services")
-
-            // get the current round that is not over
             val currentRound =
                 it.roundRepository
                     .getRoundsByGameId(gameId)
                     .firstOrNull { round -> !round.roundOver }
                     ?: return@run failure(GameError.NoActiveRound(gameId))
-            logger.info("EXISTE ROUND")
 
-            // Get the User who should be rolling (whose turn is not done)
             val currentTurn =
                 it.turnsRepository.getCurrentTurn(currentRound.id!!)
                     ?: return@run failure(GameError.NoActiveTurn(currentRound.id!!))
-            logger.info("TURN QUE PROCURO $currentTurn")
 
             success(currentTurn)
         }

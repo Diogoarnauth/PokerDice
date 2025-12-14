@@ -1,7 +1,7 @@
-// src/components/player/DepositPage.tsx
 import React, { useState } from "react";
 import { playerProfileService } from "../../services/api/PlayerProfile";
-import "./Deposit.css";
+import "../../styles/Deposit.css";
+
 export default function DepositPage() {
     const [depositAmount, setDepositAmount] = useState<number>(0);
     const [depositLoading, setDepositLoading] = useState<boolean>(false);

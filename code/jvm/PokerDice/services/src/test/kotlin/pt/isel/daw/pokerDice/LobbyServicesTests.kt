@@ -383,7 +383,7 @@ class LobbyServicesTests {
     @Nested
     inner class GetVisibleLobbiesTests {
         @Test
-        fun `getVisibleLobbies should return non-empty list if there are visible lobbies`() { // failed
+        fun `getAllLobbies should return non-empty list if there are visible lobbies`() { // failed
             // given
             val hostId = adminId
             val name = "Test Lobby"
@@ -407,7 +407,7 @@ class LobbyServicesTests {
             )
 
             // when
-            val result = service.getVisibleLobbies()
+            val result = service.getAllLobbies()
 
             // then
             assertTrue(result.isNotEmpty(), "A lista de lobbies não deve estar vazia")
@@ -415,19 +415,19 @@ class LobbyServicesTests {
         }
 
         @Test
-        fun `getVisibleLobbies should return empty list if no lobbies are visible`() { // failed
+        fun `getAllLobbies should return empty list if no lobbies are visible`() { // failed
             // given
             // Nenhum lobby foi criado ainda
 
             // when
-            val result = service.getVisibleLobbies()
+            val result = service.getAllLobbies()
 
             // then
             assertTrue(result.isEmpty(), "A lista de lobbies deve estar vazia")
         }
 
             /*@Test   Aqui falta criar user e depois mete-los no lobby
-            fun `getVisibleLobbies should return only non-full lobbies`() {
+            fun `getAllLobbies should return only non-full lobbies`() {
                 // given
 
                 val hostId = adminId
@@ -464,7 +464,7 @@ class LobbyServicesTests {
                 )
 
                 // when
-                val result = service.getVisibleLobbies()
+                val result = service.getAllLobbies()
 
                 // then
                 assertEquals(1, result.size, "Deve retornar apenas lobbies não cheios")
@@ -508,7 +508,7 @@ class LobbyServicesTests {
             assertIs<Either.Right<Unit>>(result)
 
             // Verificar que o lobby foi fechado
-            val lobby = service.getVisibleLobbies().find { it.id == lobbyId }
+            val lobby = service.getAllLobbies().find { it.id == lobbyId }
 
             assertNull(lobby, "O lobby deve ser fechado quando o host sai.")
         }

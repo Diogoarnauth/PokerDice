@@ -1,16 +1,16 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { gameService } from "../../services/api/Games";
-import { playersService } from "../../services/api/Players";
+import React, {useEffect, useState, useCallback} from "react";
+import {gameService} from "../../services/api/Games";
+import {playersService} from "../../services/api/Players";
 
-import { isOk } from "../../services/api/utils";
-import { GamePayload, Game } from "../models/Game";
-import { playerProfileService } from "../../services/api/PlayerProfile";
-import { useSSE } from "../../providers/SSEContext";
-import { useParams, useNavigate } from "react-router-dom";
+import {isOk} from "../../services/api/utils";
+import {GamePayload, Game} from "../models/Game";
+import {playerProfileService} from "../../services/api/PlayerProfile";
+import {useSSE} from "../../providers/SSEContext";
+import {useParams, useNavigate} from "react-router-dom";
 import "../../styles/Game.css";
 
 export default function GamePage() {
-    const { lobbyId } = useParams<{ lobbyId: string }>();
+    const {lobbyId} = useParams<{ lobbyId: string }>();
     const [game, setGame] = useState<Game | null>(null);
     const [gameId, setGameId] = useState<number | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -19,7 +19,7 @@ export default function GamePage() {
     const [rerollInput, setRerollInput] = useState<string>("");
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [currentPlayer, setCurrentPlayer] = useState<string | null>(null);
-    const { addHandler, removeHandler, updateTopic } = useSSE();
+    const {addHandler, removeHandler, updateTopic} = useSSE();
     const [roundNumber, setRoundNumber] = useState<number>(1);
 
     type PlayerInGame = {
@@ -33,168 +33,160 @@ export default function GamePage() {
     const [players, setPlayers] = useState<PlayerInGame[]>([]);
     const navigate = useNavigate();
 
-  const fetchGame = useCallback(async (showLoading = true) => {
-      if (showLoading) {
-          setLoading(true);
-          setError(null);
-          setInfo(null);
-      }
-        if (!lobbyId) return;
+    const fetchGame = useCallback(async (showLoading = true) => {
+                if (showLoading) {
+                    setLoading(true);
+                    setError(null);
+                    setInfo(null);
+                }
+                if (!lobbyId) return;
 
-        // 1. USER LOGADO
-        const meRes = await playerProfileService.getProfile();
-        if (isOk(meRes)) setCurrentUser(meRes.value);
-        else {
-            setError("Não foi possível obter o utilizador autenticado.");
-            setLoading(false);
-            return;
-        }
+                const meRes = await playerProfileService.getProfile();
+                if (isOk(meRes)) setCurrentUser(meRes.value);
+                else {
+                    setError("Não foi possível obter o utilizador autenticado.");
+                    setLoading(false);
+                    return;
+                }
 
-        if(meRes.value.lobbyId != lobbyId ){
-            alert("You are not part of this game")
-            navigate(`/lobbies`);
+                if (meRes.value.lobbyId != lobbyId) {
+                    alert("You are not part of this game")
+                    navigate(`/lobbies`);
+                    return;
+                }
+
+                const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
+
+                console.log("playerListOnLobby", playerListOnLobby)
+
+                let mappedPlayers: PlayerInGame[] = [];
+
+                if (isOk(playerListOnLobby)) {
+                    mappedPlayers = playerListOnLobby.value.players.map((u: any) => ({
+                        playerId: u.id,
+                        username: u.username,
+                        credit: u.credit,
+                        dices: [],
+                        valueOfCombination: 0,
+                    }));
+
+                    setPlayers(mappedPlayers);
+                }
+
+                const result = await gameService.getGameByLobbyId(Number(lobbyId));
+                console.log("result", result)
+                if (!isOk(result)) {
+                    setError(result.error ?? "Erro ao carregar o jogo.");
+                    setLoading(false);
+                    return;
+                }
+
+                const currentTurnResult = await gameService.getCompleteCurrentTurn(result.value.id);
+                const payload = new GamePayload(currentTurnResult.value);
+
+                const initialDiceArray = currentTurnResult.value.diceFaces
+                    ? currentTurnResult.value.diceFaces.split(",")
+                    : [];
+
+                setGame(prev => ({
+                    ...payload.game,
+                    dice: initialDiceArray,
+                    id: result.value.id,
+                    isFirstRoll: currentTurnResult.value.rollCount === 0,
+                }));
+
+                setGameId(result.value.id);
+                updateTopic("lobbies");
+
+
+                const currentRoundRes = await gameService.getCurrentRound(result.value.id);
+
+                if (isOk(currentRoundRes)) {
+                    const roundId = currentRoundRes.value.roundId ?? currentRoundRes.value.id;
+                    setRoundNumber(currentRoundRes.value.roundNumber);
+
+                    const turnsRes = await gameService.getAllTurnsByRound(roundId);
+                    if (isOk(turnsRes)) {
+                        const turns = turnsRes.value;
+
+                        const updatedPlayers = mappedPlayers.map(player => {
+                            const turn = turns.value.find((t: any) => t.playerId === player.playerId);
+
+                            if (!turn) return player;
+
+                            return {
+                                ...player,
+                                dices: turn.diceFaces ? turn.diceFaces.split(",") : [],
+                                valueOfCombination: turn.value_of_combination ?? 0,
+                            };
+                        });
+
+                        setPlayers(updatedPlayers);
+                    }
+                }
+
+                const turnRes = await gameService.getPlayerTurn(result.value.id);
+                if (isOk(turnRes)) setCurrentPlayer(turnRes.value.username);
+
+                setLoading(false);
             }
+            ,
+            [lobbyId, navigate, updateTopic]
+        )
+    ;
 
-        // 2. PLAYERS DO LOBBY
-        const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
+    useEffect(() => {
+        fetchGame(true);
 
-        console.log("playerListOnLobby", playerListOnLobby)
-
-        let mappedPlayers: PlayerInGame[] = [];
-
-        if (isOk(playerListOnLobby)) {
-            mappedPlayers = playerListOnLobby.value.players.map((u: any) => ({
-                playerId: u.id,
-                username: u.username,
-                credit: u.credit,
-                dices: [],
-                valueOfCombination: 0,
-            }));
-
-            setPlayers(mappedPlayers);
-        }
-
-        // 3. GAME
-        const result = await gameService.getGameByLobbyId(Number(lobbyId));
-        console.log("result", result)
-        if (!isOk(result)) {
-            setError(result.error ?? "Erro ao carregar o jogo.");
-            setLoading(false);
-            return;
-        }
-//1 min
-//ver onde se cria a turn no fim da round anterior ainda
-        const currentTurnResult = await gameService.getCompleteCurrentTurn(result.value.id);
-        console.log("currentTurnResult",currentTurnResult)
-        const payload = new GamePayload(currentTurnResult.value);
-
-        const initialDiceArray = currentTurnResult.value.diceFaces
-            ? currentTurnResult.value.diceFaces.split(",")
-            : [];
-
-        setGame(prev => ({
-            ...payload.game,
-            dice: initialDiceArray,
-            id: result.value.id,
-            isFirstRoll: currentTurnResult.value.rollCount === 0,
-        }));
-
-        setGameId(result.value.id);
-        updateTopic("lobbies");
-
-        // 4. SSE HANDLER (SEM RELOAD!)
         const handleGameUpdated = (data: any) => {
-            console.log("ENTREIIII AQUI999999999999999")
-            if (data.changeType === "ended" && data.lobbyId == lobbyId) {
+            if (String(data.lobbyId) !== String(lobbyId)) return;
+
+            if (data.changeType === "ended") {
                 navigate(`/lobbies`);
                 return;
             }
 
-            if ((data.changeType === "turn_ended" || data.changeType === "reroll_dice" || data.changeType === "roll_dice"  )&& data.lobbyId == lobbyId) {
+            if ((data.changeType === "turn_ended" || data.changeType === "reroll_dice" || data.changeType === "roll_dice")) {
                 fetchGame(false);
             }
 
-            if(data.changeType === "host_runned_out_of_credits" && data.lobbyId == lobbyId){
-                alert("Host runned out of credits, the lobby will be closed...")
+            if (data.changeType === "host_runned_out_of_credits") {
+                alert("Host ran out of credits, the lobby will be closed...");
                 navigate(`/lobbies`);
+            }
+        };
+
+        const handleRoundWinners = (data: any) => {
+            if (String(data.lobbyId) !== String(lobbyId)) return;
+
+            let winnersText = "";
+            try {
+                const winnersArray = JSON.parse(data.winners) as string[];
+                if (Array.isArray(winnersArray) && winnersArray.length > 0) {
+                    winnersText = winnersArray.join(", ");
+                } else {
+                    winnersText = "No winners";
                 }
+            } catch (e) {
+                winnersText = String(data.winners);
+            }
+
+            if (data.changeType === "roundWinners") {
+                fetchGame(false);
+                alert(`Winner(s) of this round: ${winnersText}`);
+            } else if (data.changeType === "gameWinners") {
+                alert(`Winner(s) of the game: ${winnersText}`);
+            }
         };
 
         addHandler("gameUpdated", handleGameUpdated);
+        addHandler("winnerAlert", handleRoundWinners);
 
-
-               const handleRoundWinners = (data: any) => {
-                 console.log("entrei no novo handler");
-
-                 if (data.lobbyId == lobbyId) {
-                   console.log("entrei no changeType do novo handler");
-
-                   let winnersText = "";
-
-                   try {
-                     const winnersArray = JSON.parse(data.winners) as string[];
-
-                     if (Array.isArray(winnersArray) && winnersArray.length > 0) {
-                       winnersText = winnersArray.join(", ");
-                     } else {
-                       winnersText = "No winners";
-                     }
-                   } catch (e) {
-                     console.error("Erro a fazer parse de data.winners:", data.winners, e);
-                     winnersText = String(data.winners); // fallback
-                   }
-                    if(data.changeType === "roundWinners"){
-                        fetchGame(false);
-                        alert(`Winner(s) of this round: ${winnersText}`);
-                    }
-                    else if(data.changeType ==="gameWinners"){
-                         alert(`Winner(s) of the game: ${winnersText}`);
-                        }
-               };
-           }
-
-
-        addHandler("winnerAlert", handleRoundWinners)
-
-        // 5. ROUND
-        const currentRoundRes = await gameService.getCurrentRound(result.value.id);
-
-        if (isOk(currentRoundRes)) {
-            const roundId = currentRoundRes.value.roundId ?? currentRoundRes.value.id;
-            setRoundNumber(currentRoundRes.value.roundNumber);
-
-            const turnsRes = await gameService.getAllTurnsByRound(roundId);
-            if (isOk(turnsRes)) {
-                const turns = turnsRes.value;
-
-                const updatedPlayers = mappedPlayers.map(player => {
-                    const turn = turns.value.find((t: any) => t.playerId === player.playerId);
-
-                    if (!turn) return player;
-
-                    return {
-                        ...player,
-                        dices: turn.diceFaces ? turn.diceFaces.split(",") : [],
-                        valueOfCombination: turn.value_of_combination ?? 0,
-                    };
-                });
-
-                setPlayers(updatedPlayers);
-            }
-        }
-
-        // 6. CURRENT PLAYER TURN
-        const turnRes = await gameService.getPlayerTurn(result.value.id);
-        if (isOk(turnRes)) setCurrentPlayer(turnRes.value.username);
-
-        setLoading(false);
-    }, [lobbyId, navigate, addHandler]);
-
-
-    useEffect(() => {
-        fetchGame(true);
-    }, [fetchGame]);
-
+        return () => {
+            removeHandler("gameUpdated");
+            removeHandler("winnerAlert");
+        };
+    }, [fetchGame, addHandler, removeHandler, lobbyId, navigate]);
 
     function ensureMyTurn(): boolean {
         if (!game || !currentUser || currentUser.username !== currentPlayer) {
@@ -237,7 +229,7 @@ export default function GamePage() {
             .map(s => Number(s.trim()))
             .filter(n => !Number.isNaN(n));
 
-console.log("diceMask",diceMask)
+        console.log("diceMask", diceMask)
         if (diceMask.length === 0) {
             setInfo("Indica pelo menos um índice para reroll (ex: 0,2,4).");
             return;
@@ -265,9 +257,6 @@ console.log("diceMask",diceMask)
         const result = await gameService.endTurn(Number(gameId));
 
         if (isOk(result)) {
-            //if (result.value.winners) {
-                //alert(result.value.message + " Winner: " + result.value.winners.join(", "));
-            //}
 
             const turnRes = await gameService.getPlayerTurn(game.id);
             if (isOk(turnRes)) {
@@ -287,7 +276,7 @@ console.log("diceMask",diceMask)
     }
 
     if (loading) return <p>Loading game...</p>;
-    if (error) return <p style={{ color: "red" }}>{error}</p>;
+    if (error) return <p style={{color: "red"}}>{error}</p>;
     if (!game) return <p>Jogo não encontrado.</p>;
 
     const safeDice = Array.isArray(game.dice) ? game.dice : [];
@@ -328,14 +317,14 @@ console.log("diceMask",diceMask)
                 </div>
 
                 <div className="actions">
-                  <button onClick={handleRoll}>🎲 Roll</button>
-                  <button
-                    onClick={handleReroll}
-                    disabled={rerollInput.trim() === ""}   // ⬅️ aqui está a magia
-                  >
-                    🔁 Reroll
-                  </button>
-                  <button onClick={handleEndTurn}>⏭️ Terminar</button>
+                    <button onClick={handleRoll}>🎲 Roll</button>
+                    <button
+                        onClick={handleReroll}
+                        disabled={rerollInput.trim() === ""}   // ⬅️ aqui está a magia
+                    >
+                        🔁 Reroll
+                    </button>
+                    <button onClick={handleEndTurn}>⏭️ Terminar</button>
                 </div>
 
             </div>

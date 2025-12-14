@@ -114,6 +114,21 @@ class JdbiGamesRepository(
             .execute()
     }
 
+    override fun decrementPlayerCount(gameId: Int) {
+        val sql =
+            """
+            UPDATE dbo.game
+            SET 
+                nrUsers = nrUsers - 1
+            WHERE id = :gameId
+            """.trimIndent()
+
+        handle
+            .createUpdate(sql)
+            .bind("gameId", gameId)
+            .execute()
+    }
+
     override fun updateRoundCounter(gameId: Int) {
         println("QUERO AUMENTAR O COUNTER DE RONDAS")
         val sql =

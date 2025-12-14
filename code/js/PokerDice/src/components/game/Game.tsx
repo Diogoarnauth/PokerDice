@@ -102,6 +102,7 @@ export default function GamePage() {
 
         // 4. SSE HANDLER (SEM RELOAD!)
         const handleGameUpdated = (data: any) => {
+            console.log("ENTREIIII AQUI999999999999999")
             if (data.changeType === "ended" && data.lobbyId == lobbyId) {
                 navigate(`/lobbies`);
                 return;
@@ -141,10 +142,11 @@ export default function GamePage() {
                      winnersText = String(data.winners); // fallback
                    }
                     if(data.changeType === "roundWinners"){
-                   alert(`Winner(s) of this round: ${winnersText}`);
+                        fetchGame(false);
+                        alert(`Winner(s) of this round: ${winnersText}`);
                     }
                     else if(data.changeType ==="gameWinners"){
-                         alert(`Winner(s) of the game: ${winnersText}`);
+                        // alert(`Winner(s) of the game: ${winnersText}`);
                         }
                };
            }

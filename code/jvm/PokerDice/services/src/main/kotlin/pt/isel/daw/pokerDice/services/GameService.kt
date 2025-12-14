@@ -500,6 +500,16 @@ class GameService(
                 } else {
                     // terminar ronda e começar nova
                     endRound(game, lobby, currentRound)
+
+                    val turnEndedEvent =
+                        PokerEvent.GameUpdated(
+                            lobbyId = game.lobbyId,
+                            changeType = "turn_ended",
+                        )
+
+                    eventService.sendToAll(
+                        turnEndedEvent,
+                    )
                 }
                 val jsonString = """{"message": "Turno terminado com sucesso."}"""
 

@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useCallback} from "react";
 import {useNavigate} from 'react-router-dom';
 import './Lobbies.css';
-
+import {playerProfileService} from "../../services/api/PlayerProfile";
 import {lobbiesService} from "../../services/api/Lobbies";
 import {playersService} from "../../services/api/Players";
 import {useAuthentication} from "../../providers/Authentication";
@@ -32,6 +32,8 @@ export default function LobbiesList() {
     const [lobbies, setLobbies] = useState<LobbyWithPlayers[]>([]);
     const [loading, setLoading] = useState(true);
 
+    const [myLobbyId, setMyLobbyId] = useState<number | null>(null);
+
     // Função para carregar lobbies
     const loadLobbies = useCallback(async () => {
         // setLoading(true); //         setLoading(prev => prev && lobbies.length === 0);
@@ -39,6 +41,11 @@ export default function LobbiesList() {
         setLoading(prev => prev && lobbies.length === 0);
 
         try {
+            const meRes = await playerProfileService.getProfile();
+            if (isOk(meRes)) {
+                setMyLobbyId(meRes.value.lobbyId);
+            }
+
             const response = await lobbiesService.getLobbies();
 
             if (isOk(response)) {
@@ -142,28 +149,56 @@ export default function LobbiesList() {
             )}
 
             <div className="lobbies-grid">
-                {lobbies.map((lobby) => (
-                    <div key={lobby.id} className="lobby-card">
-                        <h2 className="lobby-card-title">{lobby.name}</h2>
-                        <p className="lobby-card-description">{lobby.description}</p>
+                {lobbies.map((lobby) => {
+                    const isFull = lobby.currentPlayers >= lobby.maxUsers;
+                    const isRunning = lobby.isRunning === true;
 
-                        <div className="lobby-card-meta">
-                        <span className="lobby-meta-item">
-                            👥 {lobby.currentPlayers} / {lobby.maxUsers}
-                        </span>
-                            <span className="lobby-meta-item lobby-meta-credit">
-                            💰 {lobby.minCreditToParticipate}
-                        </span>
+                    const isMyLobby = myLobbyId === lobby.id;
+
+
+                    let buttonText = "Enter Lobby";
+                    let isDisabled = false;
+
+                    if (isMyLobby) {
+                        buttonText = "Return to Lobby";
+                        isDisabled = false;
+                    } else if (isRunning) {
+                        buttonText = "Game Running";
+                        isDisabled = true;
+                    } else if (isFull) {
+                        buttonText = "Lobby Full";
+                        isDisabled = true;
+                    }
+
+                    return (
+                        <div key={lobby.id} className="lobby-card">
+                            <h2 className="lobby-card-title">{lobby.name}</h2>
+                            <p className="lobby-card-description">{lobby.description}</p>
+
+                            <div className="lobby-card-meta">
+                                <span className="lobby-meta-item">
+                                    👥 {lobby.currentPlayers} / {lobby.maxUsers}
+                                </span>
+                                <span className="lobby-meta-item lobby-meta-credit">
+                                    💰 {lobby.minCreditToParticipate}
+                                </span>
+                            </div>
+
+                            <button
+                                onClick={() => handleEnterLobby(lobby.id)}
+                                className={`lobby-card-button ${isDisabled ? "disabled-lobby-btn" : ""}`}
+                                disabled={isDisabled}
+                                style={{
+                                    cursor: isDisabled ? "not-allowed" : "pointer",
+                                    opacity: isDisabled ? 0.6 : 1,
+                                    backgroundColor: isMyLobby ? "#2ecc71" : (isDisabled ? "#555" : undefined)
+                                }}
+                            >
+                                {buttonText}
+                            </button>
                         </div>
-
-                        <button
-                            onClick={() => handleEnterLobby(lobby.id)}
-                            className="lobby-card-button"
-                        >
-                            Enter Lobby
-                        </button>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
         </div>
     );

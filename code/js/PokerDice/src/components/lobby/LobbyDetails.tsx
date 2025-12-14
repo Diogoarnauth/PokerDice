@@ -150,8 +150,8 @@ export default function LobbyDetails() {
         addHandler("gameStarted", handleGameStart);
 
         return () => {
-            //removeHandler("lobbies_list_changes");
-            //removeHandler("gameStarted");
+            removeHandler("lobbies_list_changes");
+            removeHandler("gameStarted");
         };
     }, [authUsername, lobbyId, loadData, updateTopic, addHandler, removeHandler, navigate]);
 

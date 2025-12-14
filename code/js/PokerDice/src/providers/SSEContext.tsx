@@ -89,10 +89,15 @@ export function SSEProvider({children}: { children: React.ReactNode }) {
             if (h) h(JSON.parse(e.data));
         });
 
-            es.addEventListener("winnerAlert", (e: any) => {
-                const h = handlers.current["winnerAlert"];
-                if (h) h(JSON.parse(e.data));
-            });
+        es.addEventListener("winnerAlert", (e: any) => {
+            const h = handlers.current["winnerAlert"];
+            if (h) h(JSON.parse(e.data));
+        });
+
+        es.addEventListener(" host_runned_out_of_credits", (e: any) => {
+                    const h = handlers.current[" host_runned_out_of_credits"];
+                    if (h) h(JSON.parse(e.data));
+        });
 /*
         es.addEventListener("game_update", (e: any) => {
             const h = handlers.current["game_update"];

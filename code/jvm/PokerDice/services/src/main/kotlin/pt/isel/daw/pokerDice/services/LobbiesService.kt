@@ -1,6 +1,7 @@
 package pt.isel.daw.pokerDice.services
 
 import kotlinx.datetime.Clock
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import pt.isel.daw.pokerDice.domain.PokerEvent
 import pt.isel.daw.pokerDice.domain.lobbies.LobbiesDomain
@@ -250,6 +251,8 @@ class LobbiesService(
         userId: Int,
     ): JoinLobbyResult =
         transactionManager.run {
+            val logger = LoggerFactory.getLogger(this::class.java)
+
             val lobbiesRepo = it.lobbiesRepository
             val usersRepo = it.usersRepository
 
@@ -259,6 +262,8 @@ class LobbiesService(
                     ?: return@run failure(JoinLobbyError.LobbyNotFound)
 
             println("Lobby $lobby")
+
+            logger.info("Is Lobby running???? $lobby")
 
             if (lobby.isRunning) {
                 return@run failure(JoinLobbyError.LobbyAlreadyRunning)

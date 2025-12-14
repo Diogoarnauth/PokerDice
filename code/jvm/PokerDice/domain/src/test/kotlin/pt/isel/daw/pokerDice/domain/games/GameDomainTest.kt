@@ -6,9 +6,7 @@ import org.junit.jupiter.api.Nested
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotEquals
-
- */
-
+*/
 class GameDomainTest {
     /*
     val gameDomain = GameDomain()
@@ -29,6 +27,26 @@ class GameDomainTest {
             assert(fourOfAKindScore > fullHouseScore) { "Four of a kind should win" }
         }
 
+// TESTES RAW
+        @Test
+        fun testCombinationsRaw() {
+            val fourOfAKind = listOf(Dice.King, Dice.King, Dice.King, Dice.King, Dice.Ace)
+            val fourOfAKindScore = gameDomain.score(fourOfAKind)
+            println("AHHHHHHHHHHHHHHH: $fourOfAKindScore")
+        }
+
+        @Test
+        fun testCombinations() {
+            val fourOfAKind = listOf(Dice.King, Dice.King, Dice.Nine, Dice.Ten, Dice.King)
+            val fourOfAKindScore = gameDomain.score(fourOfAKind)
+            println("AHHHHHHHHHHHHHHH: $fourOfAKindScore")
+
+            val fourOfAKindTest = listOf(Dice.King, Dice.King, Dice.Nine, Dice.Jack, Dice.Queen)
+            val fourOfAKindTestScore = gameDomain.score(fourOfAKindTest)
+            println("BHHHHHHHHHHHHHHHHHHHHH: $fourOfAKindTestScore")
+        }
+
+        // TESTES RAW
         @Test
         fun testStraightVsThreeOfAKind() {
             val straight = listOf(Dice.Ten, Dice.Jack, Dice.Queen, Dice.King, Dice.Ace)

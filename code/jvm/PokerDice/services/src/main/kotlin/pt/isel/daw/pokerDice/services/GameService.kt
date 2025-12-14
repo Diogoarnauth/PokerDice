@@ -245,44 +245,63 @@ class GameService(
             }
 
             if (curTurn.rollCount >= 3) {
+                logger.info("ENTREI NO IF")
+
                 endTurn(game.id!!, userId)
-            }
+                val combinationDices = it.turnsRepository.getTurnByTurnId(curTurn.id!!)
 
-            val updatedDice = gameDomain.rerollDice(curTurn, keepIndexes)
+                val jsonString = """{"dice": ${
+                    combinationDices?.diceFaces?.split(",")?.joinToString(
+                        prefix = "[\"",
+                        separator = "\",\"",
+                        postfix = "\"]",
+                    )
+                }}"""
+                logger.info("jsonString $jsonString")
 
-            val newRollCount = curTurn.rollCount + 1
-            val isDone = newRollCount > 3
-            it.turnsRepository.updateTurn(
-                turnId = curTurn.id!!,
-                rollCount = newRollCount,
-                diceResults = updatedDice,
-                value_of_combination = curTurn.value_of_combination,
-                isDone = isDone,
-            )
+                success(jsonString)
+            } else {
+                logger.info("SAI DO IF")
 
-            if (isDone) {
-                getNextPlayerInRound(round.id!!, lobbyId, curTurn.playerId)
-            }
+                val updatedDice = gameDomain.rerollDice(curTurn, keepIndexes)
 
-            val jsonString = """{"dice": ${
-                updatedDice.split(",").joinToString(
-                    prefix = "[\"",
-                    separator = "\",\"",
-                    postfix = "\"]",
-                )
-            }}"""
+                logger.info("updatedDice $updatedDice")
+                logger.info("curTurn.value_of_combination $curTurn.value_of_combination")
 
-            val reRollEvent =
-                PokerEvent.GameUpdated(
-                    lobbyId = game.lobbyId,
-                    changeType = "reroll_dice",
+                val newRollCount = curTurn.rollCount + 1
+                val isDone = newRollCount > 3
+                it.turnsRepository.updateTurn(
+                    turnId = curTurn.id!!,
+                    rollCount = newRollCount,
+                    diceResults = updatedDice,
+                    value_of_combination = curTurn.value_of_combination,
+                    isDone = isDone,
                 )
 
-            eventService.sendToAll(
-                reRollEvent,
-            )
+                if (isDone) {
+                    getNextPlayerInRound(round.id!!, lobbyId, curTurn.playerId)
+                }
 
-            success(jsonString)
+                val jsonString = """{"dice": ${
+                    updatedDice.split(",").joinToString(
+                        prefix = "[\"",
+                        separator = "\",\"",
+                        postfix = "\"]",
+                    )
+                }}"""
+
+                val reRollEvent =
+                    PokerEvent.GameUpdated(
+                        lobbyId = game.lobbyId,
+                        changeType = "reroll_dice",
+                    )
+
+                eventService.sendToAll(
+                    reRollEvent,
+                )
+
+                success(jsonString)
+            }
         }
 
     fun getNextPlayerInRound(
@@ -446,6 +465,9 @@ class GameService(
                     }
                     ?: emptyList()
 
+            logger.info("ValueOfCombination ${gameDomain.score(diceList).toInt()}")
+            logger.info("diceResults ${curTurn.diceFaces}")
+
             // Marca o turno atual como terminado
             it.turnsRepository.updateTurn(
                 turnId = curTurn.id!!,
@@ -603,6 +625,16 @@ class GameService(
 
                     // Eliminar o lobby da base de dados
                     it.lobbiesRepository.deleteLobbyById(lobby.id)
+
+                    val hostRunnedOutOfCreditsEvent =
+                        PokerEvent.GameUpdated(
+                            lobbyId = lobby.id,
+                            changeType = "host_runned_out_of_credits",
+                        )
+
+                    eventService.sendToAll(
+                        hostRunnedOutOfCreditsEvent,
+                    )
                 } else if (playersOnLobby.size < lobby.minUsers) {
                     endGame(gameId, null, false)
                 }

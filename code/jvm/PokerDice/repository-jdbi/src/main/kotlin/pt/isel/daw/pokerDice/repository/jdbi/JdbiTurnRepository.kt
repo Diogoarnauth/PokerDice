@@ -135,6 +135,18 @@ class JdbiTurnRepository(
             .mapTo<Turn>()
             .list()
 
+    override fun getTurnByTurnId(id: Int): Turn? =
+        handle
+            .createQuery(
+                """
+        SELECT *
+        FROM dbo.turn
+        WHERE id = :id
+        """,
+            ).bind("id", id)
+            .mapTo<Turn>()
+            .first()
+
     override fun getAllTurnsByRoundId(roundId: Int): Int {
         val sql =
             """

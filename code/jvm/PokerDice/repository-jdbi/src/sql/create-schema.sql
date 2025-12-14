@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS dbo.turn (
                           player_id INTEGER NOT NULL REFERENCES dbo.users(id) ON DELETE CASCADE,
                           roll_count INTEGER NOT NULL DEFAULT 0 CHECK (roll_count >= 0),
                           dice_faces TEXT,
-                          value_of_combination INTEGER DEFAULT 0,
+                          value_of_combination NUMERIC(10,4) NOT NULL DEFAULT 0.0000,
                           is_done BOOLEAN NOT NULL DEFAULT FALSE
 );
 

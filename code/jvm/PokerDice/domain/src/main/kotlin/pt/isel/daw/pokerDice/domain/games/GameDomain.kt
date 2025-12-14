@@ -36,6 +36,8 @@ class GameDomain {
                         .thenByDescending { it.key },
                 )
 
+        println("groups $groups")
+
         val isStraight = isStraight(values)
 
         return when {

@@ -167,7 +167,7 @@ class JdbiLobbyRepository(
                     rounds = rs.getInt("rounds"),
                     minCreditToParticipate = rs.getInt("min_credit_to_participate"),
                     turnTime = turnTime,
-                    isRunning = false,
+                    isRunning = rs.getBoolean("isRunning"),
                 )
             }.singleOrNull()
     }
@@ -210,6 +210,7 @@ class JdbiLobbyRepository(
         val max_players: Int,
         val rounds: Int,
         val min_credit_to_participate: Int,
+        val isRunning: Boolean,
         val turn_time: Duration,
         val current_players: Int,
     ) {
@@ -223,6 +224,7 @@ class JdbiLobbyRepository(
                 maxUsers = max_players,
                 rounds = rounds,
                 minCreditToParticipate = min_credit_to_participate,
+                isRunning = isRunning,
                 turnTime = turn_time,
             )
     }

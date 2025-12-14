@@ -32,12 +32,13 @@ export default function GamePage() {
     const [players, setPlayers] = useState<PlayerInGame[]>([]);
     const navigate = useNavigate();
 
-    const fetchGame = useCallback(async () => {
+  const fetchGame = useCallback(async (showLoading = true) => {
+      if (showLoading) {
+          setLoading(true);
+          setError(null);
+          setInfo(null);
+      }
         if (!lobbyId) return;
-
-        setLoading(true);
-        setError(null);
-        setInfo(null);
 
         // 1. USER LOGADO
         const meRes = await playerProfileService.getProfile();
@@ -47,6 +48,11 @@ export default function GamePage() {
             setLoading(false);
             return;
         }
+
+        if(meRes.value.lobbyId != lobbyId ){
+            alert("You are not part of this game")
+            navigate(`/lobbies`);
+            }
 
         // 2. PLAYERS DO LOBBY
         const playerListOnLobby = await playersService.getObjPlayersOnLobby(Number(lobbyId));
@@ -99,9 +105,13 @@ export default function GamePage() {
             }
 
             if ((data.changeType === "turn_ended" || data.changeType === "reroll_dice" || data.changeType === "roll_dice"  )&& data.lobbyId == lobbyId) {
-                console.log("🔄 Turn ended → refreshing game...");
-                fetchGame();
+                fetchGame(false);
             }
+
+            if(data.changeType === "host_runned_out_of_credits" && data.lobbyId == lobbyId){
+                alert("Host runned out of credits, the lobby will be closed...")
+                navigate(`/lobbies`);
+                }
         };
 
         addHandler("gameUpdated", handleGameUpdated);
@@ -175,7 +185,7 @@ export default function GamePage() {
 
 
     useEffect(() => {
-        fetchGame();
+        fetchGame(true);
     }, [fetchGame]);
 
 
@@ -268,10 +278,6 @@ console.log("diceMask",diceMask)
             alert("Não podes terminar sem jogar ao menos 1 vez.");
         }
     }
-
-    // ============================================================
-    // RENDER
-    // ============================================================
 
     if (loading) return <p>Loading game...</p>;
     if (error) return <p style={{ color: "red" }}>{error}</p>;

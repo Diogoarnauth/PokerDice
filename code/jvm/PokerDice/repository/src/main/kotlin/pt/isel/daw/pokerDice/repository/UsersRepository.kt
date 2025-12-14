@@ -71,6 +71,8 @@ interface UsersRepository {
 
     fun removeTokenByValidationInfo(tokenValidationInfo: TokenValidationInfo): Int
 
+    fun removePlayerFromLobby(playerId: Int)
+
     fun decrementCreditsFromPlayer(
         amount: Int,
         userId: Int,

@@ -76,14 +76,16 @@ export default function GamePage() {
 
         // 3. GAME
         const result = await gameService.getGameByLobbyId(Number(lobbyId));
-
+        console.log("result", result)
         if (!isOk(result)) {
             setError(result.error ?? "Erro ao carregar o jogo.");
             setLoading(false);
             return;
         }
-
+//1 min
+//ver onde se cria a turn no fim da round anterior ainda
         const currentTurnResult = await gameService.getCompleteCurrentTurn(result.value.id);
+        console.log("currentTurnResult",currentTurnResult)
         const payload = new GamePayload(currentTurnResult.value);
 
         const initialDiceArray = currentTurnResult.value.diceFaces
@@ -146,7 +148,7 @@ export default function GamePage() {
                         alert(`Winner(s) of this round: ${winnersText}`);
                     }
                     else if(data.changeType ==="gameWinners"){
-                        // alert(`Winner(s) of the game: ${winnersText}`);
+                         alert(`Winner(s) of the game: ${winnersText}`);
                         }
                };
            }

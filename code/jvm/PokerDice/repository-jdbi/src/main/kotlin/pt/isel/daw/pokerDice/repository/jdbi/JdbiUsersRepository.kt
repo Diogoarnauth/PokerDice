@@ -219,6 +219,13 @@ class JdbiUsersRepository(
             ).bind("tokenValidationInfo", tokenValidationInfo.validationInfo) // Usando o valor do tokenValidationInfo
             .execute()
 
+    override fun removePlayerFromLobby(playerId: Int) {
+        handle
+            .createUpdate("UPDATE dbo.Users SET lobby_id = null WHERE id = :playerId")
+            .bind("playerId", playerId)
+            .execute()
+    }
+
     override fun countUsers(): Int =
         handle
             .createQuery("SELECT COUNT(*) FROM dbo.Users")

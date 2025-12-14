@@ -626,6 +626,8 @@ class GameService(
                 it.usersRepository.decrementCreditsFromPlayer(lobby!!.minCreditToParticipate, player.id)
 
             if (!creditsDecremented) {
+                logger.info("ENTREI NO DECREMENTED ${player.id}")
+
                 it.usersRepository.userExitsLobby(lobbyId = lobby.id, userId = player.id)
                 val playersOnLobby = it.usersRepository.getAllUsersInLobby(lobbyId = lobby.id)
 
@@ -646,8 +648,12 @@ class GameService(
                         hostRunnedOutOfCreditsEvent,
                     )
                 } else if (playersOnLobby.size < lobby.minUsers) {
+                    logger.info("ENTREI NO ELSE IF ${player.id}")
+
                     endGame(gameId, null, false)
                 }
+
+                // it.usersRepository.removePlayerFromLobby(player.id)
 
                 val messageSuccess = """{"Game ended: Not enough players remaining with credits."}"""
 
@@ -658,6 +664,9 @@ class GameService(
         val nextRoundId = it.roundRepository.createRound(gameId, round)
 
         val firstPlayer = it.usersRepository.getAllUsersInLobby(lobby.id).first()
+
+        logger.info("PLAYERSSSSSS ${it.usersRepository.getAllUsersInLobby(lobby.id)}")
+
         val firstTurn =
             Turn(
                 id = null,

@@ -239,6 +239,10 @@ class GameService(
                 return@run failure(GameError.IsNotYouTurn)
             }
 
+            keepIndexes.forEach {
+                if (it > 4) return@run failure(GameError.InvalidDiceIndexes(keepIndexes))
+            }
+
             // verify if the turn already ended
             if (curTurn.isDone) {
                 return@run failure(GameError.TurnAlreadyFinished)

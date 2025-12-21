@@ -14,6 +14,8 @@ interface GamesRepository {
         state: Game.GameStatus,
     )
 
+    fun getGameWinners(gameId: Int): List<String>
+
     fun decrementPlayerCount(gameId: Int)
 
     fun addGameWinners(

@@ -113,6 +113,19 @@ class JdbiGamesRepository(
             .bind("newState", state.name)
             .execute()
     }
+    override fun getGameWinners(gameId: Int): List<String> =
+        handle
+            .createQuery(
+                """
+            SELECT u.username
+            FROM dbo.game_winner gw
+            INNER JOIN dbo.users u ON gw.user_id = u.id
+            WHERE gw.game_id = :gameId
+            """.trimIndent()
+            )
+            .bind("gameId", gameId)
+            .map { rs, _ -> rs.getString("username") }
+            .toList()
 
     override fun decrementPlayerCount(gameId: Int) {
         val sql =

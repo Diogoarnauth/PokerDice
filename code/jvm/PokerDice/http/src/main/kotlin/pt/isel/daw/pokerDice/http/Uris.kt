@@ -34,6 +34,7 @@ object Uris {
     // Game URIs
     object Games {
         const val ROOT = "$PREFIX/games"
+        const val WINNERS = "$ROOT/{gameId}/winners"
         const val BY_ID = "$ROOT/{gameId}"
         const val START = "$ROOT/{lobbyId}/start"
         const val ROLL = "$ROOT/{lobbyId}/roll"

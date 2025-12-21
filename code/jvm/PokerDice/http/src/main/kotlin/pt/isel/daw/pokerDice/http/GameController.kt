@@ -29,10 +29,10 @@ class GameController(
         val res = gameService.createGame(authenticatedUser.user.id, lobbyId = lobbyId)
         return when (res) {
             is Success -> ResponseEntity.ok(res.value.toString())
-                /*ResponseEntity
-                    .status(201)
-                    .header("Location", Uris.Games.BY_ID.replace("{gameId}", res.value.toString()))
-                    .build<Unit>()*/
+            /*ResponseEntity
+                .status(201)
+                .header("Location", Uris.Games.BY_ID.replace("{gameId}", res.value.toString()))
+                .build<Unit>()*/
             is Failure ->
                 when (res.value) {
                     is GameCreationError.LobbyNotFound -> Problem.response(404, Problem.lobbyNotFound)
@@ -42,6 +42,22 @@ class GameController(
                     is GameCreationError.NotTheHost -> Problem.response(403, Problem.NotTheHost)
                 }
         }
+    }
+
+    @GetMapping(Uris.Games.WINNERS)
+    fun getGameWinners(
+        @PathVariable gameId: Int,
+    ): ResponseEntity<*> {
+        val res = gameService.getGameWinners(gameId)
+
+        return when (res) {
+            is Success -> {
+                ResponseEntity.ok(res)
+            }
+
+            is Failure -> Problem.response(404, Problem.gameNotFound)
+        }
+
     }
 
     @GetMapping(Uris.Games.GETGAME)
@@ -78,6 +94,7 @@ class GameController(
 
                 ResponseEntity.ok(mapOf("dice" to dice))
             }
+
             is Failure -> {
                 when (res.value) {
                     is GameError.NotFirstRoll -> Problem.response(403, Problem.notFirstRoll)
@@ -162,10 +179,13 @@ class GameController(
                 when (res.value) {
                     EndGameError.GameNotFound ->
                         Problem.response(404, Problem.gameNotFound)
+
                     EndGameError.GameAlreadyClosed ->
                         Problem.response(409, Problem.gameAlreadyClosed)
+
                     EndGameError.LobbyNotFound ->
                         Problem.response(404, Problem.lobbyNotFound)
+
                     EndGameError.YouAreNotHost ->
                         Problem.response(409, Problem.YouAreNotHost)
                 }
@@ -227,6 +247,7 @@ class GameController(
                         "isDone" to res.value.isDone,
                     ),
                 )
+
             is Failure -> Problem.response(404, Problem.noActiveTurn)
         }
     }

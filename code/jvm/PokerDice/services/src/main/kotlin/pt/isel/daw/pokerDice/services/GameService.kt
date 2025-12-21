@@ -46,6 +46,7 @@ sealed class GameGetByIdError {
     data object GameNotFound : GameGetByIdError()
 }
 
+typealias GetGameWinners = Either<GameError, List<String>>
 // Mudando o tipo para retornar o jogo completo
 typealias GetGameByLobby = Either<GameError, Game?>
 
@@ -104,6 +105,13 @@ class GameService(
             success(game)
         }
     }
+
+    fun getGameWinners(gameId: Int): GetGameWinners =
+        transactionManager.run {
+            val winners =
+                it.gamesRepository.getGameWinners(gameId) ?: return@run failure(GameError.GameNotFound(gameId))
+            success(winners)
+        }
 
     fun createGame(
         userId: Int,

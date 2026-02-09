@@ -47,6 +47,7 @@ sealed class GameGetByIdError {
 }
 
 typealias GetGameWinners = Either<GameError, List<String>>
+
 // Mudando o tipo para retornar o jogo completo
 typealias GetGameByLobby = Either<GameError, Game?>
 

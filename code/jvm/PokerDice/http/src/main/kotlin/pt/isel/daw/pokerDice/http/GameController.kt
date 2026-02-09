@@ -1,3 +1,4 @@
+
 package pt.isel.daw.pokerDice.http
 
 import org.slf4j.LoggerFactory
@@ -57,7 +58,6 @@ class GameController(
 
             is Failure -> Problem.response(404, Problem.gameNotFound)
         }
-
     }
 
     @GetMapping(Uris.Games.GETGAME)

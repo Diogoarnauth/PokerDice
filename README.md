@@ -1,183 +1,192 @@
-# 🎲 Poker Dice
+🎲 Poker Dice
+Multiplayer Web Application for the Poker Dice game
 
-**Aplicação Web Multiplayer do jogo Poker Dice**
+Poker Dice is a multiplayer web application that enables the creation and management of lobbies where multiple players can participate in real-time Poker Dice matches.
 
-Poker Dice é uma aplicação web multiplayer que permite a criação e gestão de lobbies onde vários jogadores podem participar em partidas do jogo Poker Dice em tempo real.
+The project was developed with a focus on:
 
-O projeto foi desenvolvido com foco em:
+Modular structuring
 
-* Estruturação modular 
-* Separação clara de responsabilidades
-* Pipeline bem definida de processamento de pedidos
-* Gestão segura de autenticação e sessões
-* Comunicação reativa entre backend e frontend
-* Organização transacional consistente da lógica de negócio
+Clear separation of concerns
 
----
+Well-defined request processing pipeline
 
-# 🏗️ Arquitetura Geral
+Secure authentication and session management
 
-A aplicação encontra-se dividida em múltiplos containers Docker:
+Reactive communication between backend and frontend
 
-* **Nginx** – Reverse proxy
-* **Backend API** – Kotlin + Spring
-* **Frontend** – React + TypeScript
+Consistent transactional organization of business logic
 
-O **Nginx** atua como ponto de entrada único, fazendo reverse proxy para os containers internos, permitindo:
+🏗️ General Architecture
+The application is divided into multiple Docker containers:
 
-* Separação clara de responsabilidades
-* Isolamento de serviços
-* Escalabilidade futura
-* Configuração centralizada de routing
+Nginx – Reverse proxy
 
----
+Backend API – Kotlin + Spring
 
-# 🖥️ Frontend
+Frontend – React + TypeScript
 
-## ⚛️ React + TypeScript
+Nginx acts as the single entry point, reverse-proxying requests to internal containers, which allows for:
 
-O frontend foi desenvolvido com:
+Clear separation of concerns
 
-* **React** para construção da interface baseada em componentes
-* **TypeScript** para tipagem estática e maior robustez
-* Gestão de estado baseada no estado do jogo no backend
+Service isolation
 
----
+Future scalability
 
-## ⚡ Vite
+Centralized routing configuration
 
-Utilizámos **Vite** como ferramenta de desenvolvimento e bundling.
+🖥️ Frontend
+⚛️ React + TypeScript
+The frontend was developed using:
 
-O Vite foi essencial para:
+React for component-based interface construction
 
-* Bundling otimizado da aplicação
-* Transpiling de TypeScript
-* Hot Module Replacement (HMR)
-* Build otimizada para produção
-* Servidor de desenvolvimento extremamente rápido
+TypeScript for static typing and greater robustness
 
-Vantagens práticas no projeto:
+State management driven by the backend game state
 
-* Redução significativa no tempo de reload
-* Pipeline simplificada de build
-* Melhor organização modular do frontend
+⚡ Vite
+We used Vite as our development and bundling tool.
 
----
+Vite was essential for:
 
-# 🧠 Backend
+Optimized application bundling
 
-## 🔹 Kotlin + Spring
+TypeScript transpilation
 
-O backend foi desenvolvido com:
+Hot Module Replacement (HMR)
 
-* **Kotlin**
-* **Spring Boot**
-* Arquitetura baseada em separação de camadas
-* Organização por domínio, repositórios, serviços e controladores
+Production-optimized build
 
----
+Extremely fast development server
 
-# 🔄 Pipeline de Processamento de Pedidos
+Practical advantages in the project:
 
-A pipeline definida para cada pedido HTTP segue a seguinte ordem:
+Significant reduction in reload time
 
-1. Servidor HTTP (container)
-2. `HttpServlet`
-3. Filtro HTTP global (executado antes do Spring)
-4. Interceptors do Spring
-5. Controllers
-6. Services
-7. Repositórios
+Simplified build pipeline
 
-Esta abordagem permitiu:
+Better modular organization of the frontend
 
-* Separar autenticação da lógica de negócio
-* Validar campos antes de chegar aos serviços
-* Centralizar verificação de permissões
-* Garantir consistência no tratamento de erros
+🧠 Backend
+🔹 Kotlin + Spring
+The backend was developed using:
 
----
+Kotlin
 
-# 🔐 Autenticação e Gestão de Sessão
+Spring Boot
 
-## 🍪 Sistema de Cookies
+Layer-separated architecture
 
-Foi implementado um sistema próprio de autenticação baseado em:
+Organization by domain, repositories, services, and controllers
 
-* Cookies configurados manualmente
-* Tokens armazenados na base de dados
-* Expiração automática após 24 horas
-* Sistema de reposição e invalidação de tokens
+🔄 Request Processing Pipeline
+The pipeline defined for each HTTP request follows this sequence:
 
-### Processo:
+HTTP Server (container)
 
-1. Login → geração de token
-2. Token armazenado na base de dados
-3. Hash do token guardado
-4. Cookie enviado ao browser
-5. Interceptor valida token em cada pedido
+HttpServlet
 
----
+Global HTTP Filter (executed before Spring)
 
-## 🔑 Cookies vs Tokens (Vantagens da abordagem usada)
+Spring Interceptors
 
-### Cookies (usados no projeto)
+Controllers
 
-* Envio automático pelo browser
-* Maior integração com mecanismos HTTP
-* Possibilidade de uso das flags `HttpOnly` e `Secure`
-* Melhor controlo em contexto web tradicional
+Services
 
-No projeto, a combinação de cookies + tokens persistidos permitiu:
+Repositories
 
-* Controlo total da sessão
-* Revogação manual de tokens
-* Expiração garantida
-* Maior controlo de segurança
+This approach made it possible to:
 
----
+Separate authentication from business logic
 
-# 🔐 Encriptação e Segurança
+Validate fields before they reach the services
 
-## Hashing com SHA-256
+Centralize permission checks
 
-A encriptação de tokens foi feita com SHA-256:
+Ensure consistency in error handling
 
-### Estratégia adotada:
+🔐 Authentication and Session Management
+🍪 Cookie System
+A custom authentication system was implemented based on:
 
-* Nunca guardar tokens em claro
-* Guardar apenas hash
-* Comparar hash do token enviado com o hash armazenado
-* Passwords tratadas da mesma forma
+Manually configured cookies
 
-Isto garante:
+Tokens stored in the database
 
-* Redução de impacto em caso de fuga de dados
-* Impossibilidade de reconstrução direta do token original
+Automatic expiration after 24 hours
 
----
+Token replacement and invalidation system
 
-# 🗄️ Persistência de Dados
+Process:
+Login → token generation
 
-## JDBI + Transaction Manager
+Token stored in the database
 
-A camada de persistência foi implementada com **JDBI**.
+Token hash saved
 
-### Handle
+Cookie sent to the browser
 
-O `Handle` representa uma ligação ativa à base de dados dentro de uma transação.
+Interceptor validates the token on every request
 
-Cada repositório recebe o mesmo `Handle`, garantindo:
+🔑 Cookies vs Tokens (Advantages of the adopted approach)
+Cookies (used in the project)
+Automatic transmission by the browser
 
-* Consistência transacional
-* Operações atómicas
-* Isolamento de contexto
+Stronger integration with HTTP mechanisms
 
----
+Ability to use HttpOnly and Secure flags
 
-## Transaction Manager
+Better control within a traditional web context
 
-```kotlin
+In this project, combining cookies with persisted tokens provided:
+
+Full session control
+
+Manual token revocation
+
+Guaranteed expiration
+
+Enhanced security control
+
+🔐 Encryption and Security
+Hashing with SHA-256
+Token encryption was handled using SHA-256:
+
+Strategy adopted:
+Never store tokens in plain text
+
+Store only the hash
+
+Compare the hash of the sent token with the stored hash
+
+Passwords handled in the same manner
+
+This ensures:
+
+Reduced impact in the event of a data leak
+
+Impossibility of directly reconstructing the original token
+
+🗄️ Data Persistence
+JDBI + Transaction Manager
+The persistence layer was implemented using JDBI.
+
+Handle
+The Handle represents an active connection to the database within a transaction.
+
+Each repository receives the same Handle, ensuring:
+
+Transactional consistency
+
+Atomic operations
+
+Context isolation
+
+Transaction Manager
+Kotlin
 class JdbiTransactionManager(
     private val jdbi: Jdbi,
 ) : TransactionManager {
@@ -188,144 +197,156 @@ class JdbiTransactionManager(
             block(transaction)
         }
 }
-```
+Advantages:
+All operations within run {} execute inside the same transaction
 
-### Vantagens:
+Automatic commit if no error occurs
 
-* Todas as operações dentro do `run {}` executam na mesma transação
-* Commit automático se não houver erro
-* Rollback automático em caso de exceção
-* Serviços mantêm-se independentes da tecnologia de persistência
+Automatic rollback in case of an exception
 
----
+Services remain decoupled from the specific persistence technology
 
-## Organização por Repositórios
+Organization by Repositories
+Each entity has its own repository:
 
-Cada entidade possui o seu repositório:
+UsersRepository
 
-* UsersRepository
-* LobbiesRepository
-* GamesRepository
-* RoundRepository
-* TurnsRepository
-* InviteRepository
-Isto demonstra:
+LobbiesRepository
 
-* Separação clara de queries
-* Encapsulamento de acesso a dados
-* Código SQL centralizado
+GamesRepository
 
----
+RoundRepository
 
-# 💼 Lógica de Negócio Transacional
+TurnsRepository
 
-Exemplo: criação de lobby.
+InviteRepository
 
-Durante `createLobby`:
+This demonstrates:
 
-* Verificação de existência do host
-* Verificação de créditos
-* Validação de parâmetros
-* Verificação de estado do utilizador
-* Criação do lobby
-* Atualização do utilizador
-* Emissão de evento SSE
+Clear separation of queries
 
-Tudo dentro de:
+Encapsulation of data access
 
-```kotlin
+Centralized SQL code
+
+💼 Transactional Business Logic
+Example: lobby creation.
+
+During createLobby:
+
+Host existence check
+
+Credit check
+
+Parameter validation
+
+User state validation
+
+Lobby creation
+
+User update
+
+SSE event broadcast
+
+Everything runs inside:
+
+Kotlin
 transactionManager.run { ... }
-```
+Ensuring total atomicity of the operation.
 
-Garantindo atomicidade total da operação.
+📡 Real-Time Communication
+SSE (Server-Sent Events)
+The following components were utilized:
 
----
+Event Emitters
 
-# 📡 Comunicação em Tempo Real
+SSEEmitters
 
-## SSE (Server-Sent Events)
+To notify the frontend about backend updates.
 
-Foram utilizados:
+Practical example:
+When a lobby is created:
 
-* Event Emitters
-* SSEEmitters
-
-Para notificar o frontend de alterações no backend.
-
-### Exemplo prático:
-
-Quando um lobby é criado:
-
-```kotlin
+Kotlin
 eventService.sendToAll(
     PokerEvent.LobbiesListChanges(...)
 )
-```
+The frontend receives the event and:
 
-O frontend recebe o evento e:
+Automatically updates the lobbies list
 
-* Atualiza automaticamente a lista de lobbies
-* Re-renderiza componentes
-* Sincroniza estado visual com estado real
+Re-renders components
 
-Vantagens:
+Synchronizes the visual state with the real state
 
-* Atualização em tempo real
-* Redução de polling
-* Melhor experiência de utilizador
-* UI reativa ao estado da aplicação
+Advantages:
 
----
+Real-time updates
 
-# 📦 Estrutura de Resposta de Erros
+Reduced polling
 
-Todas as respostas de erro seguem estrutura consistente:
+Better user experience
 
-```json
+UI reactive to application state
+
+📦 Error Response Structure
+All error responses adhere to a consistent structure:
+
+JSON
 {
   "status": 400,
   "title": "InvalidSettings",
   "detail": "Lobby configuration is invalid",
   "link": "https://github.com/.../docs/errors#InvalidSettings"
 }
-```
+This allows for:
 
-Isto permite:
+Standardization
 
-* Padronização
-* Facilidade de debugging
-* Documentação associada a cada erro
-* Melhor integração frontend/backend
+Ease of debugging
 
----
+Documentation linked to each error
 
-# 🧩 Técnica: Application Problem + JSON
+Better frontend/backend integration
 
-O backend segue uma abordagem baseada em:
+🧩 Technique: Application Problem + JSON
+The backend follows an approach based on:
 
-* Representação clara de problemas de domínio
-* Serialização estruturada para JSON
-* Separação entre erros técnicos e erros de negócio
-* Mapeamento explícito de resultados (`success` / `failure`)
+Clear representation of domain problems
 
-Isto melhora:
+Structured serialization to JSON
 
-* Legibilidade
-* Manutenção
-* Testabilidade
-* Consistência da API
+Separation between technical errors and business errors
 
----
+Explicit mapping of results (success / failure)
 
-# 🎯 Principais Decisões Técnicas
+This improves:
 
-* Arquitetura modular com containers
-* Reverse proxy com Nginx
-* Pipeline HTTP estruturada
-* Autenticação com cookies + tokens persistidos
-* Hashing com SHA-256
-* Persistência com JDBI
-* Transaction Manager customizado
-* SSE para comunicação reativa
-* Estrutura padronizada de erros
-* Separação rigorosa de lógica de negócio
+Readability
+
+Maintainability
+
+Testability
+
+API consistency
+
+🎯 Key Technical Decisions
+Modular architecture with containers
+
+Reverse proxy with Nginx
+
+Structured HTTP pipeline
+
+Authentication using cookies + persisted tokens
+
+SHA-256 hashing
+
+Persistence with JDBI
+
+Custom Transaction Manager
+
+SSE for reactive communication
+
+Standardized error structure
+
+Strict separation of business logic

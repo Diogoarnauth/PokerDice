@@ -6,7 +6,7 @@ Poker Dice é uma aplicação web multiplayer que permite a criação e gestão 
 
 O projeto foi desenvolvido com foco em:
 
-* Estruturação modular
+* Estruturação modular 
 * Separação clara de responsabilidades
 * Pipeline bem definida de processamento de pedidos
 * Gestão segura de autenticação e sessões
